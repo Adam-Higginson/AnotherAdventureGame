@@ -1,7 +1,7 @@
 package com.adam.adventure.render.vertex;
 
 public class Vertex {
-    private static final int NUM_ELEMENTS_PER_VERTEX = 3;
+    public static final int NUM_ELEMENTS_PER_VERTEX = 3;
 
     private final float x;
     private final float y;

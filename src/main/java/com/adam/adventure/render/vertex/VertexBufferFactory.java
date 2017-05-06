@@ -4,18 +4,15 @@ import org.lwjgl.BufferUtils;
 
 import java.nio.FloatBuffer;
 
-import static org.lwjgl.opengl.GL15.*;
+import static org.lwjgl.opengl.GL15.glGenBuffers;
 
 public class VertexBufferFactory {
 
     public StaticVertexBuffer newStaticVertexBuffer(final Vertex[] vertices) {
         final FloatBuffer floatBuffer = buildFloatBuffer(vertices);
-
         final int bufferId = glGenBuffers();
-        glBindBuffer(GL_ARRAY_BUFFER, bufferId);
-        glBufferData(GL_ARRAY_BUFFER, floatBuffer, GL_STATIC_DRAW);
+        return new StaticVertexBuffer(bufferId, floatBuffer, vertices.length);
 
-        return new StaticVertexBuffer(bufferId);
     }
 
     private FloatBuffer buildFloatBuffer(final Vertex[] vertices) {

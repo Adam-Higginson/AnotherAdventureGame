@@ -7,4 +7,8 @@ public class Shader {
     public Shader(final int shaderId) {
         this.shaderId = shaderId;
     }
+
+    public int getShaderId() {
+        return shaderId;
+    }
 }

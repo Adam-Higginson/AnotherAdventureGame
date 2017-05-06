@@ -8,6 +8,9 @@ import com.adam.adventure.loop.LoopIterationImpl;
 import com.adam.adventure.render.RenderQueue;
 import com.adam.adventure.render.Renderer;
 import com.adam.adventure.render.TileRenderable;
+import com.adam.adventure.render.shader.Program;
+import com.adam.adventure.render.shader.ProgramFactory;
+import com.adam.adventure.render.shader.Shader;
 import com.adam.adventure.render.shader.ShaderCompiler;
 import com.adam.adventure.state.GameStateMachine;
 import com.adam.adventure.state.LoggingGameStateListener;
@@ -41,24 +44,28 @@ public class Main {
 
         //Show window
         window.openWindow();
-        window.clearWindow(0.0f, 0.0f, 0.0f, 0.0f);
+        window.clearWindow(0.0f, 0.2f, 0.2f, 0.0f);
+
+        //Compile shaders
+        final ShaderCompiler shaderCompiler = new ShaderCompiler();
+        final String vertexShaderSource = readShaderSource("testVert.glsl");
+        final Shader vertexShader = shaderCompiler.compileVertexShader(vertexShaderSource);
+
+        final String fragmentShaderSource = readShaderSource("testFrag.glsl");
+        final Shader fragmentShader = shaderCompiler.compileFragmentShader(fragmentShaderSource);
+
+        final ProgramFactory programFactory = new ProgramFactory();
+        final Program program = programFactory.createProgramFromShaders(vertexShader, fragmentShader);
+        program.useProgram();
 
         //Prepare rendering pipeline
         final RenderQueue renderQueue = new RenderQueue();
         final Renderer renderer = new Renderer(renderQueue, window);
 
-        //Compile shaders
-        final ShaderCompiler shaderCompiler = new ShaderCompiler();
-        final String vertexShaderSource = readShaderSource("testVert.glsl");
-        shaderCompiler.compileVertexShader(vertexShaderSource);
-
-        final String fragmentShaderSource = readShaderSource("testFrag.glsl");
-        shaderCompiler.compileFragmentShader(fragmentShaderSource);
-
-
         //Create a test object to render
         final TileRenderable tileRenderable = renderer.buildRenderable(TileRenderable::new);
         renderQueue.addRenderable(tileRenderable);
+
 
         eventBus.publishEvent(new Event(EventType.LOADED));
         loop(renderer, window);
@@ -76,13 +83,11 @@ public class Main {
 
     private Window buildWindow() {
 
-        final Window window = new Window.Builder(800, 600)
+        return new Window.Builder(800, 600)
                 .withTitle("Yet another adventure game")
                 .withIsVisible(true)
                 .withIsResizable(true)
                 .build();
-
-        return window;
     }
 
     private void loop(final Renderer renderer, final Window window) {
