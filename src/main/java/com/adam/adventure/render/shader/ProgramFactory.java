@@ -1,5 +1,6 @@
 package com.adam.adventure.render.shader;
 
+import com.adam.adventure.render.Renderer;
 import org.lwjgl.BufferUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,7 +12,13 @@ import static org.lwjgl.opengl.GL20.*;
 public class ProgramFactory {
     private static final Logger LOG = LoggerFactory.getLogger(ProgramFactory.class);
 
-    public Program createProgramFromShaders(final Shader vertexShader, final Shader fragmentShader) {
+    private final Renderer renderer;
+
+    public ProgramFactory(final Renderer renderer) {
+        this.renderer = renderer;
+    }
+
+    public Program registerProgramFromShaders(final Shader vertexShader, final Shader fragmentShader, final String programName) {
         final int programId = glCreateProgram();
         glAttachShader(programId, vertexShader.getShaderId());
         glAttachShader(programId, fragmentShader.getShaderId());
@@ -24,7 +31,10 @@ public class ProgramFactory {
         glDeleteShader(vertexShader.getShaderId());
         glDeleteShader(fragmentShader.getShaderId());
 
-        return new Program(programId);
+
+        final Program program = new Program(programId, programName);
+        renderer.registerProgram(program);
+        return program;
     }
 
     private void assertProgramLinkedSuccessfully(final int programId) {

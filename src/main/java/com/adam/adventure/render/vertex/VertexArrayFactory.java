@@ -9,7 +9,7 @@ import static org.lwjgl.opengl.GL30.glGenVertexArrays;
 
 public class VertexArrayFactory {
 
-    public VertexArray newVertexArray(final Buffer vertexBuffer, final ElementArrayBuffer elementArrayBuffer) {
+    public VertexArray newVertexArray(final Buffer vertexBuffer, final Buffer elementArrayBuffer) {
         final int vertexArrayId = glGenVertexArrays();
         glBindVertexArray(vertexArrayId);
 

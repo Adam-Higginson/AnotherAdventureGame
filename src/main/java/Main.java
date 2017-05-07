@@ -1,3 +1,4 @@
+import com.adam.adventure.entity.TileEntity;
 import com.adam.adventure.event.Event;
 import com.adam.adventure.event.EventBus;
 import com.adam.adventure.event.EventType;
@@ -8,7 +9,6 @@ import com.adam.adventure.loop.LoopIterationImpl;
 import com.adam.adventure.render.RenderQueue;
 import com.adam.adventure.render.Renderer;
 import com.adam.adventure.render.TileRenderable;
-import com.adam.adventure.render.shader.Program;
 import com.adam.adventure.render.shader.ProgramFactory;
 import com.adam.adventure.render.shader.Shader;
 import com.adam.adventure.render.shader.ShaderCompiler;
@@ -46,6 +46,11 @@ public class Main {
         window.openWindow();
         window.clearWindow(0.0f, 0.2f, 0.2f, 0.0f);
 
+        //Prepare rendering pipeline
+        final RenderQueue renderQueue = new RenderQueue();
+        final Renderer renderer = new Renderer(renderQueue, window);
+
+
         //Compile shaders
         final ShaderCompiler shaderCompiler = new ShaderCompiler();
         final String vertexShaderSource = readShaderSource("testVert.glsl");
@@ -54,16 +59,14 @@ public class Main {
         final String fragmentShaderSource = readShaderSource("testFrag.glsl");
         final Shader fragmentShader = shaderCompiler.compileFragmentShader(fragmentShaderSource);
 
-        final ProgramFactory programFactory = new ProgramFactory();
-        final Program program = programFactory.createProgramFromShaders(vertexShader, fragmentShader);
-        program.useProgram();
+        //TODO put set up of programs in a ProgramRegistrar class which reads from config and extract program names to constants
+        final ProgramFactory programFactory = new ProgramFactory(renderer);
+        programFactory.registerProgramFromShaders(vertexShader, fragmentShader, "Test Program");
 
-        //Prepare rendering pipeline
-        final RenderQueue renderQueue = new RenderQueue();
-        final Renderer renderer = new Renderer(renderQueue, window);
 
         //Create a test object to render
-        final TileRenderable tileRenderable = renderer.buildRenderable(TileRenderable::new);
+        final TileEntity tileEntity = new TileEntity();
+        final TileRenderable tileRenderable = renderer.buildRenderable(() -> new TileRenderable(tileEntity));
         renderQueue.addRenderable(tileRenderable);
 
 

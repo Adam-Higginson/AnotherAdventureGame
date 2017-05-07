@@ -1,13 +1,22 @@
 package com.adam.adventure.render;
 
+import com.adam.adventure.entity.TileEntity;
+import com.adam.adventure.render.shader.Program;
+import com.adam.adventure.render.shader.Uniform4f;
 import com.adam.adventure.render.vertex.ElementArrayBuffer;
 import com.adam.adventure.render.vertex.StaticVertexBuffer;
 import com.adam.adventure.render.vertex.Vertex;
 import com.adam.adventure.render.vertex.VertexArray;
 
-public class TileRenderable implements Renderable {
+import static org.lwjgl.glfw.GLFW.glfwGetTime;
+
+public class TileRenderable extends RenderableEntity<TileEntity> {
 
     private VertexArray vertexArray;
+
+    public TileRenderable(final TileEntity entity) {
+        super(entity);
+    }
 
     @Override
     public void initialise(final Renderer renderer) {
@@ -30,6 +39,15 @@ public class TileRenderable implements Renderable {
 
     @Override
     public void render(final Renderer renderer) {
+        final float greenValue = (float) (Math.sin(glfwGetTime()) / 2) + 0.5f;
+        final float blueValue = (float) (Math.cos(glfwGetTime()) / 2) + 0.5f;
+
+
+        final Program program = renderer.getProgram("Test Program");
+        final Uniform4f someColourUniform = program.getUniform("someColour", Uniform4f.class);
+        program.useProgram();
+        someColourUniform.useUniform(blueValue, greenValue, 0.0f, 1.0f);
+
         vertexArray.enableVertexArray();
     }
 }
