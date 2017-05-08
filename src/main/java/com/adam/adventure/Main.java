@@ -1,22 +1,27 @@
+package com.adam.adventure;
+
 import com.adam.adventure.entity.TileEntity;
 import com.adam.adventure.event.Event;
 import com.adam.adventure.event.EventBus;
 import com.adam.adventure.event.EventType;
 import com.adam.adventure.event.LoggingEventListener;
+import com.adam.adventure.input.InputManager;
 import com.adam.adventure.loop.GameLoop;
 import com.adam.adventure.loop.LoopIteration;
 import com.adam.adventure.loop.LoopIterationImpl;
-import com.adam.adventure.render.RenderQueue;
-import com.adam.adventure.render.Renderer;
-import com.adam.adventure.render.TileRenderable;
-import com.adam.adventure.render.shader.ProgramFactory;
-import com.adam.adventure.render.shader.Shader;
-import com.adam.adventure.render.shader.ShaderCompiler;
+import com.adam.adventure.render.camera.Camera;
+import com.adam.adventure.render.camera.RenderQueue;
+import com.adam.adventure.render.camera.Renderer;
+import com.adam.adventure.render.camera.renderable.TileRenderable;
+import com.adam.adventure.render.camera.shader.ProgramFactory;
+import com.adam.adventure.render.camera.shader.Shader;
+import com.adam.adventure.render.camera.shader.ShaderCompiler;
 import com.adam.adventure.state.GameStateMachine;
 import com.adam.adventure.state.LoggingGameStateListener;
 import com.adam.adventure.window.Window;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
+import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFWErrorCallback;
 
 import java.io.IOException;
@@ -46,10 +51,14 @@ public class Main {
         window.openWindow();
         window.clearWindow(0.0f, 0.2f, 0.2f, 0.0f);
 
+
         //Prepare rendering pipeline
         final RenderQueue renderQueue = new RenderQueue();
-        final Renderer renderer = new Renderer(renderQueue, window);
+        final Camera camera = new Camera(5f, new Vector3f(0.0f, 0.0f, 1.0f));
+        final Renderer renderer = new Renderer(renderQueue, window, camera);
 
+        //Set key callback
+        final InputManager inputManager = new InputManager(window);
 
         //Compile shaders
         final ShaderCompiler shaderCompiler = new ShaderCompiler();
@@ -63,15 +72,15 @@ public class Main {
         final ProgramFactory programFactory = new ProgramFactory(renderer);
         programFactory.registerProgramFromShaders(vertexShader, fragmentShader, "Test Program");
 
-
         //Create a test object to render
         final TileEntity tileEntity = new TileEntity();
         final TileRenderable tileRenderable = renderer.buildRenderable(() -> new TileRenderable(tileEntity));
         renderQueue.addRenderable(tileRenderable);
 
+        final LoopIteration loopIteration = new LoopIterationImpl(inputManager, camera, renderer);
 
         eventBus.publishEvent(new Event(EventType.LOADED));
-        loop(renderer, window);
+        loop(renderer, window, loopIteration);
         eventBus.publishEvent(new Event(EventType.EXITING));
 
         window.close();
@@ -93,9 +102,7 @@ public class Main {
                 .build();
     }
 
-    private void loop(final Renderer renderer, final Window window) {
-        final LoopIteration loopIteration = new LoopIterationImpl(renderer);
-
+    private void loop(final Renderer renderer, final Window window, final LoopIteration loopIteration) {
         GameLoop.loopUntil(window::shouldClose)
                 .andUponEachLoopIterationPerform(loopIteration)
                 .loop();

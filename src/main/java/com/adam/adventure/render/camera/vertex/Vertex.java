@@ -1,4 +1,4 @@
-package com.adam.adventure.render.vertex;
+package com.adam.adventure.render.camera.vertex;
 
 public class Vertex {
     public static final int NUM_ELEMENTS_PER_VERTEX = 3;

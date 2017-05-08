@@ -1,6 +1,6 @@
-package com.adam.adventure.render.shader;
+package com.adam.adventure.render.camera.shader;
 
-import com.adam.adventure.render.Renderer;
+import com.adam.adventure.render.camera.Renderer;
 import org.lwjgl.BufferUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

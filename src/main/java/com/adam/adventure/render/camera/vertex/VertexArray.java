@@ -1,4 +1,4 @@
-package com.adam.adventure.render.vertex;
+package com.adam.adventure.render.camera.vertex;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;
@@ -16,11 +16,13 @@ public class VertexArray {
 
     public void enableVertexArray() {
         glBindVertexArray(vertexArrayId);
-        glDrawElements(GL_TRIANGLES, numberOfElements, GL_UNSIGNED_INT, 0);
-        unbind();
     }
 
-    private void unbind() {
+    public void draw() {
+        glDrawElements(GL_TRIANGLES, numberOfElements, GL_UNSIGNED_INT, 0);
+    }
+
+    public void unbind() {
         glBindVertexArray(NULL_VERTEX_ARRAY);
     }
 }

@@ -1,6 +1,7 @@
 package com.adam.adventure.window;
 
 import com.adam.adventure.glfw.GlfwUtil;
+import org.lwjgl.glfw.GLFWKeyCallbackI;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryStack;
@@ -71,6 +72,16 @@ public class Window {
         glfwSwapBuffers(glfwWindow);
     }
 
+    //TODO use callback and determine latest set size
+    public float getWidth() {
+        return 800.f;
+    }
+
+    public float getHeight() {
+        return 600.f;
+    }
+
+
     private void setWindowPositionAsCenter() {
         try (MemoryStack stack = stackPush()) {
             final IntBuffer pWidth = stack.mallocInt(1);
@@ -84,6 +95,11 @@ public class Window {
                     (vidmode.height() - pHeight.get(0)) / 2
             );
         }
+    }
+
+
+    public void setKeyCallback(final GLFWKeyCallbackI keyCallback) {
+        glfwSetKeyCallback(glfwWindow, keyCallback);
     }
 
     private void configureGlfw() {

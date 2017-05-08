@@ -1,4 +1,4 @@
-package com.adam.adventure.render.shader;
+package com.adam.adventure.render.camera.shader;
 
 public abstract class Uniform {
     private final int uniformLocation;

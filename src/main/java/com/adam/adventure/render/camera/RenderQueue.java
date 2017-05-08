@@ -1,4 +1,6 @@
-package com.adam.adventure.render;
+package com.adam.adventure.render.camera;
+
+import com.adam.adventure.render.camera.renderable.Renderable;
 
 import java.util.LinkedList;
 import java.util.Queue;

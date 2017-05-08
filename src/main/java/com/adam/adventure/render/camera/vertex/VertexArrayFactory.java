@@ -1,4 +1,4 @@
-package com.adam.adventure.render.vertex;
+package com.adam.adventure.render.camera.vertex;
 
 
 import static org.lwjgl.opengl.GL11.GL_FLOAT;

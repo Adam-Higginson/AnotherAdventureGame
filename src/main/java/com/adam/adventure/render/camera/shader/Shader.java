@@ -1,4 +1,4 @@
-package com.adam.adventure.render.shader;
+package com.adam.adventure.render.camera.shader;
 
 public class Shader {
     private final int shaderId;
