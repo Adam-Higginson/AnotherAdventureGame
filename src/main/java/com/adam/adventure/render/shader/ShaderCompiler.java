@@ -1,4 +1,4 @@
-package com.adam.adventure.render.camera.shader;
+package com.adam.adventure.render.shader;
 
 import org.lwjgl.BufferUtils;
 

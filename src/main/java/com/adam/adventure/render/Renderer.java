@@ -1,9 +1,9 @@
-package com.adam.adventure.render.camera;
+package com.adam.adventure.render;
 
-import com.adam.adventure.render.camera.renderable.Renderable;
-import com.adam.adventure.render.camera.shader.Program;
-import com.adam.adventure.render.camera.shader.UniformMatrix4f;
-import com.adam.adventure.render.camera.vertex.*;
+import com.adam.adventure.render.camera.Camera;
+import com.adam.adventure.render.renderable.Renderable;
+import com.adam.adventure.render.shader.Program;
+import com.adam.adventure.render.shader.UniformMatrix4f;
 import com.adam.adventure.window.Window;
 import org.joml.Matrix4f;
 
@@ -14,9 +14,9 @@ import java.util.function.Supplier;
 import static org.lwjgl.opengl.GL11.*;
 
 public class Renderer {
-    private final VertexBufferFactory vertexBufferFactory;
-    private final ElementArrayBufferFactory elementArrayBufferFactory;
-    private final VertexArrayFactory vertexArrayFactory;
+    private final com.adam.adventure.render.camera.vertex.VertexBufferFactory vertexBufferFactory;
+    private final com.adam.adventure.render.camera.vertex.ElementArrayBufferFactory elementArrayBufferFactory;
+    private final com.adam.adventure.render.camera.vertex.VertexArrayFactory vertexArrayFactory;
     private final Map<String, Program> programNametoProgram;
     private final RenderQueue renderQueue;
     private final Window window;
@@ -24,9 +24,9 @@ public class Renderer {
 
     public Renderer(final RenderQueue renderQueue, final Window window, final Camera camera) {
         this.camera = camera;
-        this.vertexBufferFactory = new VertexBufferFactory();
-        this.elementArrayBufferFactory = new ElementArrayBufferFactory();
-        this.vertexArrayFactory = new VertexArrayFactory();
+        this.vertexBufferFactory = new com.adam.adventure.render.camera.vertex.VertexBufferFactory();
+        this.elementArrayBufferFactory = new com.adam.adventure.render.camera.vertex.ElementArrayBufferFactory();
+        this.vertexArrayFactory = new com.adam.adventure.render.camera.vertex.VertexArrayFactory();
         this.programNametoProgram = new HashMap<>();
         this.renderQueue = renderQueue;
         this.window = window;
@@ -74,15 +74,15 @@ public class Renderer {
         projectionUniform.useUniform(projectionMatrix);
     }
 
-    public StaticVertexBuffer buildNewStaticVertexBuffer(final Vertex[] vertices) {
+    public com.adam.adventure.render.camera.vertex.StaticVertexBuffer buildNewStaticVertexBuffer(final com.adam.adventure.render.camera.vertex.Vertex[] vertices) {
         return vertexBufferFactory.newStaticVertexBuffer(vertices);
     }
 
-    public ElementArrayBuffer buildNewElementArrayBuffer(final int[] indices) {
+    public com.adam.adventure.render.camera.vertex.ElementArrayBuffer buildNewElementArrayBuffer(final int[] indices) {
         return elementArrayBufferFactory.newElementArrayBuffer(indices);
     }
 
-    public VertexArray buildNewVertexArray(final Buffer vertexBuffer, final ElementArrayBuffer elementArrayBuffer) {
+    public com.adam.adventure.render.camera.vertex.VertexArray buildNewVertexArray(final com.adam.adventure.render.camera.vertex.Buffer vertexBuffer, final com.adam.adventure.render.camera.vertex.ElementArrayBuffer elementArrayBuffer) {
         return vertexArrayFactory.newVertexArray(vertexBuffer, elementArrayBuffer);
     }
 

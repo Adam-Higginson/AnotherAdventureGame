@@ -1,7 +1,7 @@
-package com.adam.adventure.render.camera;
+package com.adam.adventure.render;
 
 import com.adam.adventure.entity.Entity;
-import com.adam.adventure.render.camera.renderable.Renderable;
+import com.adam.adventure.render.renderable.Renderable;
 
 public abstract class RenderableEntity<T extends Entity> implements Renderable {
 

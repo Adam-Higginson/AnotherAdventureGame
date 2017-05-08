@@ -1,4 +1,4 @@
-package com.adam.adventure.render.camera.shader;
+package com.adam.adventure.render.shader;
 
 public class ProgramException extends RuntimeException {
 

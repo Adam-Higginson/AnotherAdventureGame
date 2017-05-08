@@ -1,15 +1,15 @@
-package com.adam.adventure.render.camera.renderable;
+package com.adam.adventure.render.renderable;
 
 import com.adam.adventure.entity.TileEntity;
-import com.adam.adventure.render.camera.RenderableEntity;
-import com.adam.adventure.render.camera.Renderer;
-import com.adam.adventure.render.camera.shader.Program;
-import com.adam.adventure.render.camera.shader.Uniform4f;
-import com.adam.adventure.render.camera.shader.UniformMatrix4f;
-import com.adam.adventure.render.camera.vertex.ElementArrayBuffer;
-import com.adam.adventure.render.camera.vertex.StaticVertexBuffer;
-import com.adam.adventure.render.camera.vertex.Vertex;
-import com.adam.adventure.render.camera.vertex.VertexArray;
+import com.adam.adventure.render.RenderableEntity;
+import com.adam.adventure.render.Renderer;
+import com.adam.adventure.render.shader.Program;
+import com.adam.adventure.render.shader.Uniform4f;
+import com.adam.adventure.render.shader.UniformMatrix4f;
+import com.adam.adventure.render.vertex.ElementArrayBuffer;
+import com.adam.adventure.render.vertex.StaticVertexBuffer;
+import com.adam.adventure.render.vertex.Vertex;
+import com.adam.adventure.render.vertex.VertexArray;
 import org.joml.Matrix4f;
 
 import static org.lwjgl.glfw.GLFW.glfwGetTime;

@@ -1,6 +1,6 @@
-package com.adam.adventure.render.camera.renderable;
+package com.adam.adventure.render.renderable;
 
-import com.adam.adventure.render.camera.Renderer;
+import com.adam.adventure.render.Renderer;
 
 public interface Renderable {
     void initialise(final Renderer renderer);

@@ -1,4 +1,4 @@
-package com.adam.adventure.render.camera.vertex;
+package com.adam.adventure.render.vertex;
 
 public interface Buffer {
     void bindBufferData();

@@ -2,7 +2,7 @@ package com.adam.adventure.loop;
 
 import com.adam.adventure.input.InputManager;
 import com.adam.adventure.render.camera.Camera;
-import com.adam.adventure.render.camera.Renderer;
+import com.adam.adventure.render.Renderer;
 
 import static org.lwjgl.glfw.GLFW.*;
 
