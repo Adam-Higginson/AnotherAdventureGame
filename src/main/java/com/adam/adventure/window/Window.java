@@ -11,6 +11,7 @@ import java.nio.IntBuffer;
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.glClearColor;
+import static org.lwjgl.opengl.GL11.glViewport;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
@@ -18,25 +19,29 @@ public class Window {
 
     private enum WindowState {INITIALISED, OPEN, CLOSED}
 
-    private final boolean isVisible;
-    private final boolean isResizable;
-
     // The window handle
     private final long glfwWindow;
-
+    private final boolean isVisible;
+    private final boolean isResizable;
+    private int width;
+    private int height;
     private WindowState windowState;
 
 
     public Window(final Builder builder) {
         this.isVisible = builder.isVisible;
         this.isResizable = builder.isResizable;
-        this.glfwWindow = glfwCreateWindow(builder.width, builder.height, builder.title, NULL, NULL);
+        this.width = builder.width;
+        this.height = builder.height;
+        this.glfwWindow = glfwCreateWindow(width, height, builder.title, NULL, NULL);
         if (glfwWindow == NULL) {
             throw new IllegalStateException("Failed to create the GLFW window");
         }
 
+        glfwSetWindowSizeCallback(glfwWindow, (window, width, height) -> resize(width, height));
         windowState = WindowState.INITIALISED;
     }
+
 
     public void openWindow() {
         throwExceptionOnStateNotMatching(WindowState.INITIALISED);
@@ -57,6 +62,7 @@ public class Window {
         glClearColor(red, green, blue, alpha);
     }
 
+
     public boolean shouldClose() {
         return glfwWindowShouldClose(glfwWindow);
     }
@@ -67,20 +73,17 @@ public class Window {
         windowState = WindowState.CLOSED;
     }
 
-
     public void swapBuffers() {
         glfwSwapBuffers(glfwWindow);
     }
 
-    //TODO use callback and determine latest set size
-    public float getWidth() {
-        return 800.f;
+    public int getWidth() {
+        return width;
     }
 
-    public float getHeight() {
-        return 600.f;
+    public int getHeight() {
+        return height;
     }
-
 
     private void setWindowPositionAsCenter() {
         try (MemoryStack stack = stackPush()) {
@@ -102,6 +105,7 @@ public class Window {
         glfwSetKeyCallback(glfwWindow, keyCallback);
     }
 
+
     private void configureGlfw() {
         glfwWindowHint(GLFW_VISIBLE, GlfwUtil.booleanToGlfwInt(isVisible));
         glfwWindowHint(GLFW_RESIZABLE, GlfwUtil.booleanToGlfwInt(isResizable));
@@ -109,6 +113,12 @@ public class Window {
 
     private void enableVsync() {
         glfwSwapInterval(1);
+    }
+
+    private void resize(final int width, final int height) {
+        this.width = width;
+        this.height = height;
+        glViewport(0, 0, width, height);
     }
 
 
