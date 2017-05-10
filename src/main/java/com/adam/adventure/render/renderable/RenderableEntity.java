@@ -1,7 +1,6 @@
-package com.adam.adventure.render;
+package com.adam.adventure.render.renderable;
 
 import com.adam.adventure.entity.Entity;
-import com.adam.adventure.render.renderable.Renderable;
 
 public abstract class RenderableEntity<T extends Entity> implements Renderable {
 

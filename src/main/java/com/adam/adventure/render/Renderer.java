@@ -34,6 +34,8 @@ public class Renderer {
         this.renderQueue = renderQueue;
         this.window = window;
         this.camera = camera;
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
 
 
@@ -41,7 +43,7 @@ public class Renderer {
         clearScreen();
         //Don't need to reinitialise these if nothing has changed in the camera and window. Dirty flags?
         viewMatrix = camera.getLookAt();
-        projectionMatrix = new Matrix4f().ortho(0.0f, window.getWidth(), 0.0f, window.getHeight(), -1f, 100f);
+        projectionMatrix = new Matrix4f().ortho(0.0f, window.getWidth(), 0.0f, window.getHeight(), -1f, 1f);
         renderQueue.forEach(renderable -> renderable.prepare(this));
         renderQueue.forEach(renderable -> renderable.render(this));
         renderQueue.forEach(renderable -> renderable.after(this));

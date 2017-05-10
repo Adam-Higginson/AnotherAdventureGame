@@ -9,14 +9,17 @@ import static org.lwjgl.opengl.GL30.glGenVertexArrays;
 
 public class VertexArrayFactory {
 
+
     public VertexArray newVertexArray(final Buffer vertexBuffer, final Buffer elementArrayBuffer) {
         final int vertexArrayId = glGenVertexArrays();
         glBindVertexArray(vertexArrayId);
 
         vertexBuffer.bindBufferData();
         elementArrayBuffer.bindBufferData();
-        glVertexAttribPointer(0, Vertex.NUM_ELEMENTS_PER_VERTEX, GL_FLOAT, false, 0, 0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, false, Vertex.STRIDE, 0);
+        glVertexAttribPointer(1, 2, GL_FLOAT, false, Vertex.STRIDE, Vertex.TEXTURE_OFFSET);
         glEnableVertexAttribArray(0);
+        glEnableVertexAttribArray(1);
 
         //Unbind
         glBindVertexArray(0);

@@ -1,5 +1,6 @@
 package com.adam.adventure;
 
+import com.adam.adventure.entity.PlayerEntity;
 import com.adam.adventure.entity.TileEntity;
 import com.adam.adventure.event.Event;
 import com.adam.adventure.event.EventBus;
@@ -12,10 +13,13 @@ import com.adam.adventure.loop.LoopIterationImpl;
 import com.adam.adventure.render.RenderQueue;
 import com.adam.adventure.render.Renderer;
 import com.adam.adventure.render.camera.Camera;
+import com.adam.adventure.render.renderable.SpriteRenderable;
 import com.adam.adventure.render.renderable.TileRenderable;
 import com.adam.adventure.render.shader.ProgramFactory;
 import com.adam.adventure.render.shader.Shader;
 import com.adam.adventure.render.shader.ShaderCompiler;
+import com.adam.adventure.render.texture.Texture;
+import com.adam.adventure.render.texture.TextureFactory;
 import com.adam.adventure.state.GameStateMachine;
 import com.adam.adventure.state.LoggingGameStateListener;
 import com.adam.adventure.window.Window;
@@ -25,6 +29,7 @@ import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFWErrorCallback;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -57,6 +62,18 @@ public class Main {
         final Camera camera = new Camera(5f, new Vector3f(0.0f, 0.0f, 1.0f));
         final Renderer renderer = new Renderer(renderQueue, window, camera);
 
+        //Load textures
+        final TextureFactory textureFactory = new TextureFactory();
+        final Texture playerTexture;
+        final Texture tileTexture;
+        try (final InputStream playerTextureInputStream = this.getClass().getResourceAsStream("/assets/sprites/player/player-test.png")) {
+            playerTexture = textureFactory.loadTextureFromPng(playerTextureInputStream);
+        }
+        try (final InputStream tileTextureInputStream = this.getClass().getResourceAsStream("/assets/sprites/player/wood.png")) {
+            tileTexture = textureFactory.loadTextureFromPng(tileTextureInputStream);
+        }
+
+
         //Set key callback
         final InputManager inputManager = new InputManager(window);
 
@@ -74,10 +91,16 @@ public class Main {
 
         //Create a test object to render
         final TileEntity tileEntity = new TileEntity();
-        final TileRenderable tileRenderable = renderer.buildRenderable(() -> new TileRenderable(tileEntity));
+        final TileRenderable tileRenderable = renderer.buildRenderable(() -> new TileRenderable(tileEntity, tileTexture));
         renderQueue.addRenderable(tileRenderable);
 
-        final LoopIteration loopIteration = new LoopIterationImpl(inputManager, camera, renderer);
+        //Create player
+        final PlayerEntity playerEntity = new PlayerEntity(2f);
+        final SpriteRenderable spriteRenderable = renderer.buildRenderable(() -> new SpriteRenderable(playerEntity, playerTexture));
+        renderQueue.addRenderable(spriteRenderable);
+
+
+        final LoopIteration loopIteration = new LoopIterationImpl(inputManager, camera, playerEntity, renderer);
 
         eventBus.publishEvent(new Event(EventType.LOADED));
         loop(renderer, window, loopIteration);

@@ -1,6 +1,6 @@
 package com.adam.adventure.render.renderable;
 
-import com.adam.adventure.entity.TileEntity;
+import com.adam.adventure.entity.TransformableEntity;
 import com.adam.adventure.render.Renderer;
 import com.adam.adventure.render.shader.Program;
 import com.adam.adventure.render.shader.Uniform2f;
@@ -12,33 +12,26 @@ import com.adam.adventure.render.vertex.Vertex;
 import com.adam.adventure.render.vertex.VertexArray;
 import org.joml.Matrix4f;
 
-public class TileRenderable extends RenderableEntity<TileEntity> {
+public class SpriteRenderable extends RenderableEntity<TransformableEntity> {
 
     private VertexArray vertexArray;
-    private final Texture texture;
+    private final Texture spriteTexture;
 
-    public TileRenderable(final TileEntity entity, final Texture texture) {
+    public SpriteRenderable(final TransformableEntity entity, final Texture spriteTexture) {
         super(entity);
-        this.texture = texture;
+        this.spriteTexture = spriteTexture;
     }
 
     @Override
     public void initialise(final Renderer renderer) {
-//        final Vertex[] vertices = new Vertex[]{
-//                Vertex.of(0.5f, 0.5f), // Top Right
-//                Vertex.of(0.5f, -0.5f), // Bottom Right
-//                Vertex.of(-0.5f, -0.5f),  // Bottom Left
-//                Vertex.of(-0.5f, 0.5f)   // Top Left
-//        };
-
         final Vertex[] vertices = new Vertex[]{
-                Vertex.of(50f, 50f, 16f, 16f), // Top Right
-                Vertex.of(50f, -50f, 16f, 0f), // Bottom Right
-                Vertex.of(-50f, -50f, 0f, 0f),  // Bottom Left
-                Vertex.of(-50f, 50f, 0f, 16f)   // Top Left
+                Vertex.of(64f, 64f, 96f, 96f), // Top Right
+                Vertex.of(64f, 0f, 96f, 0f), // Bottom Right
+                Vertex.of(0f, 0f, 0.0f, 0f),  // Bottom Left
+                Vertex.of(0f, 64f, 0.0f, 96f)   // Top Left
         };
 
-        final int[] indices = { // Note that we start from 0!
+        final int[] indices = {
                 0, 1, 3,   // First Triangle
                 1, 2, 3    // Second Triangle
         };
@@ -57,10 +50,9 @@ public class TileRenderable extends RenderableEntity<TileEntity> {
         final Program program = renderer.getProgram("Test Program");
         program.useProgram();
         applyUniforms(program);
-
         renderer.applyProjectionMatrix(program);
 
-        texture.bindTexture();
+        spriteTexture.bindTexture();
         vertexArray.enableVertexArray();
         vertexArray.draw();
     }
@@ -71,12 +63,11 @@ public class TileRenderable extends RenderableEntity<TileEntity> {
         modelUniform.useUniform(transformMatrix);
 
         final Uniform2f textureDimensionsUniform = program.getUniform("textureDimensions", Uniform2f.class);
-        textureDimensionsUniform.useUniform(texture.getWidth(), texture.getHeight());
+        textureDimensionsUniform.useUniform(spriteTexture.getWidth(), spriteTexture.getHeight());
     }
 
     @Override
     public void after(final Renderer renderer) {
         vertexArray.unbind();
-        getEntity().getTransform().identity();
     }
 }
