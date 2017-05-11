@@ -2,10 +2,10 @@ package com.adam.adventure.render.renderable;
 
 import com.adam.adventure.entity.Entity;
 import com.adam.adventure.render.Renderer;
+import com.adam.adventure.render.Sprite;
 import com.adam.adventure.render.shader.Program;
 import com.adam.adventure.render.shader.Uniform2f;
 import com.adam.adventure.render.shader.UniformMatrix4f;
-import com.adam.adventure.render.texture.Texture;
 import com.adam.adventure.render.vertex.ElementArrayBuffer;
 import com.adam.adventure.render.vertex.StaticVertexBuffer;
 import com.adam.adventure.render.vertex.Vertex;
@@ -15,12 +15,12 @@ import org.joml.Matrix4f;
 public class SpriteRenderable extends RenderableEntity<Entity> {
 
     private VertexArray vertexArray;
-    private final Texture spriteTexture;
+    private final Sprite sprite;
     private final int zIndex;
 
-    public SpriteRenderable(final Entity entity, final Texture spriteTexture, final int zIndex) {
+    public SpriteRenderable(final Entity entity, final Sprite sprite, final int zIndex) {
         super(entity);
-        this.spriteTexture = spriteTexture;
+        this.sprite = sprite;
         this.zIndex = zIndex;
     }
 
@@ -32,11 +32,21 @@ public class SpriteRenderable extends RenderableEntity<Entity> {
 
     @Override
     public void initialise(final Renderer renderer) {
+
+        final float texTopRightX = sprite.getTextureOffset().getX() + sprite.getTextureOffset().getWidth();
+        final float texTopRightY = sprite.getTextureOffset().getY() + sprite.getTextureOffset().getHeight();
+        final float texBottomRightX = sprite.getTextureOffset().getX() + sprite.getTextureOffset().getWidth();
+        final float texBottomRightY = sprite.getTextureOffset().getY();
+        final float texBottomLeftX = sprite.getTextureOffset().getX();
+        final float texBottomLeftY = sprite.getTextureOffset().getY();
+        final float texTopLeftX = sprite.getTextureOffset().getX();
+        final float textTopLeftY = sprite.getTextureOffset().getY() + sprite.getTextureOffset().getHeight();
+
         final Vertex[] vertices = new Vertex[]{
-                Vertex.of(64f, 64f, 96f, 96f), // Top Right
-                Vertex.of(64f, 0f, 96f, 0f), // Bottom Right
-                Vertex.of(0f, 0f, 0.0f, 0f),  // Bottom Left
-                Vertex.of(0f, 64f, 0.0f, 96f)   // Top Left
+                Vertex.of(sprite.getWidth(), sprite.getHeight(), texTopRightX, texTopRightY), // Top Right
+                Vertex.of(sprite.getWidth(), 0f, texBottomRightX, texBottomRightY), // Bottom Right
+                Vertex.of(0f, 0f, texBottomLeftX, texBottomLeftY),  // Bottom Left
+                Vertex.of(0f, sprite.getHeight(), texTopLeftX, textTopLeftY)   // Top Left
         };
 
         final int[] indices = {
@@ -60,7 +70,7 @@ public class SpriteRenderable extends RenderableEntity<Entity> {
         applyUniforms(program);
         renderer.applyProjectionMatrix(program);
 
-        spriteTexture.bindTexture();
+        sprite.getTexture().bindTexture();
         vertexArray.enableVertexArray();
         vertexArray.draw();
     }
@@ -71,7 +81,10 @@ public class SpriteRenderable extends RenderableEntity<Entity> {
         modelUniform.useUniform(transformMatrix);
 
         final Uniform2f textureDimensionsUniform = program.getUniform("textureDimensions", Uniform2f.class);
-        textureDimensionsUniform.useUniform(spriteTexture.getWidth(), spriteTexture.getHeight());
+        textureDimensionsUniform.useUniform(sprite.getTexture().getWidth(), sprite.getTexture().getHeight());
+
+        final Uniform2f textureOffset = program.getUniform("textureOffset", Uniform2f.class);
+        textureOffset.useUniform(sprite.getTextureOffset().getX(), sprite.getTextureOffset().getWidth());
     }
 
     @Override

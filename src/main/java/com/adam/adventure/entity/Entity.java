@@ -8,9 +8,9 @@ import java.util.List;
 
 public class Entity {
     private final Matrix4f transform;
-    private final List<EntityComponent> components;
+    private final List<EntityComponent<Entity>> components;
 
-    Entity() {
+    public Entity() {
         transform = new Matrix4f();
         components = new ArrayList<>();
     }
@@ -19,7 +19,7 @@ public class Entity {
         return transform;
     }
 
-    public Entity addComponenet(final EntityComponent component) {
+    public Entity addComponent(final EntityComponent component) {
         components.add(component);
         return this;
     }

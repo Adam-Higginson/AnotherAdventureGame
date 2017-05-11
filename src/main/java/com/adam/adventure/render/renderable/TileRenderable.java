@@ -77,6 +77,9 @@ public class TileRenderable extends RenderableEntity<Entity> {
 
         final Uniform2f textureDimensionsUniform = program.getUniform("textureDimensions", Uniform2f.class);
         textureDimensionsUniform.useUniform(texture.getWidth(), texture.getHeight());
+
+        final Uniform2f textureOffset = program.getUniform("textureOffset", Uniform2f.class);
+        textureOffset.useUniform(0, 0);
     }
 
     @Override

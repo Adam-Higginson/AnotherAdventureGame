@@ -6,6 +6,7 @@ import com.adam.adventure.update.event.UpdateEvent;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 public class EntityFactory {
     private final List<Entity> entities;
@@ -15,8 +16,8 @@ public class EntityFactory {
         eventBus.register(this);
     }
 
-    public Entity newEntity() {
-        final Entity entity = new Entity();
+    public Entity newEntity(final Supplier<? extends Entity> entitySupplier) {
+        final Entity entity = entitySupplier.get();
         entities.add(entity);
         return entity;
     }

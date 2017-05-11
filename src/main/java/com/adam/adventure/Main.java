@@ -2,6 +2,8 @@ package com.adam.adventure;
 
 import com.adam.adventure.entity.Entity;
 import com.adam.adventure.entity.EntityFactory;
+import com.adam.adventure.entity.SpriteEntity;
+import com.adam.adventure.entity.component.AnimatedSpriteComponent;
 import com.adam.adventure.entity.component.KeyboardMovementComponent;
 import com.adam.adventure.event.EventBus;
 import com.adam.adventure.input.InputManager;
@@ -10,6 +12,7 @@ import com.adam.adventure.loop.LoopIteration;
 import com.adam.adventure.loop.LoopIterationImpl;
 import com.adam.adventure.render.RenderQueue;
 import com.adam.adventure.render.Renderer;
+import com.adam.adventure.render.Sprite;
 import com.adam.adventure.render.camera.Camera;
 import com.adam.adventure.render.renderable.SpriteRenderable;
 import com.adam.adventure.render.renderable.TileRenderable;
@@ -18,6 +21,7 @@ import com.adam.adventure.render.shader.Shader;
 import com.adam.adventure.render.shader.ShaderCompiler;
 import com.adam.adventure.render.texture.Texture;
 import com.adam.adventure.render.texture.TextureFactory;
+import com.adam.adventure.render.util.Rectangle;
 import com.adam.adventure.update.PublishEventUpdateStrategy;
 import com.adam.adventure.update.UpdateStrategy;
 import com.adam.adventure.window.Window;
@@ -86,14 +90,24 @@ public class Main {
         //Create components
         final EntityFactory entityFactory = new EntityFactory(eventBus);
         final KeyboardMovementComponent keyboardMovementComponent = new KeyboardMovementComponent(.2f, inputManager);
+        //TODO add name of "subsets" of animation frames to allow keyboard movement component to signal different animations
+        final AnimatedSpriteComponent animatedSpriteComponent = new AnimatedSpriteComponent.Builder(300, true)
+                .addAnimationFrame(new Rectangle(0.0f, 0.0f, 96f, 96f))
+                .addAnimationFrame(new Rectangle(96f, 0.0f, 96f, 96f))
+                .addAnimationFrame(new Rectangle(192f, 0.0f, 96f, 96f))
+                .build();
+
 
         //Create player
-        final Entity playerEntity = entityFactory.newEntity().addComponenet(keyboardMovementComponent);
-        final SpriteRenderable spriteRenderable = renderer.buildRenderable(() -> new SpriteRenderable(playerEntity, playerTexture, 1));
+        final Sprite sprite = new Sprite(playerTexture, new Rectangle(0.0f, 0.0f, 96f, 96f), 64f, 64f);
+        final Entity playerEntity = entityFactory.newEntity(() -> new SpriteEntity(sprite))
+                .addComponent(keyboardMovementComponent)
+                .addComponent(animatedSpriteComponent);
+        final SpriteRenderable spriteRenderable = renderer.buildRenderable(() -> new SpriteRenderable(playerEntity, sprite, 1));
         renderQueue.addRenderable(spriteRenderable);
 
         //Create a test object to render
-        final Entity tileEntity = entityFactory.newEntity();
+        final Entity tileEntity = entityFactory.newEntity(Entity::new);
         final TileRenderable tileRenderable = renderer.buildRenderable(() -> new TileRenderable(tileEntity, tileTexture));
         renderQueue.addRenderable(tileRenderable);
 
