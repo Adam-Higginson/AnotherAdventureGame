@@ -1,6 +1,7 @@
 package com.adam.adventure.entity.component;
 
 import com.adam.adventure.entity.Entity;
+import com.adam.adventure.entity.component.event.ComponentEvent;
 import com.adam.adventure.input.InputManager;
 import org.joml.Vector3f;
 
@@ -18,19 +19,35 @@ public class KeyboardMovementComponent implements EntityComponent {
 
 
     @Override
-    public void update(final Entity target, final float elapsedTime) {
+    public void update(final Entity target, final float elapsedTime, final ComponentContainer componentContainer) {
+        boolean keyboardPressed = false;
         if (inputManager.isKeyPressed(GLFW_KEY_W)) {
             moveUp(target, elapsedTime);
+            keyboardPressed = true;
         }
         if (inputManager.isKeyPressed(GLFW_KEY_S)) {
             moveDown(target, elapsedTime);
+            keyboardPressed = true;
         }
         if (inputManager.isKeyPressed(GLFW_KEY_A)) {
             moveLeft(target, elapsedTime);
+            keyboardPressed = true;
         }
         if (inputManager.isKeyPressed(GLFW_KEY_D)) {
             moveRight(target, elapsedTime);
+            keyboardPressed = true;
         }
+
+        if (keyboardPressed) {
+            componentContainer.broadcastComponentEvent(ComponentEvent.START_ANIMATION);
+        } else {
+            componentContainer.broadcastComponentEvent(ComponentEvent.STOP_ANIMATION);
+        }
+    }
+
+    @Override
+    public void onComponentEvent(final ComponentEvent componentEvent) {
+        //Nothing doing
     }
 
 

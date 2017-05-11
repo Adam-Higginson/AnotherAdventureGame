@@ -1,6 +1,7 @@
 package com.adam.adventure.entity.component;
 
 import com.adam.adventure.entity.SpriteEntity;
+import com.adam.adventure.entity.component.event.ComponentEvent;
 import com.adam.adventure.render.util.Rectangle;
 
 import java.util.ArrayList;
@@ -21,12 +22,12 @@ public class AnimatedSpriteComponent implements EntityComponent<SpriteEntity> {
         this.animationFrames = builder.animationFrames;
         this.currentTime = 0;
         this.currentFrame = 0;
-        this.isPaused = false;
+        this.isPaused = true;
     }
 
     //TODO all these variables are specific to the entity - how do we handle this if we want to use the same component?
     @Override
-    public void update(final SpriteEntity target, final float deltaTime) {
+    public void update(final SpriteEntity target, final float deltaTime, final ComponentContainer componentContainer) {
         if (!this.isPaused) {
             this.currentTime += deltaTime;
             if (this.currentTime >= this.millisPerFrame) {
@@ -43,6 +44,15 @@ public class AnimatedSpriteComponent implements EntityComponent<SpriteEntity> {
 
                 setFrame(target, this.currentFrame);
             }
+        }
+    }
+
+    @Override
+    public void onComponentEvent(final ComponentEvent componentEvent) {
+        if (componentEvent == ComponentEvent.START_ANIMATION) {
+            this.isPaused = false;
+        } else if (componentEvent == ComponentEvent.STOP_ANIMATION) {
+            this.isPaused = true;
         }
     }
 

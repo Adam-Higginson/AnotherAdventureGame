@@ -1,18 +1,16 @@
 package com.adam.adventure.entity;
 
+import com.adam.adventure.entity.component.ComponentContainer;
 import com.adam.adventure.entity.component.EntityComponent;
 import org.joml.Matrix4f;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class Entity {
     private final Matrix4f transform;
-    private final List<EntityComponent<Entity>> components;
+    private final ComponentContainer componentContainer;
 
     public Entity() {
         transform = new Matrix4f();
-        components = new ArrayList<>();
+        componentContainer = new ComponentContainer();
     }
 
     public Matrix4f getTransform() {
@@ -20,11 +18,11 @@ public class Entity {
     }
 
     public Entity addComponent(final EntityComponent component) {
-        components.add(component);
+        componentContainer.addComponent(component);
         return this;
     }
 
     public void update(final float deltaTime) {
-        components.forEach(component -> component.update(this, deltaTime));
+        componentContainer.update(this, deltaTime);
     }
 }
