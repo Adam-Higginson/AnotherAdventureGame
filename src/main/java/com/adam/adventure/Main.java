@@ -1,11 +1,9 @@
 package com.adam.adventure;
 
-import com.adam.adventure.entity.PlayerEntity;
-import com.adam.adventure.entity.TileEntity;
-import com.adam.adventure.event.Event;
+import com.adam.adventure.entity.Entity;
+import com.adam.adventure.entity.EntityFactory;
+import com.adam.adventure.entity.component.KeyboardMovementComponent;
 import com.adam.adventure.event.EventBus;
-import com.adam.adventure.event.EventType;
-import com.adam.adventure.event.LoggingEventListener;
 import com.adam.adventure.input.InputManager;
 import com.adam.adventure.loop.GameLoop;
 import com.adam.adventure.loop.LoopIteration;
@@ -20,8 +18,8 @@ import com.adam.adventure.render.shader.Shader;
 import com.adam.adventure.render.shader.ShaderCompiler;
 import com.adam.adventure.render.texture.Texture;
 import com.adam.adventure.render.texture.TextureFactory;
-import com.adam.adventure.state.GameStateMachine;
-import com.adam.adventure.state.LoggingGameStateListener;
+import com.adam.adventure.update.PublishEventUpdateStrategy;
+import com.adam.adventure.update.UpdateStrategy;
 import com.adam.adventure.window.Window;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
@@ -42,14 +40,10 @@ public class Main {
             throw new IllegalStateException("Unable to initialize GLFW");
         }
 
-        //Set up event buses
+        //Set up event bus
         final EventBus eventBus = new EventBus();
-        LoggingEventListener.registerNewLoggingEventListener(eventBus);
-        final GameStateMachine gameStateMachine = GameStateMachine.registerNewGameStateMachine(eventBus)
-                .addListener(new LoggingGameStateListener());
 
         //Create window
-        eventBus.publishEvent(new Event(EventType.INITIALISING));
         final Window window = buildWindow();
 
         //Show window
@@ -89,22 +83,25 @@ public class Main {
         final ProgramFactory programFactory = new ProgramFactory(renderer);
         programFactory.registerProgramFromShaders(vertexShader, fragmentShader, "Test Program");
 
+        //Create components
+        final EntityFactory entityFactory = new EntityFactory(eventBus);
+        final KeyboardMovementComponent keyboardMovementComponent = new KeyboardMovementComponent(.2f, inputManager);
+
+        //Create player
+        final Entity playerEntity = entityFactory.newEntity().addComponenet(keyboardMovementComponent);
+        final SpriteRenderable spriteRenderable = renderer.buildRenderable(() -> new SpriteRenderable(playerEntity, playerTexture, 1));
+        renderQueue.addRenderable(spriteRenderable);
+
         //Create a test object to render
-        final TileEntity tileEntity = new TileEntity();
+        final Entity tileEntity = entityFactory.newEntity();
         final TileRenderable tileRenderable = renderer.buildRenderable(() -> new TileRenderable(tileEntity, tileTexture));
         renderQueue.addRenderable(tileRenderable);
 
-        //Create player
-        final PlayerEntity playerEntity = new PlayerEntity(2f);
-        final SpriteRenderable spriteRenderable = renderer.buildRenderable(() -> new SpriteRenderable(playerEntity, playerTexture));
-        renderQueue.addRenderable(spriteRenderable);
 
+        final UpdateStrategy updateStrategy = new PublishEventUpdateStrategy(eventBus);
+        final LoopIteration loopIteration = new LoopIterationImpl(inputManager, updateStrategy, renderer);
 
-        final LoopIteration loopIteration = new LoopIterationImpl(inputManager, camera, playerEntity, renderer);
-
-        eventBus.publishEvent(new Event(EventType.LOADED));
         loop(renderer, window, loopIteration);
-        eventBus.publishEvent(new Event(EventType.EXITING));
 
         window.close();
         glfwTerminate();

@@ -13,10 +13,11 @@ public class GameLoop {
     }
 
     public void loop() {
-        final long lastTime = System.currentTimeMillis();
+        long lastTime = System.currentTimeMillis();
         while (!untilConditionSupplier.get()) {
             final long currentTime = System.currentTimeMillis();
             final long elapsedTime = currentTime - lastTime;
+            lastTime = currentTime;
 
             loopHandler.onNewIteration(elapsedTime);
         }

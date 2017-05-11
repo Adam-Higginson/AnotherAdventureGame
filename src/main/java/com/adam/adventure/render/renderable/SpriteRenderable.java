@@ -1,6 +1,6 @@
 package com.adam.adventure.render.renderable;
 
-import com.adam.adventure.entity.TransformableEntity;
+import com.adam.adventure.entity.Entity;
 import com.adam.adventure.render.Renderer;
 import com.adam.adventure.render.shader.Program;
 import com.adam.adventure.render.shader.Uniform2f;
@@ -12,14 +12,22 @@ import com.adam.adventure.render.vertex.Vertex;
 import com.adam.adventure.render.vertex.VertexArray;
 import org.joml.Matrix4f;
 
-public class SpriteRenderable extends RenderableEntity<TransformableEntity> {
+public class SpriteRenderable extends RenderableEntity<Entity> {
 
     private VertexArray vertexArray;
     private final Texture spriteTexture;
+    private final int zIndex;
 
-    public SpriteRenderable(final TransformableEntity entity, final Texture spriteTexture) {
+    public SpriteRenderable(final Entity entity, final Texture spriteTexture, final int zIndex) {
         super(entity);
         this.spriteTexture = spriteTexture;
+        this.zIndex = zIndex;
+    }
+
+
+    @Override
+    public int getZIndex() {
+        return zIndex;
     }
 
     @Override

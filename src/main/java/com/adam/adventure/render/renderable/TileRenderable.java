@@ -1,6 +1,6 @@
 package com.adam.adventure.render.renderable;
 
-import com.adam.adventure.entity.TileEntity;
+import com.adam.adventure.entity.Entity;
 import com.adam.adventure.render.Renderer;
 import com.adam.adventure.render.shader.Program;
 import com.adam.adventure.render.shader.Uniform2f;
@@ -12,14 +12,19 @@ import com.adam.adventure.render.vertex.Vertex;
 import com.adam.adventure.render.vertex.VertexArray;
 import org.joml.Matrix4f;
 
-public class TileRenderable extends RenderableEntity<TileEntity> {
+public class TileRenderable extends RenderableEntity<Entity> {
 
     private VertexArray vertexArray;
     private final Texture texture;
 
-    public TileRenderable(final TileEntity entity, final Texture texture) {
+    public TileRenderable(final Entity entity, final Texture texture) {
         super(entity);
         this.texture = texture;
+    }
+
+    @Override
+    public int getZIndex() {
+        return 0;
     }
 
     @Override

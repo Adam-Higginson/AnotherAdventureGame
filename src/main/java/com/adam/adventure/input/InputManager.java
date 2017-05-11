@@ -4,6 +4,9 @@ import com.adam.adventure.window.Window;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWKeyCallbackI;
 
+import static org.lwjgl.glfw.GLFW.glfwPollEvents;
+
+//TODO extract interface
 public class InputManager implements GLFWKeyCallbackI {
 
     private final boolean[] heldKeys;
@@ -11,6 +14,10 @@ public class InputManager implements GLFWKeyCallbackI {
     public InputManager(final Window window) {
         this.heldKeys = new boolean[1024];
         window.setKeyCallback(this);
+    }
+
+    public void processInput() {
+        glfwPollEvents();
     }
 
     @Override

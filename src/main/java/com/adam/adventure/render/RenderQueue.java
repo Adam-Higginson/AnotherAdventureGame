@@ -2,15 +2,16 @@ package com.adam.adventure.render;
 
 import com.adam.adventure.render.renderable.Renderable;
 
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.Comparator;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.function.Consumer;
 
 public class RenderQueue {
-    private final Queue<Renderable> renderableQueue;
+    private final SortedSet<Renderable> renderableQueue;
 
     public RenderQueue() {
-        renderableQueue = new LinkedList<>();
+        renderableQueue = new TreeSet<>(Comparator.comparing(Renderable::getZIndex));
     }
 
     public RenderQueue addRenderable(final Renderable renderable) {
