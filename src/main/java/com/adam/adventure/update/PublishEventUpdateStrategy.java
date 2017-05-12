@@ -1,7 +1,7 @@
 package com.adam.adventure.update;
 
 import com.adam.adventure.event.EventBus;
-import com.adam.adventure.update.event.UpdateEvent;
+import com.adam.adventure.update.event.NewLoopIterationEvent;
 
 public class PublishEventUpdateStrategy implements UpdateStrategy {
 
@@ -13,6 +13,6 @@ public class PublishEventUpdateStrategy implements UpdateStrategy {
 
     @Override
     public void update(final float elapsedTime) {
-        eventBus.publishEvent(new UpdateEvent(elapsedTime));
+        eventBus.publishEvent(new NewLoopIterationEvent(elapsedTime));
     }
 }

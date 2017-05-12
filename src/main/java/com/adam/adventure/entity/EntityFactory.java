@@ -2,7 +2,7 @@ package com.adam.adventure.entity;
 
 import com.adam.adventure.event.EventBus;
 import com.adam.adventure.event.EventSubscribe;
-import com.adam.adventure.update.event.UpdateEvent;
+import com.adam.adventure.update.event.NewLoopIterationEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +24,7 @@ public class EntityFactory {
 
     @EventSubscribe
     @SuppressWarnings("unused")
-    public void onUpdateEvent(final UpdateEvent updateEvent) {
-        entities.forEach(entity -> entity.update(updateEvent.getElapsedTime()));
+    public void onUpdateEvent(final NewLoopIterationEvent newLoopIterationEvent) {
+        entities.forEach(entity -> entity.update(newLoopIterationEvent.getElapsedTime()));
     }
 }

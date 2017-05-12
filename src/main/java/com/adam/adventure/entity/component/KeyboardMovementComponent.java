@@ -20,29 +20,27 @@ public class KeyboardMovementComponent implements EntityComponent {
 
     @Override
     public void update(final Entity target, final float elapsedTime, final ComponentContainer componentContainer) {
-        boolean keyboardPressed = false;
+        ComponentEvent event = ComponentEvent.NO_MOVEMENT;
+
         if (inputManager.isKeyPressed(GLFW_KEY_W)) {
             moveUp(target, elapsedTime);
-            keyboardPressed = true;
+            event = ComponentEvent.ENTITY_MOVE_NORTH;
         }
         if (inputManager.isKeyPressed(GLFW_KEY_S)) {
             moveDown(target, elapsedTime);
-            keyboardPressed = true;
+            event = ComponentEvent.ENTITY_MOVE_SOUTH;
         }
         if (inputManager.isKeyPressed(GLFW_KEY_A)) {
             moveLeft(target, elapsedTime);
-            keyboardPressed = true;
+            event = ComponentEvent.ENTITY_MOVE_WEST;
         }
         if (inputManager.isKeyPressed(GLFW_KEY_D)) {
             moveRight(target, elapsedTime);
-            keyboardPressed = true;
+            event = ComponentEvent.ENTITY_MOVE_EAST;
         }
 
-        if (keyboardPressed) {
-            componentContainer.broadcastComponentEvent(ComponentEvent.START_ANIMATION);
-        } else {
-            componentContainer.broadcastComponentEvent(ComponentEvent.STOP_ANIMATION);
-        }
+        //This only supports broadcasting of one component event to stop events cancelling themselves out.
+        componentContainer.broadcastComponentEvent(event);
     }
 
     @Override

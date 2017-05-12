@@ -1,4 +1,4 @@
-package com.adam.adventure.render;
+package com.adam.adventure.render.sprite;
 
 import com.adam.adventure.render.texture.Texture;
 import com.adam.adventure.render.util.Rectangle;

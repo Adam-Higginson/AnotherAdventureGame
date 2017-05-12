@@ -5,6 +5,7 @@ import com.adam.adventure.entity.EntityFactory;
 import com.adam.adventure.entity.SpriteEntity;
 import com.adam.adventure.entity.component.AnimatedSpriteComponent;
 import com.adam.adventure.entity.component.KeyboardMovementComponent;
+import com.adam.adventure.entity.component.event.ComponentEvent;
 import com.adam.adventure.event.EventBus;
 import com.adam.adventure.input.InputManager;
 import com.adam.adventure.loop.GameLoop;
@@ -12,13 +13,14 @@ import com.adam.adventure.loop.LoopIteration;
 import com.adam.adventure.loop.LoopIterationImpl;
 import com.adam.adventure.render.RenderQueue;
 import com.adam.adventure.render.Renderer;
-import com.adam.adventure.render.Sprite;
 import com.adam.adventure.render.camera.Camera;
 import com.adam.adventure.render.renderable.SpriteRenderable;
 import com.adam.adventure.render.renderable.TileRenderable;
 import com.adam.adventure.render.shader.ProgramFactory;
 import com.adam.adventure.render.shader.Shader;
 import com.adam.adventure.render.shader.ShaderCompiler;
+import com.adam.adventure.render.sprite.Sprite;
+import com.adam.adventure.render.texture.SpriteAnimation;
 import com.adam.adventure.render.texture.Texture;
 import com.adam.adventure.render.texture.TextureFactory;
 import com.adam.adventure.render.util.Rectangle;
@@ -87,22 +89,48 @@ public class Main {
         final ProgramFactory programFactory = new ProgramFactory(renderer);
         programFactory.registerProgramFromShaders(vertexShader, fragmentShader, "Test Program");
 
-        //Create components
-        final EntityFactory entityFactory = new EntityFactory(eventBus);
-        final KeyboardMovementComponent keyboardMovementComponent = new KeyboardMovementComponent(.2f, inputManager);
-        //TODO add name of "subsets" of animation frames to allow keyboard movement component to signal different animations
-        final AnimatedSpriteComponent animatedSpriteComponent = new AnimatedSpriteComponent.Builder(300, true)
+
+        final SpriteAnimation moveUpAnimation = new SpriteAnimation.Builder(50, true)
                 .addAnimationFrame(new Rectangle(0.0f, 0.0f, 96f, 96f))
                 .addAnimationFrame(new Rectangle(96f, 0.0f, 96f, 96f))
                 .addAnimationFrame(new Rectangle(192f, 0.0f, 96f, 96f))
                 .build();
 
+        final SpriteAnimation moveEastAnimation = new SpriteAnimation.Builder(50, true)
+                .addAnimationFrame(new Rectangle(0.0f, 96f, 96f, 96f))
+                .addAnimationFrame(new Rectangle(96f, 96f, 96f, 96f))
+                .addAnimationFrame(new Rectangle(192f, 96f, 96f, 96f))
+                .build();
+
+        final SpriteAnimation moveWestAnimation = new SpriteAnimation.Builder(50, true)
+                .addAnimationFrame(new Rectangle(0.0f, 192f, 96f, 96f))
+                .addAnimationFrame(new Rectangle(96f, 192f, 96f, 96f))
+                .addAnimationFrame(new Rectangle(192f, 192f, 96f, 96f))
+                .build();
+
+        final SpriteAnimation moveDownAnimation = new SpriteAnimation.Builder(50, true)
+                .addAnimationFrame(new Rectangle(0.0f, 288f, 96f, 96f))
+                .addAnimationFrame(new Rectangle(96f, 288f, 96f, 96f))
+                .addAnimationFrame(new Rectangle(192f, 288f, 96f, 96f))
+                .build();
+
+
+        //Create components
+        final EntityFactory entityFactory = new EntityFactory(eventBus);
+        final KeyboardMovementComponent keyboardMovementComponent = new KeyboardMovementComponent(.2f, inputManager);
+        final AnimatedSpriteComponent animatedSpriteComponent = new AnimatedSpriteComponent.Builder()
+                .onEventStopAnimation(ComponentEvent.NO_MOVEMENT)
+                .onEventSetAnimation(ComponentEvent.ENTITY_MOVE_NORTH, moveUpAnimation)
+                .onEventSetAnimation(ComponentEvent.ENTITY_MOVE_EAST, moveEastAnimation)
+                .onEventSetAnimation(ComponentEvent.ENTITY_MOVE_WEST, moveWestAnimation)
+                .onEventSetAnimation(ComponentEvent.ENTITY_MOVE_SOUTH, moveDownAnimation)
+                .build();
 
         //Create player
         final Sprite sprite = new Sprite(playerTexture, new Rectangle(0.0f, 0.0f, 96f, 96f), 64f, 64f);
         final Entity playerEntity = entityFactory.newEntity(() -> new SpriteEntity(sprite))
-                .addComponent(keyboardMovementComponent)
-                .addComponent(animatedSpriteComponent);
+                .addComponent(animatedSpriteComponent)
+                .addComponent(keyboardMovementComponent);
         final SpriteRenderable spriteRenderable = renderer.buildRenderable(() -> new SpriteRenderable(playerEntity, sprite, 1));
         renderQueue.addRenderable(spriteRenderable);
 

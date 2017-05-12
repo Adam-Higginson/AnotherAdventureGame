@@ -2,10 +2,10 @@ package com.adam.adventure.render.renderable;
 
 import com.adam.adventure.entity.Entity;
 import com.adam.adventure.render.Renderer;
-import com.adam.adventure.render.Sprite;
 import com.adam.adventure.render.shader.Program;
 import com.adam.adventure.render.shader.Uniform2f;
 import com.adam.adventure.render.shader.UniformMatrix4f;
+import com.adam.adventure.render.sprite.Sprite;
 import com.adam.adventure.render.vertex.ElementArrayBuffer;
 import com.adam.adventure.render.vertex.StaticVertexBuffer;
 import com.adam.adventure.render.vertex.Vertex;
@@ -84,7 +84,7 @@ public class SpriteRenderable extends RenderableEntity<Entity> {
         textureDimensionsUniform.useUniform(sprite.getTexture().getWidth(), sprite.getTexture().getHeight());
 
         final Uniform2f textureOffset = program.getUniform("textureOffset", Uniform2f.class);
-        textureOffset.useUniform(sprite.getTextureOffset().getX(), sprite.getTextureOffset().getWidth());
+        textureOffset.useUniform(sprite.getTextureOffset().getX(), sprite.getTextureOffset().getY());
     }
 
     @Override
