@@ -10,7 +10,7 @@ public class SpriteAnimation {
 
     private final List<Rectangle> animationFrames;
     private final long millisPerFrame;
-    private final boolean isLooping;
+    private boolean isLooping;
     private boolean isPaused;
     private long currentTime;
     private int currentFrame;
@@ -55,6 +55,14 @@ public class SpriteAnimation {
 
     public void setPaused(final boolean paused) {
         isPaused = paused;
+    }
+
+    public boolean isLooping() {
+        return isLooping;
+    }
+
+    public void setLooping(final boolean looping) {
+        isLooping = looping;
     }
 
     public void reset() {

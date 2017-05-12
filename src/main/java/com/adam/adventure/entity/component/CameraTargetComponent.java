@@ -30,8 +30,6 @@ public class CameraTargetComponent implements EntityComponent<Entity> {
         eye.x = targetEntityTranslate.x;
         eye.y = targetEntityTranslate.y;
         camera.setEye(eye);
-
-        //System.out.println("camera target: " + camera.getTarget() + " camera eye: " + camera.getEye() + " camera look at: " + camera.getLookAt());
     }
 
     @Override

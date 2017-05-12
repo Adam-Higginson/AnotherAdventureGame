@@ -35,20 +35,20 @@ public class AnimatedSpriteComponent implements EntityComponent<SpriteEntity> {
     public void onComponentEvent(final ComponentEvent componentEvent) {
         if (activeComponentEvent != componentEvent) {
             if (stopAnimationEvents.contains(componentEvent) && activeSpriteAnimation != null) {
-                activeSpriteAnimation.setPaused(true);
-                activeSpriteAnimation.reset();
-            }
+                activeSpriteAnimation.setLooping(false);
+            } else {
+                LOG.debug("Current component event = {} new one = {}", activeComponentEvent, componentEvent);
+                final SpriteAnimation newSpriteAnimation = eventToSpriteAnimation.get(componentEvent);
+                if (newSpriteAnimation != null) {
+                    if (activeSpriteAnimation != null) {
+                        activeSpriteAnimation.setPaused(true);
+                        activeSpriteAnimation.reset();
+                    }
 
-            LOG.debug("Current component event = {} new one = {}", activeComponentEvent, componentEvent);
-            final SpriteAnimation newSpriteAnimation = eventToSpriteAnimation.get(componentEvent);
-            if (newSpriteAnimation != null) {
-                if (activeSpriteAnimation != null) {
-                    activeSpriteAnimation.setPaused(true);
-                    activeSpriteAnimation.reset();
+                    activeSpriteAnimation = newSpriteAnimation;
+                    activeSpriteAnimation.setPaused(false);
+                    activeSpriteAnimation.setLooping(true);
                 }
-
-                activeSpriteAnimation = newSpriteAnimation;
-                activeSpriteAnimation.setPaused(false);
             }
         }
 
