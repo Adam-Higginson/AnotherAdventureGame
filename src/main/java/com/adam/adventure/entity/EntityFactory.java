@@ -16,10 +16,11 @@ public class EntityFactory {
         eventBus.register(this);
     }
 
-    public Entity newEntity(final Supplier<? extends Entity> entitySupplier) {
+    @SuppressWarnings("unchecked")
+    public <T extends Entity> T newEntity(final Supplier<T> entitySupplier) {
         final Entity entity = entitySupplier.get();
         entities.add(entity);
-        return entity;
+        return (T) entity;
     }
 
     @EventSubscribe

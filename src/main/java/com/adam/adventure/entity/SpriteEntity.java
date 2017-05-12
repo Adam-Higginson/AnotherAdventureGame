@@ -2,7 +2,7 @@ package com.adam.adventure.entity;
 
 import com.adam.adventure.render.sprite.Sprite;
 
-public class SpriteEntity extends Entity {
+public class SpriteEntity extends Entity<SpriteEntity> {
     private final Sprite sprite;
 
     public SpriteEntity(final Sprite sprite) {

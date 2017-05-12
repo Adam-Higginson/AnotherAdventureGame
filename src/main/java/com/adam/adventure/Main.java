@@ -4,6 +4,7 @@ import com.adam.adventure.entity.Entity;
 import com.adam.adventure.entity.EntityFactory;
 import com.adam.adventure.entity.SpriteEntity;
 import com.adam.adventure.entity.component.AnimatedSpriteComponent;
+import com.adam.adventure.entity.component.CameraTargetComponent;
 import com.adam.adventure.entity.component.KeyboardMovementComponent;
 import com.adam.adventure.entity.component.event.ComponentEvent;
 import com.adam.adventure.event.EventBus;
@@ -59,7 +60,7 @@ public class Main {
 
         //Prepare rendering pipeline
         final RenderQueue renderQueue = new RenderQueue();
-        final Camera camera = new Camera(5f, new Vector3f(0.0f, 0.0f, 1.0f));
+        final Camera camera = new Camera(new Vector3f(0.0f, 0.0f, 1.0f));
         final Renderer renderer = new Renderer(renderQueue, window, camera);
 
         //Load textures
@@ -119,19 +120,22 @@ public class Main {
         final EntityFactory entityFactory = new EntityFactory(eventBus);
         final KeyboardMovementComponent keyboardMovementComponent = new KeyboardMovementComponent(.2f, inputManager);
         final AnimatedSpriteComponent animatedSpriteComponent = new AnimatedSpriteComponent.Builder()
-                .onEventStopAnimation(ComponentEvent.NO_MOVEMENT)
+                .onEventStopAnimation(ComponentEvent.ENTITY_NO_MOVEMENT)
                 .onEventSetAnimation(ComponentEvent.ENTITY_MOVE_NORTH, moveUpAnimation)
                 .onEventSetAnimation(ComponentEvent.ENTITY_MOVE_EAST, moveEastAnimation)
                 .onEventSetAnimation(ComponentEvent.ENTITY_MOVE_WEST, moveWestAnimation)
                 .onEventSetAnimation(ComponentEvent.ENTITY_MOVE_SOUTH, moveDownAnimation)
                 .build();
+        final CameraTargetComponent cameraTargetComponent = new CameraTargetComponent(window, camera);
 
         //Create player
         final Sprite sprite = new Sprite(playerTexture, new Rectangle(0.0f, 0.0f, 96f, 96f), 64f, 64f);
-        final Entity playerEntity = entityFactory.newEntity(() -> new SpriteEntity(sprite))
+        final SpriteEntity playerEntity = entityFactory.newEntity(() -> new SpriteEntity(sprite))
                 .addComponent(animatedSpriteComponent)
-                .addComponent(keyboardMovementComponent);
-        final SpriteRenderable spriteRenderable = renderer.buildRenderable(() -> new SpriteRenderable(playerEntity, sprite, 1));
+                .addComponent(keyboardMovementComponent)
+                .addComponent(cameraTargetComponent);
+
+        final SpriteRenderable spriteRenderable = renderer.buildRenderable(() -> new SpriteRenderable(playerEntity, 1));
         renderQueue.addRenderable(spriteRenderable);
 
         //Create a test object to render

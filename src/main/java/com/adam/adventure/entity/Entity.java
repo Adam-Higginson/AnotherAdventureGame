@@ -4,7 +4,7 @@ import com.adam.adventure.entity.component.ComponentContainer;
 import com.adam.adventure.entity.component.EntityComponent;
 import org.joml.Matrix4f;
 
-public class Entity {
+public class Entity<T extends Entity<T>> {
     private final Matrix4f transform;
     private final ComponentContainer componentContainer;
 
@@ -17,9 +17,10 @@ public class Entity {
         return transform;
     }
 
-    public Entity addComponent(final EntityComponent component) {
+    @SuppressWarnings("unchecked")
+    public T addComponent(final EntityComponent component) {
         componentContainer.addComponent(component);
-        return this;
+        return (T) this;
     }
 
     public void update(final float deltaTime) {

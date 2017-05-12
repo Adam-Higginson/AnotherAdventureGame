@@ -6,51 +6,29 @@ import org.joml.Vector3f;
 public class Camera {
     private static final Vector3f UP = new Vector3f(0.0f, 1.0f, 0.0f);
 
-    private final float speed;
-    private final Vector3f eye;
-    private final Vector3f target;
+    private Vector3f eye;
+    private Vector3f target;
 
-    public Camera(final float speed, final Vector3f eye) {
-        this.speed = speed;
+    public Camera(final Vector3f eye) {
         this.eye = eye;
         this.target = new Vector3f(0.0f, 0.0f, 0.0f);
     }
 
 
-    public Camera moveUp(final float deltaTime) {
-        final float amountToMove = speed * deltaTime;
-        final Vector3f delta = new Vector3f(0.0f, amountToMove, 0.0f);
-        eye.add(delta);
-        target.add(delta);
-
-        return this;
+    public Vector3f getEye() {
+        return eye;
     }
 
-    public Camera moveDown(final float deltaTime) {
-        final float amountToMove = speed * deltaTime;
-        final Vector3f delta = new Vector3f(0.0f, -amountToMove, 0.0f);
-        eye.add(delta);
-        target.add(delta);
-
-        return this;
+    public void setEye(final Vector3f eye) {
+        this.eye = eye;
     }
 
-    public Camera moveRight(final float deltaTime) {
-        final float amountToMove = speed * deltaTime;
-        final Vector3f delta = new Vector3f(amountToMove, 0.0f, 0.0f);
-        eye.add(delta);
-        target.add(delta);
-
-        return this;
+    public Vector3f getTarget() {
+        return target;
     }
 
-    public Camera moveLeft(final float deltaTime) {
-        final float amountToMove = speed * deltaTime;
-        final Vector3f delta = new Vector3f(-amountToMove, 0.0f, 0.0f);
-        eye.add(delta);
-        target.add(delta);
-
-        return this;
+    public void setTarget(final Vector3f target) {
+        this.target = target;
     }
 
 

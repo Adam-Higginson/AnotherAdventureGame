@@ -20,7 +20,7 @@ public class KeyboardMovementComponent implements EntityComponent {
 
     @Override
     public void update(final Entity target, final float elapsedTime, final ComponentContainer componentContainer) {
-        ComponentEvent event = ComponentEvent.NO_MOVEMENT;
+        ComponentEvent event = ComponentEvent.ENTITY_NO_MOVEMENT;
 
         if (inputManager.isKeyPressed(GLFW_KEY_W)) {
             moveUp(target, elapsedTime);
