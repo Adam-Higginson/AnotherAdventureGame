@@ -3,8 +3,33 @@ package com.adam.adventure.entity.component;
 import com.adam.adventure.entity.Entity;
 import com.adam.adventure.entity.component.event.ComponentEvent;
 
-public interface EntityComponent<T extends Entity> {
-    void update(final T target, float deltaTime, ComponentContainer componentContainer);
+import java.util.Optional;
 
-    void onComponentEvent(ComponentEvent componentEvent);
+public abstract class EntityComponent {
+
+    private final ComponentContainer componentContainer;
+
+    public EntityComponent(final ComponentContainer componentContainer) {
+        this.componentContainer = componentContainer;
+    }
+
+    public Entity getEntity() {
+        return componentContainer.getEntity();
+    }
+
+    public <T extends EntityComponent> Optional<T> getComponent(final Class<T> componentType) {
+        return componentContainer.getComponent(componentType);
+    }
+
+    public TransformComponent getTransformComponent() {
+        return componentContainer.getTransformComponent();
+    }
+
+    protected abstract void update(float deltaTime);
+
+    protected abstract void onComponentEvent(ComponentEvent componentEvent);
+
+    protected final void broadcastComponentEvent(final ComponentEvent componentEvent) {
+        componentContainer.broadcastComponentEvent(componentEvent);
+    }
 }

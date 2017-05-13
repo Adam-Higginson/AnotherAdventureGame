@@ -1,33 +1,43 @@
 package com.adam.adventure.entity.component;
 
-import com.adam.adventure.entity.SpriteEntity;
 import com.adam.adventure.entity.component.event.ComponentEvent;
+import com.adam.adventure.render.RenderQueue;
+import com.adam.adventure.render.renderable.SpriteRenderable;
+import com.adam.adventure.render.sprite.Sprite;
 import com.adam.adventure.render.texture.SpriteAnimation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.EnumMap;
-import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 
-public class AnimatedSpriteComponent implements EntityComponent<SpriteEntity> {
-    private static final Logger LOG = LoggerFactory.getLogger(AnimatedSpriteComponent.class);
+public class AnimatedSpriteRendererComponent extends EntityComponent {
+    private static final Logger LOG = LoggerFactory.getLogger(AnimatedSpriteRendererComponent.class);
 
+    private final Sprite sprite;
     private final Map<ComponentEvent, SpriteAnimation> eventToSpriteAnimation;
     private final Set<ComponentEvent> stopAnimationEvents;
     private ComponentEvent activeComponentEvent;
     private SpriteAnimation activeSpriteAnimation;
 
-    private AnimatedSpriteComponent(final Builder builder) {
-        this.eventToSpriteAnimation = builder.eventToSpriteAnimation;
-        this.stopAnimationEvents = builder.stopAnimationEvents;
+    public AnimatedSpriteRendererComponent(final ComponentContainer componentContainer,
+                                           final Sprite sprite,
+                                           final RenderQueue rendererQueue,
+                                           final Map<ComponentEvent, SpriteAnimation> eventToSpriteAnimation,
+                                           final Set<ComponentEvent> stopAnimationEvents) {
+        super(componentContainer);
+        this.sprite = sprite;
+        this.eventToSpriteAnimation = eventToSpriteAnimation;
+        this.stopAnimationEvents = stopAnimationEvents;
+        final SpriteRenderable spriteRenderable = new SpriteRenderable(getEntity(), this.sprite, 1);
+        rendererQueue.addRenderable(spriteRenderable);
     }
 
+
     @Override
-    public void update(final SpriteEntity target, final float deltaTime, final ComponentContainer componentContainer) {
+    protected void update(final float deltaTime) {
         if (activeSpriteAnimation != null) {
-            activeSpriteAnimation.update(deltaTime, target.getSprite());
+            activeSpriteAnimation.update(deltaTime, sprite);
         }
     }
 
@@ -53,30 +63,5 @@ public class AnimatedSpriteComponent implements EntityComponent<SpriteEntity> {
         }
 
         activeComponentEvent = componentEvent;
-    }
-
-
-    public static class Builder {
-        private final Map<ComponentEvent, SpriteAnimation> eventToSpriteAnimation;
-        private final Set<ComponentEvent> stopAnimationEvents;
-
-        public Builder() {
-            eventToSpriteAnimation = new EnumMap<>(ComponentEvent.class);
-            stopAnimationEvents = EnumSet.noneOf(ComponentEvent.class);
-        }
-
-        public Builder onEventSetAnimation(final ComponentEvent event, final SpriteAnimation spriteAnimation) {
-            eventToSpriteAnimation.put(event, spriteAnimation);
-            return this;
-        }
-
-        public Builder onEventStopAnimation(final ComponentEvent event) {
-            this.stopAnimationEvents.add(event);
-            return this;
-        }
-
-        public AnimatedSpriteComponent build() {
-            return new AnimatedSpriteComponent(this);
-        }
     }
 }

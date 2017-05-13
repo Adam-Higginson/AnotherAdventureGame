@@ -1,12 +1,11 @@
 package com.adam.adventure;
 
 import com.adam.adventure.entity.Entity;
-import com.adam.adventure.entity.EntityFactory;
-import com.adam.adventure.entity.SpriteEntity;
-import com.adam.adventure.entity.component.AnimatedSpriteComponent;
-import com.adam.adventure.entity.component.CameraTargetComponent;
-import com.adam.adventure.entity.component.KeyboardMovementComponent;
 import com.adam.adventure.entity.component.event.ComponentEvent;
+import com.adam.adventure.entity.component.factory.AnimatedSpriteRendererComponentFactory;
+import com.adam.adventure.entity.component.factory.CameraTargetComponentFactory;
+import com.adam.adventure.entity.component.factory.KeyboardMovementEntityComponentFactory;
+import com.adam.adventure.entity.component.factory.SpriteRendererComponentFactory;
 import com.adam.adventure.event.EventBus;
 import com.adam.adventure.input.InputManager;
 import com.adam.adventure.loop.GameLoop;
@@ -15,8 +14,6 @@ import com.adam.adventure.loop.LoopIterationImpl;
 import com.adam.adventure.render.RenderQueue;
 import com.adam.adventure.render.Renderer;
 import com.adam.adventure.render.camera.Camera;
-import com.adam.adventure.render.renderable.SpriteRenderable;
-import com.adam.adventure.render.renderable.TileRenderable;
 import com.adam.adventure.render.shader.ProgramFactory;
 import com.adam.adventure.render.shader.Shader;
 import com.adam.adventure.render.shader.ShaderCompiler;
@@ -25,6 +22,7 @@ import com.adam.adventure.render.texture.SpriteAnimation;
 import com.adam.adventure.render.texture.Texture;
 import com.adam.adventure.render.texture.TextureFactory;
 import com.adam.adventure.render.util.Rectangle;
+import com.adam.adventure.scene.Scene;
 import com.adam.adventure.update.PublishEventUpdateStrategy;
 import com.adam.adventure.update.UpdateStrategy;
 import com.adam.adventure.window.Window;
@@ -116,34 +114,42 @@ public class Main {
                 .build();
 
 
+        final Scene scene = new Scene(eventBus, "Test Scene", renderer);
+
         //Create components
-        final EntityFactory entityFactory = new EntityFactory(eventBus);
-        final KeyboardMovementComponent keyboardMovementComponent = new KeyboardMovementComponent(.2f, inputManager);
-        final AnimatedSpriteComponent animatedSpriteComponent = new AnimatedSpriteComponent.Builder()
+        final KeyboardMovementEntityComponentFactory keyboardMovementComponentFactory = new KeyboardMovementEntityComponentFactory(.2f, inputManager);
+        final Sprite sprite = new Sprite(playerTexture, new Rectangle(0.0f, 0.0f, 96f, 96f), 64f, 64f);
+        final AnimatedSpriteRendererComponentFactory animatedSpriteRendererComponentFactory = new AnimatedSpriteRendererComponentFactory.Builder(sprite, renderQueue)
                 .onEventStopAnimation(ComponentEvent.ENTITY_NO_MOVEMENT)
                 .onEventSetAnimation(ComponentEvent.ENTITY_MOVE_NORTH, moveUpAnimation)
                 .onEventSetAnimation(ComponentEvent.ENTITY_MOVE_EAST, moveEastAnimation)
                 .onEventSetAnimation(ComponentEvent.ENTITY_MOVE_WEST, moveWestAnimation)
                 .onEventSetAnimation(ComponentEvent.ENTITY_MOVE_SOUTH, moveDownAnimation)
                 .build();
-        final CameraTargetComponent cameraTargetComponent = new CameraTargetComponent(window, camera);
+        final CameraTargetComponentFactory cameraTargetComponentFactory = new CameraTargetComponentFactory(window, camera);
+
+        final Sprite woodSprite = new Sprite(tileTexture, new Rectangle(0.0f, 0.0f, 16f, 16f), 64f, 64f);
+        final SpriteRendererComponentFactory spriteRendererComponentFactory = new SpriteRendererComponentFactory(woodSprite, renderQueue);
 
         //Create player
-        final Sprite sprite = new Sprite(playerTexture, new Rectangle(0.0f, 0.0f, 96f, 96f), 64f, 64f);
-        final SpriteEntity playerEntity = entityFactory.newEntity(() -> new SpriteEntity(sprite))
-                .addComponent(animatedSpriteComponent)
-                .addComponent(keyboardMovementComponent)
-                .addComponent(cameraTargetComponent);
+        final Entity playerEntity = new Entity("Player")
+                .addComponent(keyboardMovementComponentFactory)
+                .addComponent(animatedSpriteRendererComponentFactory)
+                .addComponent(cameraTargetComponentFactory);
+        scene.addEntity(playerEntity);
 
-        final SpriteRenderable spriteRenderable = renderer.buildRenderable(() -> new SpriteRenderable(playerEntity, 1));
-        renderQueue.addRenderable(spriteRenderable);
+        final Entity tileEntity = new Entity("Wood")
+                .addComponent(spriteRendererComponentFactory);
+        scene.addEntity(tileEntity);
+
 
         //Create a test object to render
-        final Entity tileEntity = entityFactory.newEntity(Entity::new);
-        final TileRenderable tileRenderable = renderer.buildRenderable(() -> new TileRenderable(tileEntity, tileTexture));
-        renderQueue.addRenderable(tileRenderable);
+//        final Entity tileEntity = entityFactory.newEntity(Entity::new);
+//        final TileRenderable tileRenderable = renderer.buildRenderable(() -> new TileRenderable(tileEntity, tileTexture));
+//        renderQueue.addRenderable(tileRenderable);
 
 
+        scene.activateScene();
         final UpdateStrategy updateStrategy = new PublishEventUpdateStrategy(eventBus);
         final LoopIteration loopIteration = new LoopIterationImpl(inputManager, updateStrategy, renderer);
 

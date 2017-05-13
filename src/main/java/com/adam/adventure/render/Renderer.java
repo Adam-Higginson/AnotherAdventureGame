@@ -1,20 +1,22 @@
 package com.adam.adventure.render;
 
 import com.adam.adventure.render.camera.Camera;
-import com.adam.adventure.render.renderable.Renderable;
 import com.adam.adventure.render.shader.Program;
 import com.adam.adventure.render.shader.UniformMatrix4f;
 import com.adam.adventure.render.vertex.*;
 import com.adam.adventure.window.Window;
 import org.joml.Matrix4f;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
 
 import static org.lwjgl.opengl.GL11.*;
 
 public class Renderer {
+    private static final Logger LOG = LoggerFactory.getLogger(Renderer.class);
+
     private final VertexBufferFactory vertexBufferFactory;
     private final ElementArrayBufferFactory elementArrayBufferFactory;
     private final VertexArrayFactory vertexArrayFactory;
@@ -38,6 +40,12 @@ public class Renderer {
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
 
+    public void initialise() {
+        LOG.info("Initialising renderer");
+        final long startTime = System.currentTimeMillis();
+        renderQueue.forEach(renderable -> renderable.initialise(this));
+        LOG.info("Successfully initialised renderer in: {}ms", System.currentTimeMillis() - startTime);
+    }
 
     public void render() {
         clearScreen();
@@ -90,12 +98,5 @@ public class Renderer {
 
     public VertexArray buildNewVertexArray(final Buffer vertexBuffer, final Buffer elementArrayBuffer) {
         return vertexArrayFactory.newVertexArray(vertexBuffer, elementArrayBuffer);
-    }
-
-
-    public <T extends Renderable> T buildRenderable(final Supplier<T> renderableSupplier) {
-        final T renderable = renderableSupplier.get();
-        renderable.initialise(this);
-        return renderable;
     }
 }
