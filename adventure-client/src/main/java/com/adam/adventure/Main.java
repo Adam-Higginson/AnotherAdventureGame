@@ -7,6 +7,7 @@ import com.adam.adventure.entity.component.factory.CameraTargetComponentFactory;
 import com.adam.adventure.entity.component.factory.KeyboardMovementEntityComponentFactory;
 import com.adam.adventure.entity.component.factory.SpriteRendererComponentFactory;
 import com.adam.adventure.event.EventBus;
+import com.adam.adventure.event.InitialisedEvent;
 import com.adam.adventure.input.InputManager;
 import com.adam.adventure.loop.GameLoop;
 import com.adam.adventure.loop.LoopIteration;
@@ -24,6 +25,7 @@ import com.adam.adventure.render.texture.Texture;
 import com.adam.adventure.render.texture.TextureFactory;
 import com.adam.adventure.render.util.Rectangle;
 import com.adam.adventure.scene.Scene;
+import com.adam.adventure.scene.SceneManager;
 import com.adam.adventure.ui.UiModule;
 import com.adam.adventure.ui.UiScreenBuilder;
 import com.adam.adventure.update.PublishEventUpdateStrategy;
@@ -99,7 +101,26 @@ public class Main {
         final ProgramFactory programFactory = new ProgramFactory(renderer);
         programFactory.registerProgramFromShaders(vertexShader, fragmentShader, "Test Program");
 
+        final SceneManager sceneManager = new SceneManager(eventBus, renderer, inputManager);
 
+        //TODO obviously move this
+        addTestScene(eventBus, window, renderQueue, camera, renderer, playerTexture, tileTexture, inputManager, sceneManager);
+
+        final UpdateStrategy updateStrategy = new PublishEventUpdateStrategy(eventBus);
+        final LoopIteration loopIteration = new LoopIterationImpl(inputManager, updateStrategy, renderer);
+
+        //Notify everything that game is ready
+        eventBus.publishEvent(new InitialisedEvent());
+
+        loop(renderer, window, loopIteration);
+
+        window.close();
+        glfwTerminate();
+        glfwSetErrorCallback(null).free();
+    }
+
+
+    private Scene addTestScene(final EventBus eventBus, final Window window, final RenderQueue renderQueue, final Camera camera, final Renderer renderer, final Texture playerTexture, final Texture tileTexture, final InputManager inputManager, final SceneManager sceneManager) {
         final SpriteAnimation moveUpAnimation = new SpriteAnimation.Builder(50, true)
                 .addAnimationFrame(new Rectangle(0.0f, 0.0f, 96f, 96f))
                 .addAnimationFrame(new Rectangle(96f, 0.0f, 96f, 96f))
@@ -126,6 +147,7 @@ public class Main {
 
 
         final Scene scene = new Scene(eventBus, "Test Scene", renderer);
+        sceneManager.addScene("Test Scene", () -> scene);
 
         //Create components
         final KeyboardMovementEntityComponentFactory keyboardMovementComponentFactory = new KeyboardMovementEntityComponentFactory(.2f, inputManager);
@@ -152,17 +174,7 @@ public class Main {
         final Entity tileEntity = new Entity("Wood")
                 .addComponent(spriteRendererComponentFactory);
         scene.addEntity(tileEntity);
-
-
-        scene.activateScene();
-        final UpdateStrategy updateStrategy = new PublishEventUpdateStrategy(eventBus);
-        final LoopIteration loopIteration = new LoopIterationImpl(inputManager, updateStrategy, renderer);
-
-        loop(renderer, window, loopIteration);
-
-        window.close();
-        glfwTerminate();
-        glfwSetErrorCallback(null).free();
+        return scene;
     }
 
     private Renderable initialiseUi(final Window window, final InputManager inputManager) {

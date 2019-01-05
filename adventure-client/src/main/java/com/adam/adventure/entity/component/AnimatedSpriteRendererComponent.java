@@ -15,6 +15,7 @@ public class AnimatedSpriteRendererComponent extends EntityComponent {
     private static final Logger LOG = LoggerFactory.getLogger(AnimatedSpriteRendererComponent.class);
 
     private final Sprite sprite;
+    private final RenderQueue rendererQueue;
     private final Map<ComponentEvent, SpriteAnimation> eventToSpriteAnimation;
     private final Set<ComponentEvent> stopAnimationEvents;
     private ComponentEvent activeComponentEvent;
@@ -27,12 +28,17 @@ public class AnimatedSpriteRendererComponent extends EntityComponent {
                                            final Set<ComponentEvent> stopAnimationEvents) {
         super(componentContainer);
         this.sprite = sprite;
+        this.rendererQueue = rendererQueue;
         this.eventToSpriteAnimation = eventToSpriteAnimation;
         this.stopAnimationEvents = stopAnimationEvents;
+    }
+
+
+    @Override
+    public void activate() {
         final SpriteRenderable spriteRenderable = new SpriteRenderable(getEntity(), this.sprite, 1);
         rendererQueue.addRenderable(spriteRenderable);
     }
-
 
     @Override
     protected void update(final float deltaTime) {

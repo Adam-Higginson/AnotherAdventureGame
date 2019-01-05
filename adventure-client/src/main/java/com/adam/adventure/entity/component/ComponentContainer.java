@@ -51,4 +51,8 @@ public class ComponentContainer {
     void broadcastComponentEvent(final ComponentEvent componentEvent) {
         getAllComponents().forEach(component -> component.onComponentEvent(componentEvent));
     }
+
+    public void activate() {
+        getAllComponents().forEach(EntityComponent::activate);
+    }
 }

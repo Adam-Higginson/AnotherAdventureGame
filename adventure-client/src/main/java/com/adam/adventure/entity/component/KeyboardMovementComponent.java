@@ -11,7 +11,9 @@ public class KeyboardMovementComponent extends EntityComponent {
     private final float speed;
     private final InputManager inputManager;
 
-    public KeyboardMovementComponent(final ComponentContainer componentContainer, final float speed, final InputManager inputManager) {
+    public KeyboardMovementComponent(final ComponentContainer componentContainer,
+                                     final float speed,
+                                     final InputManager inputManager) {
         super(componentContainer);
         this.speed = speed;
         this.inputManager = inputManager;

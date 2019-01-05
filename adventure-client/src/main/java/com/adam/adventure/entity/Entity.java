@@ -26,6 +26,13 @@ public class Entity {
         return name;
     }
 
+    /**
+     * Tells the entity that it should now be active in the context of the current scene
+     */
+    public void activate() {
+        componentContainer.activate();
+    }
+
     public void update(final float deltaTime) {
         componentContainer.update(deltaTime);
     }

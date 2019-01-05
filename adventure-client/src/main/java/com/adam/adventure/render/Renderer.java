@@ -23,7 +23,7 @@ public class Renderer {
     private final Map<String, Program> programNametoProgram;
     private final RenderQueue renderQueue;
     private final Window window;
-    private Camera camera;
+    private final Camera camera;
     private Matrix4f viewMatrix;
     private Matrix4f projectionMatrix;
 
@@ -35,7 +35,6 @@ public class Renderer {
         this.programNametoProgram = new HashMap<>();
         this.renderQueue = renderQueue;
         this.window = window;
-        this.camera = camera;
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }

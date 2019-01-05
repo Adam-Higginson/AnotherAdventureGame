@@ -3,8 +3,6 @@ package com.adam.adventure.ui;
 import com.adam.adventure.render.Renderer;
 import com.adam.adventure.render.renderable.Renderable;
 import de.lessvoid.nifty.Nifty;
-import de.lessvoid.nifty.controls.Console;
-import de.lessvoid.nifty.screen.Screen;
 
 import javax.inject.Inject;
 
@@ -35,10 +33,6 @@ public class UiRenderable implements Renderable {
 
     @Override
     public void render(final Renderer renderer) {
-        nifty.gotoScreen("start");
-        final Screen screen = nifty.getScreen("start");
-        final Console console = screen.findNiftyControl("console", Console.class);
-        console.output("Hello :)");
         nifty.render(false);
     }
 

@@ -25,6 +25,10 @@ public abstract class EntityComponent {
         return componentContainer.getTransformComponent();
     }
 
+    protected void activate() {
+        //By default nothing happens
+    }
+
     protected abstract void update(float deltaTime);
 
     protected abstract void onComponentEvent(ComponentEvent componentEvent);

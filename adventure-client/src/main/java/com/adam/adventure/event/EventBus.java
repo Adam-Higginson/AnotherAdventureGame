@@ -3,6 +3,8 @@ package com.adam.adventure.event;
 import com.google.common.base.Objects;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -13,6 +15,7 @@ import java.util.stream.Collectors;
 
 //Potentially have the event bus as a background thread
 public class EventBus {
+    private static final Logger LOG = LoggerFactory.getLogger(EventBus.class);
 
     private final Multimap<Class<? extends Event>, InstanceAndMethod> eventTypeToSubscribers;
 
@@ -45,6 +48,10 @@ public class EventBus {
     }
 
     public void publishEvent(final Event event) {
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("Publishing new event: {}", event.getClass());
+        }
+
         final Collection<InstanceAndMethod> subscribedInstances = eventTypeToSubscribers.get(event.getClass());
         if (subscribedInstances != null) {
             subscribedInstances.forEach(subscribedInstance -> subscribedInstance.invoke(event));
@@ -63,15 +70,19 @@ public class EventBus {
         private void invoke(final Event event) {
             try {
                 method.invoke(instance, event);
-            } catch (IllegalAccessException | InvocationTargetException e) {
+            } catch (final IllegalAccessException | InvocationTargetException e) {
                 throw new IllegalStateException(e);
             }
         }
 
         @Override
         public boolean equals(final Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
             final InstanceAndMethod that = (InstanceAndMethod) o;
             return Objects.equal(instance, that.instance) &&
                     Objects.equal(method, that.method);

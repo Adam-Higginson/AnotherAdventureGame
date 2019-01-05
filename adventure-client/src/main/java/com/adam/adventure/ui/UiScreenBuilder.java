@@ -5,6 +5,7 @@ import de.lessvoid.nifty.Nifty;
 import de.lessvoid.nifty.builder.LayerBuilder;
 import de.lessvoid.nifty.builder.PanelBuilder;
 import de.lessvoid.nifty.builder.ScreenBuilder;
+import de.lessvoid.nifty.controls.Console;
 import de.lessvoid.nifty.controls.console.builder.ConsoleBuilder;
 import de.lessvoid.nifty.screen.Screen;
 import de.lessvoid.nifty.screen.ScreenController;
@@ -24,6 +25,7 @@ public class UiScreenBuilder implements ScreenController {
     public Renderable build() {
         nifty.loadControlFile("nifty-default-controls.xml");
         nifty.loadStyleFile("nifty-default-styles.xml");
+
         nifty.addScreen("start", new ScreenBuilder("start2", this) {{
             layer(new LayerBuilder("consoleLayer") {{
                 childLayoutVertical();
@@ -44,6 +46,11 @@ public class UiScreenBuilder implements ScreenController {
                 }});
             }});
         }}.build(nifty));
+
+        final Screen screen = nifty.getScreen("start");
+        final Console console = screen.findNiftyControl("console", Console.class);
+        console.output("Hello :)");
+        nifty.gotoScreen("start");
 
         return new UiRenderable(nifty);
     }
