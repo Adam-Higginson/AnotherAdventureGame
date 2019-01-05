@@ -42,6 +42,7 @@ public class Renderer {
     public void initialise() {
         LOG.info("Initialising renderer");
         final long startTime = System.currentTimeMillis();
+        renderQueue.prepareForRetrieval();
         renderQueue.forEach(renderable -> renderable.initialise(this));
         LOG.info("Successfully initialised renderer in: {}ms", System.currentTimeMillis() - startTime);
     }

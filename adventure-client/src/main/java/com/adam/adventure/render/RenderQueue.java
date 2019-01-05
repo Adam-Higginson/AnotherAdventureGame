@@ -2,16 +2,16 @@ package com.adam.adventure.render;
 
 import com.adam.adventure.render.renderable.Renderable;
 
+import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.List;
 import java.util.function.Consumer;
 
 public class RenderQueue {
-    private final SortedSet<Renderable> renderableQueue;
+    private final List<Renderable> renderableQueue;
 
     public RenderQueue() {
-        renderableQueue = new TreeSet<>(Comparator.comparing(Renderable::getZIndex));
+        renderableQueue = new ArrayList<>();
     }
 
     public RenderQueue addRenderable(final Renderable renderable) {
@@ -19,7 +19,11 @@ public class RenderQueue {
         return this;
     }
 
-    public void forEach(final Consumer<? super Renderable> renderableConsumer) {
+    void prepareForRetrieval() {
+        renderableQueue.sort(Comparator.comparing(Renderable::getZIndex));
+    }
+
+    void forEach(final Consumer<? super Renderable> renderableConsumer) {
         renderableQueue.forEach(renderableConsumer);
     }
 }

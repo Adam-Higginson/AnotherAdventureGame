@@ -7,19 +7,20 @@ import com.adam.adventure.render.sprite.Sprite;
 
 public class SpriteRendererComponent extends EntityComponent {
 
+    private final Sprite sprite;
     private final RenderQueue renderQueue;
-    private final SpriteRenderable spriteRenderable;
 
-    public SpriteRendererComponent(final ComponentContainer componentContainer, final Sprite sprite, final RenderQueue rendererQueue) {
+    public SpriteRendererComponent(final ComponentContainer componentContainer,
+                                   final Sprite sprite,
+                                   final RenderQueue rendererQueue) {
         super(componentContainer);
+        this.sprite = sprite;
         this.renderQueue = rendererQueue;
-        this.spriteRenderable = new SpriteRenderable(getEntity(), sprite, 0);
-        final SpriteRenderable spriteRenderable = this.spriteRenderable;
-        rendererQueue.addRenderable(spriteRenderable);
     }
 
     @Override
     public void activate() {
+        final SpriteRenderable spriteRenderable = new SpriteRenderable(getEntity(), sprite, 0);
         renderQueue.addRenderable(spriteRenderable);
     }
 
