@@ -31,6 +31,6 @@ public class LoopIterationImpl implements LoopIteration {
         inputManager.processInput();
         updateStrategy.update(elapsedTime);
         renderer.render();
-        adventureClient.send();
+        //adventureClient.send();
     }
 }

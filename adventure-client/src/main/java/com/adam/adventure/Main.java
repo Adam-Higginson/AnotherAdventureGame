@@ -14,6 +14,7 @@ import com.adam.adventure.loop.LoopIterationImpl;
 import com.adam.adventure.render.RenderQueue;
 import com.adam.adventure.render.Renderer;
 import com.adam.adventure.render.camera.Camera;
+import com.adam.adventure.render.renderable.Renderable;
 import com.adam.adventure.render.shader.ProgramFactory;
 import com.adam.adventure.render.shader.Shader;
 import com.adam.adventure.render.shader.ShaderCompiler;
@@ -23,12 +24,15 @@ import com.adam.adventure.render.texture.Texture;
 import com.adam.adventure.render.texture.TextureFactory;
 import com.adam.adventure.render.util.Rectangle;
 import com.adam.adventure.scene.Scene;
-import com.adam.adventure.ui.UiManager;
+import com.adam.adventure.ui.UiModule;
+import com.adam.adventure.ui.UiScreenBuilder;
 import com.adam.adventure.update.PublishEventUpdateStrategy;
 import com.adam.adventure.update.UpdateStrategy;
 import com.adam.adventure.window.Window;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFWErrorCallback;
 
@@ -79,7 +83,9 @@ public class Main {
         final InputManager inputManager = new InputManager(window);
 
         //Start Nifty UI
-        initialiseUi(window, inputManager);
+        final Renderable uiRenderable = initialiseUi(window, inputManager);
+        renderQueue.addRenderable(uiRenderable);
+
 
         //Compile shaders
         final ShaderCompiler shaderCompiler = new ShaderCompiler();
@@ -148,12 +154,6 @@ public class Main {
         scene.addEntity(tileEntity);
 
 
-        //Create a test object to render
-//        final Entity tileEntity = entityFactory.newEntity(Entity::new);
-//        final TileRenderable tileRenderable = renderer.buildRenderable(() -> new TileRenderable(tileEntity, tileTexture));
-//        renderQueue.addRenderable(tileRenderable);
-
-
         scene.activateScene();
         final UpdateStrategy updateStrategy = new PublishEventUpdateStrategy(eventBus);
         final LoopIteration loopIteration = new LoopIterationImpl(inputManager, updateStrategy, renderer);
@@ -165,8 +165,11 @@ public class Main {
         glfwSetErrorCallback(null).free();
     }
 
-    private void initialiseUi(final Window window, final InputManager inputManager) {
-        new UiManager(window, inputManager);
+    private Renderable initialiseUi(final Window window, final InputManager inputManager) {
+        final Injector uiInjector = Guice.createInjector(new UiModule(window, inputManager));
+
+        final UiScreenBuilder screenBuilder = uiInjector.getInstance(UiScreenBuilder.class);
+        return screenBuilder.build();
     }
 
     private String readShaderSource(final String resourceLocation) throws IOException {
