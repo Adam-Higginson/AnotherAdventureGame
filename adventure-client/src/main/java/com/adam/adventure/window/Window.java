@@ -1,7 +1,10 @@
 package com.adam.adventure.window;
 
 import com.adam.adventure.glfw.GlfwUtil;
+import com.adam.adventure.input.InputManager;
+import org.lwjgl.glfw.GLFWCursorPosCallbackI;
 import org.lwjgl.glfw.GLFWKeyCallbackI;
+import org.lwjgl.glfw.GLFWMouseButtonCallbackI;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryStack;
@@ -17,16 +20,17 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 
 public class Window {
 
-    private enum WindowState {INITIALISED, OPEN, CLOSED}
+
+    private enum WindowState {INITIALISED, OPEN, CLOSED;}
 
     // The window handle
     private final long glfwWindow;
+
     private final boolean isVisible;
     private final boolean isResizable;
     private int width;
     private int height;
     private WindowState windowState;
-
 
     public Window(final Builder builder) {
         this.isVisible = builder.isVisible;
@@ -67,6 +71,7 @@ public class Window {
         return glfwWindowShouldClose(glfwWindow);
     }
 
+
     public void close() {
         glfwFreeCallbacks(glfwWindow);
         glfwDestroyWindow(glfwWindow);
@@ -100,11 +105,13 @@ public class Window {
         }
     }
 
-
     public void setKeyCallback(final GLFWKeyCallbackI keyCallback) {
         glfwSetKeyCallback(glfwWindow, keyCallback);
     }
 
+    public long getWindowHandle() {
+        return glfwWindow;
+    }
 
     private void configureGlfw() {
         glfwWindowHint(GLFW_VISIBLE, GlfwUtil.booleanToGlfwInt(isVisible));

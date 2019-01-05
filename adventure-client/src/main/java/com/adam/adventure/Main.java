@@ -23,6 +23,7 @@ import com.adam.adventure.render.texture.Texture;
 import com.adam.adventure.render.texture.TextureFactory;
 import com.adam.adventure.render.util.Rectangle;
 import com.adam.adventure.scene.Scene;
+import com.adam.adventure.ui.UiManager;
 import com.adam.adventure.update.PublishEventUpdateStrategy;
 import com.adam.adventure.update.UpdateStrategy;
 import com.adam.adventure.window.Window;
@@ -39,7 +40,7 @@ import static org.lwjgl.glfw.GLFW.*;
 
 public class Main {
 
-    private void run() throws IOException {
+    private void run() throws Exception {
         GLFWErrorCallback.createPrint(System.err).set();
         if (!glfwInit()) {
             throw new IllegalStateException("Unable to initialize GLFW");
@@ -61,6 +62,7 @@ public class Main {
         final Camera camera = new Camera(new Vector3f(0.0f, 0.0f, 1.0f));
         final Renderer renderer = new Renderer(renderQueue, window, camera);
 
+
         //Load textures
         final TextureFactory textureFactory = new TextureFactory();
         final Texture playerTexture;
@@ -75,6 +77,9 @@ public class Main {
 
         //Set key callback
         final InputManager inputManager = new InputManager(window);
+
+        //Start Nifty UI
+        initialiseUi(window, inputManager);
 
         //Compile shaders
         final ShaderCompiler shaderCompiler = new ShaderCompiler();
@@ -160,6 +165,10 @@ public class Main {
         glfwSetErrorCallback(null).free();
     }
 
+    private void initialiseUi(final Window window, final InputManager inputManager) {
+        new UiManager(window, inputManager);
+    }
+
     private String readShaderSource(final String resourceLocation) throws IOException {
         final URL resource = Resources.getResource(resourceLocation);
         return Resources.toString(resource, Charsets.UTF_8);
@@ -181,7 +190,7 @@ public class Main {
     }
 
 
-    public static void main(final String[] args) throws IOException {
+    public static void main(final String[] args) throws Exception {
         new Main().run();
     }
 }
