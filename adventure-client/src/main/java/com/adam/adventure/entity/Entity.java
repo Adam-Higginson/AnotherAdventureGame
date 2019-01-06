@@ -32,6 +32,7 @@ public class Entity {
     public Entity addComponent(final EntityComponent entityComponent) {
         entityComponent.addToContainer(componentContainer);
         injector.injectMembers(entityComponent);
+
         return this;
     }
 
@@ -44,6 +45,13 @@ public class Entity {
      */
     public void activate() {
         componentContainer.activate();
+    }
+
+    /**
+     * Tells an entity it should be removed from the current scene.
+     */
+    public void destroy() {
+        componentContainer.destroy();
     }
 
     public void update(final float deltaTime) {

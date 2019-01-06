@@ -1,5 +1,6 @@
 package com.adam.adventure.input;
 
+import com.adam.adventure.entity.component.console.UiConsoleComponent;
 import com.adam.adventure.window.Window;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWKeyCallbackI;
@@ -52,6 +53,10 @@ public class InputManager implements GLFWKeyCallbackI {
         keyPressListeners.add(keyPressListener);
     }
 
+
+    public void removeKeyPressListener(final UiConsoleComponent component) {
+        keyPressListeners.remove(component);
+    }
 
     public boolean isKeyPressed(final int key) {
         return heldKeys[key];

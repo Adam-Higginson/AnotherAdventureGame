@@ -21,7 +21,6 @@ import javax.inject.Singleton;
 
 public class AdventureClientModule extends AbstractModule {
 
-
     @Override
     protected void configure() {
         bind(EventBus.class).toInstance(new EventBus());
@@ -40,14 +39,11 @@ public class AdventureClientModule extends AbstractModule {
         install(new EntityModule());
     }
 
-    //TODO move this to its own module?
     private Window buildWindow() {
-
         return new Window.Builder(800, 600)
                 .withTitle("Yet another adventure game")
                 .withIsVisible(true)
                 .withIsResizable(true)
                 .build();
     }
-
 }

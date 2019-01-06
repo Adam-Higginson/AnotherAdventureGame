@@ -34,6 +34,10 @@ public class Scene {
         renderer.initialise();
     }
 
+    void destroy() {
+        LOG.info("Destroying scene: {}", name);
+        entities.forEach(Entity::destroy);
+    }
 
     public String getName() {
         return name;

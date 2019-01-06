@@ -155,21 +155,12 @@ public class Main {
         return Resources.toString(resource, Charsets.UTF_8);
     }
 
-    private Window buildWindow() {
-
-        return new Window.Builder(800, 600)
-                .withTitle("Yet another adventure game")
-                .withIsVisible(true)
-                .withIsResizable(true)
-                .build();
-    }
 
     private void loop(final Window window, final LoopIteration loopIteration) {
         GameLoop.loopUntil(window::shouldClose)
                 .andUponEachLoopIterationPerform(loopIteration)
                 .loop();
     }
-
 
     public static void main(final String[] args) throws Exception {
         new Main().run();

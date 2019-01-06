@@ -55,4 +55,8 @@ public class ComponentContainer {
     void activate() {
         getAllComponents().forEach(EntityComponent::activate);
     }
+
+    public void destroy() {
+        getAllComponents().forEach(EntityComponent::destroy);
+    }
 }

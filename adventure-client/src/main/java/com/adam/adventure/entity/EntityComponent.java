@@ -35,6 +35,10 @@ public abstract class EntityComponent {
         // By default nothing happens
     }
 
+    protected void destroy() {
+        // By default nothing happens
+    }
+
     protected void onComponentEvent(final ComponentEvent componentEvent) {
         //By default nothing happens
     }

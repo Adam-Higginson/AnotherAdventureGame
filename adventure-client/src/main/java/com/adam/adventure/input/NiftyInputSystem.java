@@ -165,8 +165,13 @@ public class NiftyInputSystem implements InputSystem {
         final boolean shiftDown = (mods & GLFW_MOD_SHIFT) != 0;
         final boolean ctrlDown = (mods & GLFW_MOD_CONTROL) != 0;
         final int niftyKeyCode = GlfwToNiftyKeyCodeConverter.convertToNiftyKeyCode(key);
-        final String keyName = glfwGetKeyName(key, scancode);
-        final char keyChar = (keyName != null && keyName.length() == 1) ? keyName.charAt(0) : Character.MIN_VALUE;
+        final char keyChar;
+        if (key == GLFW_KEY_SPACE) {
+            keyChar = ' ';
+        } else {
+            final String keyName = glfwGetKeyName(key, scancode);
+            keyChar = (keyName != null && keyName.length() == 1) ? keyName.charAt(0) : Character.MIN_VALUE;
+        }
         return new KeyboardInputEvent(niftyKeyCode, keyChar, keyDown, shiftDown, ctrlDown);
     }
 

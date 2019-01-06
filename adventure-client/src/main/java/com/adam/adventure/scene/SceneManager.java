@@ -16,12 +16,15 @@ import java.util.Map;
 import static com.adam.adventure.scene.SceneFactory.START_MENU_SCENE_NAME;
 
 public class SceneManager {
+    private enum SceneManagerState {ACTIVE_SCENE, TRANSITION_TO_SCENE}
+
     private static final Logger LOG = LoggerFactory.getLogger(SceneManager.class);
 
     private Scene currentScene;
     private final EventBus eventBus;
     private final Map<String, Scene> sceneNameToSceneSupplier;
     private final SceneFactory sceneFactory;
+    private SceneManagerState sceneManagerState;
 
     @Inject
     public SceneManager(
@@ -62,13 +65,25 @@ public class SceneManager {
     public void onSceneTransitionEvent(final SceneTransitionEvent sceneTransitionEvent) {
         final Scene scene = sceneTransitionEvent.getScene();
         LOG.info("Activating scene: {}", scene.getName());
+
+        //We update to scene in next frame rather than the current to allow for other processes to clean up
+        sceneManagerState = SceneManagerState.TRANSITION_TO_SCENE;
+        if (currentScene != null) {
+            currentScene.destroy();
+        }
+
         currentScene = scene;
-        currentScene.activate();
     }
 
     @EventSubscribe
     @SuppressWarnings("unused")
     public void onUpdateEvent(final NewLoopIterationEvent newLoopIterationEvent) {
+        if (sceneManagerState == SceneManagerState.TRANSITION_TO_SCENE) {
+            //Transition to new scene if we need to
+            currentScene.activate();
+            sceneManagerState = SceneManagerState.ACTIVE_SCENE;
+        }
+
         currentScene.update(newLoopIterationEvent.getElapsedTime());
     }
 }

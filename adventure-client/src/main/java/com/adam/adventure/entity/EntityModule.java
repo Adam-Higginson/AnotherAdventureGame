@@ -10,5 +10,8 @@ public class EntityModule extends AbstractModule {
         install(new FactoryModuleBuilder()
                 .implement(Entity.class, Entity.class)
                 .build(EntityFactory.class));
+
+
     }
+
 }

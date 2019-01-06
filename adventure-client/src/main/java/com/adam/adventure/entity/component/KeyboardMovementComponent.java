@@ -1,6 +1,7 @@
 package com.adam.adventure.entity.component;
 
 import com.adam.adventure.entity.EntityComponent;
+import com.adam.adventure.entity.InputLocked;
 import com.adam.adventure.entity.component.event.ComponentEvent;
 import com.adam.adventure.input.InputManager;
 import org.joml.Vector3f;
@@ -14,6 +15,8 @@ public class KeyboardMovementComponent extends EntityComponent {
     @Inject
     private InputManager inputManager;
 
+    private boolean inputLocked;
+
     private final float speed;
 
     public KeyboardMovementComponent(final float speed) {
@@ -22,7 +25,12 @@ public class KeyboardMovementComponent extends EntityComponent {
 
 
     @Override
+    @InputLocked
     protected void update(final float deltaTime) {
+        if (inputLocked) {
+            return;
+        }
+
         ComponentEvent event = ComponentEvent.ENTITY_NO_MOVEMENT;
 
         if (inputManager.isKeyPressed(GLFW_KEY_W)) {
@@ -45,6 +53,7 @@ public class KeyboardMovementComponent extends EntityComponent {
         //This only supports broadcasting of one component event to stop events cancelling themselves out.
         broadcastComponentEvent(event);
     }
+
 
     private void moveUp(final float elapsedTime) {
         final float amountToMove = speed * elapsedTime;

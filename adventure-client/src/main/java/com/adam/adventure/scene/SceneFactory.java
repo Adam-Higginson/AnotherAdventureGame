@@ -3,7 +3,7 @@ package com.adam.adventure.scene;
 import com.adam.adventure.entity.Entity;
 import com.adam.adventure.entity.EntityFactory;
 import com.adam.adventure.entity.component.KeyboardListenerComponent;
-import com.adam.adventure.entity.component.console.UiConsoleComponent;
+import com.adam.adventure.entity.component.console.UiConsoleComponentFactory;
 import com.adam.adventure.event.EventBus;
 import com.adam.adventure.render.Renderer;
 import com.adam.adventure.scene.event.NewSceneEvent;
@@ -18,14 +18,17 @@ public class SceneFactory {
     private final EventBus eventBus;
     private final Renderer renderer;
     private final EntityFactory entityFactory;
+    private final UiConsoleComponentFactory uiConsoleComponentFactory;
 
     @Inject
     SceneFactory(final EventBus eventBus,
                  final Renderer renderer,
-                 final EntityFactory entityFactory) {
+                 final EntityFactory entityFactory,
+                 final UiConsoleComponentFactory uiConsoleComponentFactory) {
         this.eventBus = eventBus;
         this.renderer = renderer;
         this.entityFactory = entityFactory;
+        this.uiConsoleComponentFactory = uiConsoleComponentFactory;
     }
 
     public Scene createStartScene() {
@@ -43,7 +46,7 @@ public class SceneFactory {
 
     public Scene createScene(final String name) {
         final Entity commandConsole = entityFactory.create("Command Console")
-                .addComponent(new UiConsoleComponent());
+                .addComponent(uiConsoleComponentFactory.buildDefaultUiConsoleComponent());
 
         return new Scene(eventBus, name, renderer).addEntity(commandConsole);
     }
