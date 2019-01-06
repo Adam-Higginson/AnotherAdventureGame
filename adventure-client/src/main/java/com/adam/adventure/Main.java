@@ -1,5 +1,6 @@
 package com.adam.adventure;
 
+import com.adam.adventure.client.NetworkClient;
 import com.adam.adventure.entity.Entity;
 import com.adam.adventure.entity.EntityFactory;
 import com.adam.adventure.entity.component.AnimatedSpriteRendererComponent;
@@ -50,6 +51,9 @@ public class Main {
         window.openWindow();
         window.clearWindow(0.0f, 0.2f, 0.2f, 0.0f);
 
+        final NetworkClient networkClient = injector.getInstance(NetworkClient.class);
+        networkClient.start();
+
         compileShaders(injector.getInstance(ShaderCompiler.class), injector.getInstance(ProgramFactory.class));
         addTestScene(injector.getInstance(EntityFactory.class),
                 injector.getInstance(TextureFactory.class),
@@ -62,6 +66,7 @@ public class Main {
 
         loop(window, injector.getInstance(LoopIteration.class));
 
+        networkClient.stop();
         window.close();
         glfwTerminate();
         glfwSetErrorCallback(null).free();

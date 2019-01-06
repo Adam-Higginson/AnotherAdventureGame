@@ -63,7 +63,13 @@ public class Renderer {
     }
 
     private void prepare() {
-        renderQueue.forEach(renderable -> renderable.prepare(this));
+        renderQueue.forEach(renderable -> {
+            try {
+                renderable.prepare(this);
+            } catch (final Exception e) {
+                LOG.error("Exception when preparing renderable: {}", renderable.getClass(), e);
+            }
+        });
     }
 
     private void renderAllRenderables() {
@@ -71,7 +77,7 @@ public class Renderer {
             try {
                 renderable.render(this);
             } catch (final Exception e) {
-                LOG.error("Exception when logging renderable: {}", renderable.getClass(), e);
+                LOG.error("Exception when rendering renderable: {}", renderable.getClass(), e);
             }
         });
     }

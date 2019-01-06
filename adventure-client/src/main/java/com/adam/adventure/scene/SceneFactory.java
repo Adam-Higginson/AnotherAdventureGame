@@ -4,6 +4,7 @@ import com.adam.adventure.entity.Entity;
 import com.adam.adventure.entity.EntityFactory;
 import com.adam.adventure.entity.component.KeyboardListenerComponent;
 import com.adam.adventure.entity.component.console.UiConsoleComponentFactory;
+import com.adam.adventure.entity.component.network.NetworkManagerComponent;
 import com.adam.adventure.event.EventBus;
 import com.adam.adventure.render.Renderer;
 import com.adam.adventure.scene.event.NewSceneEvent;
@@ -37,7 +38,12 @@ public class SceneFactory {
                         GLFW_KEY_ESCAPE,
                         this::onEscapePressed));
 
-        return createScene(START_MENU_SCENE_NAME).addEntity(keyboardListenerEntity);
+        final Entity networkEntity = entityFactory.create("Network manager")
+                .addComponent(new NetworkManagerComponent());
+
+        return createScene(START_MENU_SCENE_NAME)
+                .addEntity(keyboardListenerEntity)
+                .addEntity(networkEntity);
     }
 
     private void onEscapePressed() {

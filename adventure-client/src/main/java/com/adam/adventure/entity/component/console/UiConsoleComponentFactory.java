@@ -16,6 +16,12 @@ public class UiConsoleComponentFactory {
 
     public UiConsoleComponent buildDefaultUiConsoleComponent() {
         return new UiConsoleComponent()
-                .addConsoleCommand("connect", (console, args) -> eventBus.publishEvent(new ConnectionRequestEvent(args[0])));
+                .addConsoleCommand("connect", (console, args) -> {
+                    if (args.length < 2) {
+                        console.writeError("Usage: connect <address:port>");
+                    } else {
+                        eventBus.publishEvent(new ConnectionRequestEvent(args[1]));
+                    }
+                });
     }
 }

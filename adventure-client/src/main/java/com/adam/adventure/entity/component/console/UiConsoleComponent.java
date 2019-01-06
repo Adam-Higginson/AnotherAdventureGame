@@ -2,7 +2,9 @@ package com.adam.adventure.entity.component.console;
 
 import com.adam.adventure.entity.EntityComponent;
 import com.adam.adventure.event.EventBus;
+import com.adam.adventure.event.EventSubscribe;
 import com.adam.adventure.event.LockInputEvent;
+import com.adam.adventure.event.WriteUiConsoleErrorEvent;
 import com.adam.adventure.input.InputManager;
 import com.adam.adventure.input.KeyPressListener;
 import com.adam.adventure.render.ui.UiManager;
@@ -52,6 +54,8 @@ public class UiConsoleComponent extends EntityComponent implements KeyPressListe
 
     @Override
     protected void activate() {
+        eventBus.register(this);
+
         final Screen baseScreen = uiManager.getBaseScreen();
         final Element baseLayer = baseScreen.findElementById(UiManager.BASE_LAYER_ID);
 
@@ -63,6 +67,8 @@ public class UiConsoleComponent extends EntityComponent implements KeyPressListe
 
     @Override
     protected void destroy() {
+        //TODO Deregister from event bus
+
         closeConsole();
         inputManager.removeKeyPressListener(this);
 
@@ -107,6 +113,11 @@ public class UiConsoleComponent extends EntityComponent implements KeyPressListe
         if (key == CONSOLE_TOGGLE_KEY) {
             toggleConsole();
         }
+    }
+
+    @EventSubscribe
+    public void onConsoleMessageEvent(final WriteUiConsoleErrorEvent writeUiConsoleErrorEvent) {
+        writeError(writeUiConsoleErrorEvent.getMessage());
     }
 
     private void toggleConsole() {

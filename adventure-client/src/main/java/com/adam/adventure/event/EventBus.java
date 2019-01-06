@@ -52,6 +52,22 @@ public class EventBus {
             LOG.trace("Publishing new event: {}", event.getClass());
         }
 
+        broadcastForExactListeners(event);
+        //For now only supports one level, could use recursion in the future if needed
+        broadcastForSuperclassListeners(event);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void broadcastForSuperclassListeners(final Event event) {
+        final Class<?> superclass = event.getClass().getSuperclass();
+        if (Event.class.isAssignableFrom(superclass)) {
+            final Class<? extends Event> eventSuperclass = (Class<? extends Event>) superclass;
+            final Collection<InstanceAndMethod> subscribedInstances = eventTypeToSubscribers.get(eventSuperclass);
+            subscribedInstances.forEach(subscribedInstance -> subscribedInstance.invoke(event));
+        }
+    }
+
+    private void broadcastForExactListeners(final Event event) {
         final Collection<InstanceAndMethod> subscribedInstances = eventTypeToSubscribers.get(event.getClass());
         if (subscribedInstances != null) {
             subscribedInstances.forEach(subscribedInstance -> subscribedInstance.invoke(event));
