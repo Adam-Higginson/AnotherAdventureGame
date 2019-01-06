@@ -1,6 +1,6 @@
 namespace com.adam.adventure.lib.flatbuffer.schema.packet;
 
 
-table LogInPacket {
+table LoginPacket {
     username:string;
 }

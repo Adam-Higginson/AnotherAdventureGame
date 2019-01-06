@@ -17,10 +17,10 @@ public class UiConsoleComponentFactory {
     public UiConsoleComponent buildDefaultUiConsoleComponent() {
         return new UiConsoleComponent()
                 .addConsoleCommand("connect", (console, args) -> {
-                    if (args.length < 2) {
-                        console.writeError("Usage: connect <address:port>");
+                    if (args.length < 3) {
+                        console.writeError("Usage: connect <address> <port>");
                     } else {
-                        eventBus.publishEvent(new ConnectionRequestEvent(args[1]));
+                        eventBus.publishEvent(new ConnectionRequestEvent(args[1], Integer.parseInt(args[2])));
                     }
                 });
     }

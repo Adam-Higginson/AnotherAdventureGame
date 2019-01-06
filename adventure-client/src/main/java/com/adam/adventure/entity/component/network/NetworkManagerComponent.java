@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 
 public class NetworkManagerComponent extends EntityComponent {
 
@@ -29,12 +28,12 @@ public class NetworkManagerComponent extends EntityComponent {
     public void onConnect(final ConnectionRequestEvent connectionRequestEvent) {
         final String addressToConnectTo = connectionRequestEvent.getAddressToConnectTo();
         try {
-            final InetAddress address = InetAddress.getByName(addressToConnectTo);
-            final int port = 4445;
-            eventBus.publishEvent(new LoginToServerEvent("Test-User", address, port));
-        } catch (final UnknownHostException e) {
+            final InetAddress address = InetAddress.getByName(connectionRequestEvent.getAddressToConnectTo());
+            eventBus.publishEvent(new LoginToServerEvent("Test-User", address, connectionRequestEvent.getPort()));
+
+        } catch (final Exception e) {
             eventBus.publishEvent(new WriteUiConsoleErrorEvent("Could not connect to address: " + addressToConnectTo));
-            LOG.warn("UnknownHostException on connect", e);
+            LOG.warn("Exception on connect", e);
         }
     }
 }

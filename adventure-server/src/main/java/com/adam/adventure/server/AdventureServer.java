@@ -1,6 +1,6 @@
 package com.adam.adventure.server;
 
-import com.adam.adventure.lib.flatbuffer.schema.Player;
+import com.adam.adventure.lib.flatbuffer.schema.LoginPacket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,9 +14,9 @@ public class AdventureServer {
     private static final Logger LOG = LoggerFactory.getLogger(AdventureServer.class);
 
     private boolean running;
-    private int port;
+    private final int port;
 
-    public AdventureServer(int port) throws SocketException {
+    public AdventureServer(final int port) throws SocketException {
         this.port = port;
     }
 
@@ -26,18 +26,18 @@ public class AdventureServer {
         acceptData(datagramSocket);
     }
 
-    private void acceptData(DatagramSocket datagramSocket) throws IOException {
-        byte[] buffer = new byte[256];
+    private void acceptData(final DatagramSocket datagramSocket) throws IOException {
+        final byte[] buffer = new byte[256];
 
         while (running) {
 
             // receive request
-            DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+            final DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
             datagramSocket.receive(packet);
             final ByteBuffer byteBuffer = ByteBuffer.wrap(buffer, packet.getOffset(), packet.getLength());
-            final Player player = Player.getRootAsPlayer(byteBuffer);
+            final LoginPacket loginPacket = LoginPacket.getRootAsLoginPacket(byteBuffer);
 
-            LOG.info("Received player with position: {}", player.position().x());
+            LOG.info("Received login request with username: {}", loginPacket.username());
         }
 
     }

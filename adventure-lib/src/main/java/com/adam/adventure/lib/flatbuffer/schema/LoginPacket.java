@@ -9,12 +9,12 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 @SuppressWarnings("unused")
-public final class LogInPacket extends Table {
-    public static LogInPacket getRootAsLogInPacket(final ByteBuffer _bb) {
-        return getRootAsLogInPacket(_bb, new LogInPacket());
+public final class LoginPacket extends Table {
+    public static LoginPacket getRootAsLoginPacket(final ByteBuffer _bb) {
+        return getRootAsLoginPacket(_bb, new LoginPacket());
     }
 
-    public static LogInPacket getRootAsLogInPacket(final ByteBuffer _bb, final LogInPacket obj) {
+    public static LoginPacket getRootAsLoginPacket(final ByteBuffer _bb, final LoginPacket obj) {
         _bb.order(ByteOrder.LITTLE_ENDIAN);
         return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb));
     }
@@ -24,7 +24,7 @@ public final class LogInPacket extends Table {
         bb = _bb;
     }
 
-    public LogInPacket __assign(final int _i, final ByteBuffer _bb) {
+    public LoginPacket __assign(final int _i, final ByteBuffer _bb) {
         __init(_i, _bb);
         return this;
     }
@@ -42,14 +42,14 @@ public final class LogInPacket extends Table {
         return __vector_in_bytebuffer(_bb, 4, 1);
     }
 
-    public static int createLogInPacket(final FlatBufferBuilder builder,
+    public static int createLoginPacket(final FlatBufferBuilder builder,
                                         final int usernameOffset) {
         builder.startObject(1);
-        LogInPacket.addUsername(builder, usernameOffset);
-        return LogInPacket.endLogInPacket(builder);
+        LoginPacket.addUsername(builder, usernameOffset);
+        return LoginPacket.endLoginPacket(builder);
     }
 
-    public static void startLogInPacket(final FlatBufferBuilder builder) {
+    public static void startLoginPacket(final FlatBufferBuilder builder) {
         builder.startObject(1);
     }
 
@@ -57,7 +57,7 @@ public final class LogInPacket extends Table {
         builder.addOffset(0, usernameOffset, 0);
     }
 
-    public static int endLogInPacket(final FlatBufferBuilder builder) {
+    public static int endLoginPacket(final FlatBufferBuilder builder) {
         final int o = builder.endObject();
         return o;
     }

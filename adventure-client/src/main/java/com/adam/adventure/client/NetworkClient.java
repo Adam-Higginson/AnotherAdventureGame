@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import java.io.IOException;
 import java.net.DatagramSocket;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -62,13 +63,17 @@ public class NetworkClient {
         public void run() {
             try (final DatagramSocket datagramSocket = new DatagramSocket()) {
                 while (running) {
-                    final NetworkEvent nextEvent = eventQueue.poll();
-                    if (nextEvent != null) {
-                        nextEvent.handle(datagramSocket);
-                    }
+                    processEvents(datagramSocket);
                 }
             } catch (final Exception e) {
                 LOG.error("Exception in network client", e);
+            }
+        }
+
+        private void processEvents(final DatagramSocket datagramSocket) throws IOException {
+            final NetworkEvent nextEvent = eventQueue.poll();
+            if (nextEvent != null) {
+                nextEvent.handle(datagramSocket);
             }
         }
     }
