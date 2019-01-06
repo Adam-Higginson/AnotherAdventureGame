@@ -5,6 +5,7 @@ import org.lwjgl.BufferUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
 import java.nio.IntBuffer;
 
 import static org.lwjgl.opengl.GL20.*;
@@ -14,6 +15,7 @@ public class ProgramFactory {
 
     private final Renderer renderer;
 
+    @Inject
     public ProgramFactory(final Renderer renderer) {
         this.renderer = renderer;
     }

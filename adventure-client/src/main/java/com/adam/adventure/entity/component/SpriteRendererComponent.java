@@ -6,15 +6,17 @@ import com.adam.adventure.render.RenderQueue;
 import com.adam.adventure.render.renderable.SpriteRenderable;
 import com.adam.adventure.render.sprite.Sprite;
 
+import javax.inject.Inject;
+
 public class SpriteRendererComponent extends EntityComponent {
 
-    private final Sprite sprite;
-    private final RenderQueue renderQueue;
+    @Inject
+    private RenderQueue renderQueue;
 
-    public SpriteRendererComponent(final Sprite sprite,
-                                   final RenderQueue rendererQueue) {
+    private final Sprite sprite;
+
+    public SpriteRendererComponent(final Sprite sprite) {
         this.sprite = sprite;
-        this.renderQueue = rendererQueue;
     }
 
     @Override

@@ -1,13 +1,14 @@
 package com.adam.adventure.scene;
 
 import com.adam.adventure.entity.Entity;
+import com.adam.adventure.entity.EntityFactory;
 import com.adam.adventure.entity.component.KeyboardListenerComponent;
-import com.adam.adventure.entity.component.UiConsoleComponent;
+import com.adam.adventure.entity.component.console.UiConsoleComponent;
 import com.adam.adventure.event.EventBus;
-import com.adam.adventure.input.InputManager;
 import com.adam.adventure.render.Renderer;
-import com.adam.adventure.render.ui.UiManager;
 import com.adam.adventure.scene.event.NewSceneEvent;
+
+import javax.inject.Inject;
 
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE;
 
@@ -16,23 +17,20 @@ public class SceneFactory {
 
     private final EventBus eventBus;
     private final Renderer renderer;
-    private final InputManager inputManager;
-    private final UiManager uiManager;
+    private final EntityFactory entityFactory;
 
+    @Inject
     SceneFactory(final EventBus eventBus,
                  final Renderer renderer,
-                 final InputManager inputManager,
-                 final UiManager uiManager) {
+                 final EntityFactory entityFactory) {
         this.eventBus = eventBus;
         this.renderer = renderer;
-        this.inputManager = inputManager;
-        this.uiManager = uiManager;
+        this.entityFactory = entityFactory;
     }
 
     public Scene createStartScene() {
-        final Entity keyboardListenerEntity = new Entity("Keyboard Listener")
+        final Entity keyboardListenerEntity = entityFactory.create("Keyboard Listener")
                 .addComponent(new KeyboardListenerComponent(
-                        inputManager,
                         GLFW_KEY_ESCAPE,
                         this::onEscapePressed));
 
@@ -44,8 +42,8 @@ public class SceneFactory {
     }
 
     public Scene createScene(final String name) {
-        final Entity commandConsole = new Entity("Command Console")
-                .addComponent(new UiConsoleComponent(inputManager, uiManager));
+        final Entity commandConsole = entityFactory.create("Command Console")
+                .addComponent(new UiConsoleComponent());
 
         return new Scene(eventBus, name, renderer).addEntity(commandConsole);
     }

@@ -5,17 +5,19 @@ import com.adam.adventure.entity.component.event.ComponentEvent;
 import com.adam.adventure.input.InputManager;
 import org.joml.Vector3f;
 
+import javax.inject.Inject;
+
 import static org.lwjgl.glfw.GLFW.*;
 
 public class KeyboardMovementComponent extends EntityComponent {
 
-    private final float speed;
-    private final InputManager inputManager;
+    @Inject
+    private InputManager inputManager;
 
-    public KeyboardMovementComponent(final float speed,
-                                     final InputManager inputManager) {
+    private final float speed;
+
+    public KeyboardMovementComponent(final float speed) {
         this.speed = speed;
-        this.inputManager = inputManager;
     }
 
 
@@ -44,31 +46,25 @@ public class KeyboardMovementComponent extends EntityComponent {
         broadcastComponentEvent(event);
     }
 
-    @Override
-    public void onComponentEvent(final ComponentEvent componentEvent) {
-        //Nothing doing
-    }
-
-
     private void moveUp(final float elapsedTime) {
         final float amountToMove = speed * elapsedTime;
         final Vector3f delta = new Vector3f(0.0f, amountToMove, 0.0f);
         getTransformComponent().getTransform().translate(delta);
     }
 
-    public void moveDown(final float elapsedTime) {
+    private void moveDown(final float elapsedTime) {
         final float amountToMove = speed * elapsedTime;
         final Vector3f delta = new Vector3f(0.0f, -amountToMove, 0.0f);
         getTransformComponent().getTransform().translate(delta);
     }
 
-    public void moveRight(final float elapsedTime) {
+    private void moveRight(final float elapsedTime) {
         final float amountToMove = speed * elapsedTime;
         final Vector3f delta = new Vector3f(amountToMove, 0.0f, 0.0f);
         getTransformComponent().getTransform().translate(delta);
     }
 
-    public void moveLeft(final float elapsedTime) {
+    private void moveLeft(final float elapsedTime) {
         final float amountToMove = speed * elapsedTime;
         final Vector3f delta = new Vector3f(-amountToMove, 0.0f, 0.0f);
         getTransformComponent().getTransform().translate(delta);

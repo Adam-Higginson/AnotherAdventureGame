@@ -48,10 +48,19 @@
             <dependency>
                 <groupId>com.google.inject</groupId>
                 <artifactId>guice</artifactId>
-                <version>4.2.2</version>
+                <version>${guice.version}</version>
+            </dependency>
+            <!-- https://mvnrepository.com/artifact/com.google.inject.extensions/guice-assistedinject -->
+            <dependency>
+                <groupId>com.google.inject.extensions</groupId>
+                <artifactId>guice-assistedinject</artifactId>
+                <version>${guice.version}</version>
             </dependency>
         </dependencies>
-
     </dependencyManagement>
+    
+    <properties>
+        <guice.version>4.2.2</guice.version>
+    </properties>
 
 </project>

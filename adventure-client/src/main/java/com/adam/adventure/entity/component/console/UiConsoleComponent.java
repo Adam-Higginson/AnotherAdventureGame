@@ -1,4 +1,4 @@
-package com.adam.adventure.entity.component;
+package com.adam.adventure.entity.component.console;
 
 import com.adam.adventure.entity.EntityComponent;
 import com.adam.adventure.input.InputManager;
@@ -7,30 +7,40 @@ import com.adam.adventure.render.ui.UiManager;
 import de.lessvoid.nifty.builder.EffectBuilder;
 import de.lessvoid.nifty.builder.LayerBuilder;
 import de.lessvoid.nifty.builder.PanelBuilder;
+import de.lessvoid.nifty.controls.Console;
+import de.lessvoid.nifty.controls.ConsoleCommands;
 import de.lessvoid.nifty.controls.console.builder.ConsoleBuilder;
 import de.lessvoid.nifty.effects.EffectEventId;
 import de.lessvoid.nifty.elements.Element;
 import de.lessvoid.nifty.screen.Screen;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.inject.Inject;
 
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_F1;
 
 public class UiConsoleComponent extends EntityComponent implements KeyPressListener {
 
+    private static final Logger LOG = LoggerFactory.getLogger(UiConsoleComponent.class);
+
     private static final int CONSOLE_TOGGLE_KEY = GLFW_KEY_F1;
 
-    private final InputManager inputManager;
-    private final UiManager uiManager;
+    @Inject
+    private InputManager inputManager;
+    @Inject
+    private UiManager uiManager;
+
+    private ConsoleCommands consoleCommands;
+    private boolean isActive;
     private boolean consoleVisible;
     private Element consoleLayer;
     private Element consoleElementFocus;
     private Element oldFocusElement;
 
-    public UiConsoleComponent(final InputManager inputManager, final UiManager uiManager) {
-        this.inputManager = inputManager;
-        this.uiManager = uiManager;
-    }
 
     @Override
+    @SuppressWarnings("squid:S3599")
     protected void activate() {
         final Screen baseScreen = uiManager.getBaseScreen();
         final Element baseLayer = baseScreen.findElementById(UiManager.BASE_LAYER_ID);
@@ -70,6 +80,21 @@ public class UiConsoleComponent extends EntityComponent implements KeyPressListe
         final Element consoleElement = baseScreen.findElementById("console");
         consoleElementFocus = consoleElement.findElementById("#textInput");
         inputManager.addKeyPressListener(this);
+
+        final Console console = baseScreen.findNiftyControl("console", Console.class);
+        this.consoleCommands = new ConsoleCommands(uiManager.getNifty(), console);
+        consoleCommands.enableCommandCompletion(true);
+        isActive = true;
+    }
+
+    public UiConsoleComponent addConsoleCommand(final String commandText, final ConsoleCommand consoleCommand) {
+        if (isActive) {
+            consoleCommands.registerCommand(commandText, consoleCommand::execute);
+        } else {
+            LOG.warn("Console not active but attempted to add a command, ignoring...");
+        }
+
+        return this;
     }
 
 

@@ -6,15 +6,15 @@ import com.adam.adventure.render.camera.Camera;
 import com.adam.adventure.window.Window;
 import org.joml.Vector3f;
 
+import javax.inject.Inject;
+
 public class CameraTargetComponent extends EntityComponent {
 
-    private final Window window;
-    private final Camera camera;
+    @Inject
+    private Window window;
 
-    public CameraTargetComponent(final Window window, final Camera camera) {
-        this.window = window;
-        this.camera = camera;
-    }
+    @Inject
+    private Camera camera;
 
     @Override
     public void update(final float deltaTime) {

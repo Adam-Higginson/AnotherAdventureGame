@@ -4,17 +4,18 @@ import com.adam.adventure.entity.EntityComponent;
 import com.adam.adventure.entity.component.event.ComponentEvent;
 import com.adam.adventure.input.InputManager;
 
+import javax.inject.Inject;
+
 public class KeyboardListenerComponent extends EntityComponent {
 
+    @Inject
+    private InputManager inputManager;
 
-    private final InputManager inputManager;
     private final int glfwKey;
     private final Runnable actionToExecute;
 
-    public KeyboardListenerComponent(final InputManager inputManager,
-                                     final int glfwKey,
+    public KeyboardListenerComponent(final int glfwKey,
                                      final Runnable actionToExecute) {
-        this.inputManager = inputManager;
         this.glfwKey = glfwKey;
         this.actionToExecute = actionToExecute;
     }

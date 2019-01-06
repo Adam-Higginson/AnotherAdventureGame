@@ -9,6 +9,7 @@ import org.joml.Matrix4f;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,6 +28,7 @@ public class Renderer {
     private Matrix4f viewMatrix;
     private Matrix4f projectionMatrix;
 
+    @Inject
     public Renderer(final RenderQueue renderQueue,
                     final Window window,
                     final Camera camera) {

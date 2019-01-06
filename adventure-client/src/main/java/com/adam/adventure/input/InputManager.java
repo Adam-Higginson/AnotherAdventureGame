@@ -4,6 +4,7 @@ import com.adam.adventure.window.Window;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWKeyCallbackI;
 
+import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,6 +16,7 @@ public class InputManager implements GLFWKeyCallbackI {
     private final boolean[] heldKeys;
     private final List<KeyPressListener> keyPressListeners;
 
+    @Inject
     public InputManager(final Window window) throws Exception {
         this.lwjflInputSystem = new NiftyInputSystem(window.getWindowHandle());
         lwjflInputSystem.startup();

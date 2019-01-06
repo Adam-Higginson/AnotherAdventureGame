@@ -4,12 +4,15 @@ import com.adam.adventure.input.InputManager;
 import com.adam.adventure.render.Renderer;
 import com.adam.adventure.update.UpdateStrategy;
 
+import javax.inject.Inject;
+
 public class LoopIterationImpl implements LoopIteration {
 
     private final InputManager inputManager;
     private final UpdateStrategy updateStrategy;
     private final Renderer renderer;
 
+    @Inject
     public LoopIterationImpl(final InputManager inputManager, final UpdateStrategy updateStrategy, final Renderer renderer) {
         this.inputManager = inputManager;
         this.updateStrategy = updateStrategy;

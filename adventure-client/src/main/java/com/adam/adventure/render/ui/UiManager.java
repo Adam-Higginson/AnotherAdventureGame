@@ -13,6 +13,8 @@ import de.lessvoid.nifty.screen.Screen;
 import de.lessvoid.nifty.spi.render.RenderDevice;
 import de.lessvoid.nifty.spi.time.impl.AccurateTimeProvider;
 
+import javax.inject.Inject;
+
 /**
  * Handles Nifty GUI and all attached elements.
  */
@@ -25,6 +27,7 @@ public class UiManager {
     private final Nifty nifty;
     private final Screen baseScreen;
 
+    @Inject
     public UiManager(final Window window, final InputManager inputManager, final RenderQueue renderQueue) {
         this.window = window;
         this.inputManager = inputManager;

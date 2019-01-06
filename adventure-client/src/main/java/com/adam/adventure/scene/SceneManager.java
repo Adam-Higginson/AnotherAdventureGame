@@ -3,15 +3,13 @@ package com.adam.adventure.scene;
 import com.adam.adventure.event.EventBus;
 import com.adam.adventure.event.EventSubscribe;
 import com.adam.adventure.event.InitialisedEvent;
-import com.adam.adventure.input.InputManager;
-import com.adam.adventure.render.Renderer;
-import com.adam.adventure.render.ui.UiManager;
 import com.adam.adventure.scene.event.NewSceneEvent;
 import com.adam.adventure.scene.event.SceneTransitionEvent;
 import com.adam.adventure.update.event.NewLoopIterationEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,18 +20,16 @@ public class SceneManager {
 
     private Scene currentScene;
     private final EventBus eventBus;
-    private final Renderer renderer;
     private final Map<String, Scene> sceneNameToSceneSupplier;
     private final SceneFactory sceneFactory;
 
-    public SceneManager(final EventBus eventBus,
-                        final Renderer renderer,
-                        final InputManager inputManager,
-                        final UiManager uiManager) {
+    @Inject
+    public SceneManager(
+            final SceneFactory sceneFactory,
+            final EventBus eventBus) {
         this.eventBus = eventBus;
-        this.renderer = renderer;
         this.sceneNameToSceneSupplier = new HashMap<>();
-        this.sceneFactory = new SceneFactory(eventBus, renderer, inputManager, uiManager);
+        this.sceneFactory = sceneFactory;
 
         final Scene startScene = sceneFactory.createStartScene();
         sceneNameToSceneSupplier.put(startScene.getName(), startScene);

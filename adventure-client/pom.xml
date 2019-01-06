@@ -364,6 +364,10 @@
             <artifactId>guice</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.google.inject.extensions</groupId>
+            <artifactId>guice-assistedinject</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.adam</groupId>
             <artifactId>adventure-lib</artifactId>
             <version>1.0-SNAPSHOT</version>

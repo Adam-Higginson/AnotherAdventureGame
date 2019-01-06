@@ -9,6 +9,7 @@ import com.adam.adventure.render.texture.SpriteAnimation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Map;
@@ -17,8 +18,10 @@ import java.util.Set;
 public class AnimatedSpriteRendererComponent extends EntityComponent {
     private static final Logger LOG = LoggerFactory.getLogger(AnimatedSpriteRendererComponent.class);
 
+    @Inject
+    private RenderQueue rendererQueue;
+
     private final Sprite sprite;
-    private final RenderQueue rendererQueue;
     private final Map<ComponentEvent, SpriteAnimation> eventToSpriteAnimation;
     private final Set<ComponentEvent> stopAnimationEvents;
     private ComponentEvent activeComponentEvent;
@@ -26,17 +29,14 @@ public class AnimatedSpriteRendererComponent extends EntityComponent {
 
     public AnimatedSpriteRendererComponent(final Builder builder) {
         this(builder.sprite,
-                builder.renderQueue,
                 builder.eventToSpriteAnimation,
                 builder.stopAnimationEvents);
     }
 
     public AnimatedSpriteRendererComponent(final Sprite sprite,
-                                           final RenderQueue rendererQueue,
                                            final Map<ComponentEvent, SpriteAnimation> eventToSpriteAnimation,
                                            final Set<ComponentEvent> stopAnimationEvents) {
         this.sprite = sprite;
-        this.rendererQueue = rendererQueue;
         this.eventToSpriteAnimation = eventToSpriteAnimation;
         this.stopAnimationEvents = stopAnimationEvents;
     }
@@ -81,13 +81,11 @@ public class AnimatedSpriteRendererComponent extends EntityComponent {
 
     public static class Builder {
         private final Sprite sprite;
-        private final RenderQueue renderQueue;
         private final Map<ComponentEvent, SpriteAnimation> eventToSpriteAnimation;
         private final Set<ComponentEvent> stopAnimationEvents;
 
-        public Builder(final Sprite sprite, final RenderQueue renderQueue) {
+        public Builder(final Sprite sprite) {
             this.sprite = sprite;
-            this.renderQueue = renderQueue;
             this.eventToSpriteAnimation = new EnumMap<>(ComponentEvent.class);
             this.stopAnimationEvents = EnumSet.noneOf(ComponentEvent.class);
         }
