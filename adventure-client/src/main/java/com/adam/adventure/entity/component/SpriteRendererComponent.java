@@ -1,5 +1,6 @@
 package com.adam.adventure.entity.component;
 
+import com.adam.adventure.entity.EntityComponent;
 import com.adam.adventure.entity.component.event.ComponentEvent;
 import com.adam.adventure.render.RenderQueue;
 import com.adam.adventure.render.renderable.SpriteRenderable;
@@ -10,10 +11,8 @@ public class SpriteRendererComponent extends EntityComponent {
     private final Sprite sprite;
     private final RenderQueue renderQueue;
 
-    public SpriteRendererComponent(final ComponentContainer componentContainer,
-                                   final Sprite sprite,
+    public SpriteRendererComponent(final Sprite sprite,
                                    final RenderQueue rendererQueue) {
-        super(componentContainer);
         this.sprite = sprite;
         this.renderQueue = rendererQueue;
     }

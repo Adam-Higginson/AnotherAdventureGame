@@ -1,11 +1,7 @@
 package com.adam.adventure.window;
 
 import com.adam.adventure.glfw.GlfwUtil;
-import com.adam.adventure.input.InputManager;
-import org.lwjgl.glfw.GLFWCursorPosCallbackI;
-import org.lwjgl.glfw.GLFWKeyCallbackI;
-import org.lwjgl.glfw.GLFWMouseButtonCallbackI;
-import org.lwjgl.glfw.GLFWVidMode;
+import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryStack;
 
@@ -91,7 +87,7 @@ public class Window {
     }
 
     private void setWindowPositionAsCenter() {
-        try (MemoryStack stack = stackPush()) {
+        try (final MemoryStack stack = stackPush()) {
             final IntBuffer pWidth = stack.mallocInt(1);
             final IntBuffer pHeight = stack.mallocInt(1);
 
@@ -107,6 +103,18 @@ public class Window {
 
     public void setKeyCallback(final GLFWKeyCallbackI keyCallback) {
         glfwSetKeyCallback(glfwWindow, keyCallback);
+    }
+
+    public void setCursorPositionCallback(final GLFWCursorPosCallbackI cursorPositionCallback) {
+        glfwSetCursorPosCallback(glfwWindow, cursorPositionCallback);
+    }
+
+    public void setMouseButtonCallback(final GLFWMouseButtonCallbackI mouseButtonCallback) {
+        glfwSetMouseButtonCallback(glfwWindow, mouseButtonCallback);
+    }
+
+    public void setScrollCallback(final GLFWScrollCallbackI scrollCallback) {
+        glfwSetScrollCallback(glfwWindow, scrollCallback);
     }
 
     public long getWindowHandle() {

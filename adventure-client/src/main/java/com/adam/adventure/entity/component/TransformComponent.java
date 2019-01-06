@@ -1,13 +1,13 @@
 package com.adam.adventure.entity.component;
 
+import com.adam.adventure.entity.EntityComponent;
 import com.adam.adventure.entity.component.event.ComponentEvent;
 import org.joml.Matrix4f;
 
 public class TransformComponent extends EntityComponent {
     private final Matrix4f transform;
 
-    public TransformComponent(final ComponentContainer componentContainer) {
-        super(componentContainer);
+    public TransformComponent() {
         transform = new Matrix4f();
     }
 

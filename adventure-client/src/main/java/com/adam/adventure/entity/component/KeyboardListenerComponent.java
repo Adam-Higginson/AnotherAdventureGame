@@ -1,5 +1,6 @@
 package com.adam.adventure.entity.component;
 
+import com.adam.adventure.entity.EntityComponent;
 import com.adam.adventure.entity.component.event.ComponentEvent;
 import com.adam.adventure.input.InputManager;
 
@@ -10,11 +11,9 @@ public class KeyboardListenerComponent extends EntityComponent {
     private final int glfwKey;
     private final Runnable actionToExecute;
 
-    public KeyboardListenerComponent(final ComponentContainer componentContainer,
-                                     final InputManager inputManager,
+    public KeyboardListenerComponent(final InputManager inputManager,
                                      final int glfwKey,
                                      final Runnable actionToExecute) {
-        super(componentContainer);
         this.inputManager = inputManager;
         this.glfwKey = glfwKey;
         this.actionToExecute = actionToExecute;

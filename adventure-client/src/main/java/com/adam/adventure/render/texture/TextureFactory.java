@@ -35,6 +35,7 @@ public class TextureFactory {
         pngDecoder.decodeFlipped(buffer, pngDecoder.getWidth() * 4, PNGDecoder.Format.RGBA);
         buffer.flip();
 
+
         return buffer;
     }
 }

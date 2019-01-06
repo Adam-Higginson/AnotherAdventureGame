@@ -1,20 +1,22 @@
-package com.adam.adventure.entity.component;
+package com.adam.adventure.entity;
 
-import com.adam.adventure.entity.Entity;
+import com.adam.adventure.entity.component.TransformComponent;
 import com.adam.adventure.entity.component.event.ComponentEvent;
 
 import java.util.Optional;
 
 public abstract class EntityComponent {
 
-    private final ComponentContainer componentContainer;
+    private ComponentContainer componentContainer;
 
-    public EntityComponent(final ComponentContainer componentContainer) {
-        this.componentContainer = componentContainer;
-    }
 
     public Entity getEntity() {
         return componentContainer.getEntity();
+    }
+
+    final void addToContainer(final ComponentContainer componentContainer) {
+        this.componentContainer = componentContainer;
+        this.componentContainer.addComponent(this);
     }
 
     public <T extends EntityComponent> Optional<T> getComponent(final Class<T> componentType) {
@@ -26,12 +28,16 @@ public abstract class EntityComponent {
     }
 
     protected void activate() {
-        //By default nothing happens
+        // By default nothing happens
     }
 
-    protected abstract void update(float deltaTime);
+    protected void update(final float deltaTime) {
+        // By default nothing happens
+    }
 
-    protected abstract void onComponentEvent(ComponentEvent componentEvent);
+    protected void onComponentEvent(final ComponentEvent componentEvent) {
+        //By default nothing happens
+    }
 
     protected final void broadcastComponentEvent(final ComponentEvent componentEvent) {
         componentContainer.broadcastComponentEvent(componentEvent);

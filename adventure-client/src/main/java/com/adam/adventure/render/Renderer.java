@@ -27,7 +27,9 @@ public class Renderer {
     private Matrix4f viewMatrix;
     private Matrix4f projectionMatrix;
 
-    public Renderer(final RenderQueue renderQueue, final Window window, final Camera camera) {
+    public Renderer(final RenderQueue renderQueue,
+                    final Window window,
+                    final Camera camera) {
         this.camera = camera;
         this.vertexBufferFactory = new VertexBufferFactory();
         this.elementArrayBufferFactory = new ElementArrayBufferFactory();
@@ -52,11 +54,30 @@ public class Renderer {
         //Don't need to reinitialise these if nothing has changed in the camera and window. Dirty flags?
         viewMatrix = camera.getLookAt();
         projectionMatrix = new Matrix4f().ortho(0.0f, window.getWidth(), 0.0f, window.getHeight(), -1f, 1f);
-        renderQueue.forEach(renderable -> renderable.prepare(this));
-        renderQueue.forEach(renderable -> renderable.render(this));
-        renderQueue.forEach(renderable -> renderable.after(this));
+        prepare();
+        renderAllRenderables();
+        after();
         window.swapBuffers();
     }
+
+    private void prepare() {
+        renderQueue.forEach(renderable -> renderable.prepare(this));
+    }
+
+    private void renderAllRenderables() {
+        renderQueue.forEach(renderable -> {
+            try {
+                renderable.render(this);
+            } catch (final Exception e) {
+                LOG.error("Exception when logging renderable: {}", renderable.getClass(), e);
+            }
+        });
+    }
+
+    private void after() {
+        renderQueue.forEach(renderable -> renderable.after(this));
+    }
+
 
     private void clearScreen() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer

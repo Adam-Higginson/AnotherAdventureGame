@@ -16,7 +16,7 @@ public class Scene {
     private final List<Entity> entities;
     private final Renderer renderer;
 
-    public Scene(final EventBus eventBus, final String name, final Renderer renderer) {
+    Scene(final EventBus eventBus, final String name, final Renderer renderer) {
         this.name = name;
         this.renderer = renderer;
         entities = new ArrayList<>();
@@ -34,6 +34,7 @@ public class Scene {
         renderer.initialise();
     }
 
+
     public String getName() {
         return name;
     }
@@ -41,4 +42,6 @@ public class Scene {
     public void update(final float elapsedTime) {
         entities.forEach(entity -> entity.update(elapsedTime));
     }
+
+
 }

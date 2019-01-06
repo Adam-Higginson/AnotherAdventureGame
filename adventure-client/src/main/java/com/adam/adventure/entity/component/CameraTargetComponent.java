@@ -1,5 +1,6 @@
 package com.adam.adventure.entity.component;
 
+import com.adam.adventure.entity.EntityComponent;
 import com.adam.adventure.entity.component.event.ComponentEvent;
 import com.adam.adventure.render.camera.Camera;
 import com.adam.adventure.window.Window;
@@ -10,8 +11,7 @@ public class CameraTargetComponent extends EntityComponent {
     private final Window window;
     private final Camera camera;
 
-    public CameraTargetComponent(final ComponentContainer componentContainer, final Window window, final Camera camera) {
-        super(componentContainer);
+    public CameraTargetComponent(final Window window, final Camera camera) {
         this.window = window;
         this.camera = camera;
     }

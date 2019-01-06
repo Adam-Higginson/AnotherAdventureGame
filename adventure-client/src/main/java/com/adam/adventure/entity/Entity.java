@@ -1,7 +1,5 @@
 package com.adam.adventure.entity;
 
-import com.adam.adventure.entity.component.ComponentContainer;
-import com.adam.adventure.entity.component.factory.EntityComponentFactory;
 import org.joml.Matrix4f;
 
 public class Entity {
@@ -10,15 +8,16 @@ public class Entity {
 
     public Entity(final String name) {
         this.name = name;
-        componentContainer = new ComponentContainer(this);
+        this.componentContainer = new ComponentContainer(this);
     }
 
     public Matrix4f getTransform() {
         return componentContainer.getTransformComponent().getTransform();
     }
 
-    public Entity addComponent(final EntityComponentFactory componentFactory) {
-        componentFactory.registerNewInstanceWithContainer(componentContainer);
+
+    public Entity addComponent(final EntityComponent entityComponent) {
+        entityComponent.addToContainer(componentContainer);
         return this;
     }
 

@@ -1,5 +1,6 @@
 package com.adam.adventure.entity.component;
 
+import com.adam.adventure.entity.EntityComponent;
 import com.adam.adventure.entity.component.event.ComponentEvent;
 import com.adam.adventure.render.RenderQueue;
 import com.adam.adventure.render.renderable.SpriteRenderable;
@@ -8,6 +9,8 @@ import com.adam.adventure.render.texture.SpriteAnimation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -21,12 +24,17 @@ public class AnimatedSpriteRendererComponent extends EntityComponent {
     private ComponentEvent activeComponentEvent;
     private SpriteAnimation activeSpriteAnimation;
 
-    public AnimatedSpriteRendererComponent(final ComponentContainer componentContainer,
-                                           final Sprite sprite,
+    public AnimatedSpriteRendererComponent(final Builder builder) {
+        this(builder.sprite,
+                builder.renderQueue,
+                builder.eventToSpriteAnimation,
+                builder.stopAnimationEvents);
+    }
+
+    public AnimatedSpriteRendererComponent(final Sprite sprite,
                                            final RenderQueue rendererQueue,
                                            final Map<ComponentEvent, SpriteAnimation> eventToSpriteAnimation,
                                            final Set<ComponentEvent> stopAnimationEvents) {
-        super(componentContainer);
         this.sprite = sprite;
         this.rendererQueue = rendererQueue;
         this.eventToSpriteAnimation = eventToSpriteAnimation;
@@ -69,5 +77,33 @@ public class AnimatedSpriteRendererComponent extends EntityComponent {
         }
 
         activeComponentEvent = componentEvent;
+    }
+
+    public static class Builder {
+        private final Sprite sprite;
+        private final RenderQueue renderQueue;
+        private final Map<ComponentEvent, SpriteAnimation> eventToSpriteAnimation;
+        private final Set<ComponentEvent> stopAnimationEvents;
+
+        public Builder(final Sprite sprite, final RenderQueue renderQueue) {
+            this.sprite = sprite;
+            this.renderQueue = renderQueue;
+            this.eventToSpriteAnimation = new EnumMap<>(ComponentEvent.class);
+            this.stopAnimationEvents = EnumSet.noneOf(ComponentEvent.class);
+        }
+
+        public Builder onEventSetAnimation(final ComponentEvent event, final SpriteAnimation spriteAnimation) {
+            eventToSpriteAnimation.put(event, spriteAnimation);
+            return this;
+        }
+
+        public Builder onEventStopAnimation(final ComponentEvent event) {
+            this.stopAnimationEvents.add(event);
+            return this;
+        }
+
+        public AnimatedSpriteRendererComponent build() {
+            return new AnimatedSpriteRendererComponent(this);
+        }
     }
 }

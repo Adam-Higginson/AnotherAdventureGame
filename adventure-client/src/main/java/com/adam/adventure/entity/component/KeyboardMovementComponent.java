@@ -1,5 +1,6 @@
 package com.adam.adventure.entity.component;
 
+import com.adam.adventure.entity.EntityComponent;
 import com.adam.adventure.entity.component.event.ComponentEvent;
 import com.adam.adventure.input.InputManager;
 import org.joml.Vector3f;
@@ -11,10 +12,8 @@ public class KeyboardMovementComponent extends EntityComponent {
     private final float speed;
     private final InputManager inputManager;
 
-    public KeyboardMovementComponent(final ComponentContainer componentContainer,
-                                     final float speed,
+    public KeyboardMovementComponent(final float speed,
                                      final InputManager inputManager) {
-        super(componentContainer);
         this.speed = speed;
         this.inputManager = inputManager;
     }

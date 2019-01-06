@@ -1,22 +1,28 @@
 package com.adam.adventure.input;
 
 import com.adam.adventure.window.Window;
-import de.lessvoid.nifty.renderer.lwjgl3.input.Lwjgl3InputSystem;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWKeyCallbackI;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.lwjgl.glfw.GLFW.glfwPollEvents;
 
 public class InputManager implements GLFWKeyCallbackI {
 
-    private final Lwjgl3InputSystem lwjflInputSystem;
+    private final NiftyInputSystem lwjflInputSystem;
     private final boolean[] heldKeys;
+    private final List<KeyPressListener> keyPressListeners;
 
     public InputManager(final Window window) throws Exception {
-        this.lwjflInputSystem = new Lwjgl3InputSystem(window.getWindowHandle());
+        this.lwjflInputSystem = new NiftyInputSystem(window.getWindowHandle());
         lwjflInputSystem.startup();
         this.heldKeys = new boolean[1024];
+        this.keyPressListeners = new ArrayList<>();
         window.setKeyCallback(this);
+        window.setCursorPositionCallback(new CursorMovementInputManager(lwjflInputSystem));
+        window.setMouseButtonCallback(new MouseButtonInputManager(lwjflInputSystem));
     }
 
     public void processInput() {
@@ -30,9 +36,18 @@ public class InputManager implements GLFWKeyCallbackI {
     public void invoke(final long window, final int key, final int scancode, final int action, final int mods) {
         if (action == GLFW.GLFW_PRESS) {
             heldKeys[key] = true;
+            keyPressListeners.forEach(keyPressListener -> keyPressListener.onKeyPress(key));
         } else if (action == GLFW.GLFW_RELEASE) {
             heldKeys[key] = false;
         }
+
+        // Forward to nifty gui
+        lwjflInputSystem.keyCallback.invoke(window, key, scancode, action, mods);
+    }
+
+
+    public void addKeyPressListener(final KeyPressListener keyPressListener) {
+        keyPressListeners.add(keyPressListener);
     }
 
 
@@ -40,7 +55,8 @@ public class InputManager implements GLFWKeyCallbackI {
         return heldKeys[key];
     }
 
-    public Lwjgl3InputSystem getLwjflInputSystem() {
+
+    public NiftyInputSystem getLwjflInputSystem() {
         return lwjflInputSystem;
     }
 }

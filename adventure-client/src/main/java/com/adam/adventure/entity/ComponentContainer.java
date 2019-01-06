@@ -1,6 +1,6 @@
-package com.adam.adventure.entity.component;
+package com.adam.adventure.entity;
 
-import com.adam.adventure.entity.Entity;
+import com.adam.adventure.entity.component.TransformComponent;
 import com.adam.adventure.entity.component.event.ComponentEvent;
 
 import java.util.Collection;
@@ -16,8 +16,8 @@ public class ComponentContainer {
 
     public ComponentContainer(final Entity entity) {
         this.entity = entity;
-        entityComponentTypeToInstance = new HashMap<>();
-        transformComponent = new TransformComponent(this);
+        this.entityComponentTypeToInstance = new HashMap<>();
+        this.transformComponent = new TransformComponent();
         addComponent(transformComponent);
     }
 
@@ -52,7 +52,7 @@ public class ComponentContainer {
         getAllComponents().forEach(component -> component.onComponentEvent(componentEvent));
     }
 
-    public void activate() {
+    void activate() {
         getAllComponents().forEach(EntityComponent::activate);
     }
 }

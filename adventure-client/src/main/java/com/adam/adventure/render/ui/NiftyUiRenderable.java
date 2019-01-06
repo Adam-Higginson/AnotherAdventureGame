@@ -1,17 +1,14 @@
-package com.adam.adventure.ui;
+package com.adam.adventure.render.ui;
 
 import com.adam.adventure.render.Renderer;
 import com.adam.adventure.render.renderable.Renderable;
 import de.lessvoid.nifty.Nifty;
 
-import javax.inject.Inject;
-
-public class UiRenderable implements Renderable {
+public class NiftyUiRenderable implements Renderable {
 
     private final Nifty nifty;
 
-    @Inject
-    public UiRenderable(final Nifty nifty) {
+    NiftyUiRenderable(final Nifty nifty) {
         this.nifty = nifty;
     }
 
@@ -23,12 +20,12 @@ public class UiRenderable implements Renderable {
 
     @Override
     public void initialise(final Renderer renderer) {
-        // Nothing needs doing
+        //Nothing needs doing
     }
 
     @Override
     public void prepare(final Renderer renderer) {
-        // Nothing needs doing
+        nifty.update();
     }
 
     @Override
