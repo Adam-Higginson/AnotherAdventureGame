@@ -23,6 +23,9 @@ public class Entity {
         return componentContainer.getTransformComponent().getTransform();
     }
 
+    public void setTransform(final Matrix4f transform) {
+        componentContainer.getTransformComponent().setTransform(transform);
+    }
 
     /**
      * Adds the component to this entity and injects all required fields

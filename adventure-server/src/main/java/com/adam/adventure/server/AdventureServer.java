@@ -1,5 +1,6 @@
 package com.adam.adventure.server;
 
+import com.adam.adventure.lib.flatbuffer.schema.converter.PacketConverter;
 import com.adam.adventure.lib.flatbuffer.schema.packet.*;
 import com.google.flatbuffers.FlatBufferBuilder;
 import org.slf4j.Logger;
@@ -80,11 +81,14 @@ public class AdventureServer {
         PlayerInfo.addUserId(builder, 555);
         PlayerInfo.addUsername(builder, playerUsernameId);
 
+
+        org.joml.Matrix4f randomPositionMatrix = new org.joml.Matrix4f().translate(5, 5, 1);
+
         int playerPositionId = Matrix4f.createMatrix4f(builder,
-                1.0f, 0.0f, 0.0f, 0.0f,
-                0.0f, 1.0f, 0.0f, 0.0f,
-                0.0f, 0.0f, 1.0f, 0.0f,
-                0.0f, 0.0f, 0.0f, 1.0f);
+                randomPositionMatrix.m00(), randomPositionMatrix.m01(), randomPositionMatrix.m02(), randomPositionMatrix.m03(),
+                randomPositionMatrix.m10(), randomPositionMatrix.m11(), randomPositionMatrix.m12(), randomPositionMatrix.m13(),
+                randomPositionMatrix.m20(), randomPositionMatrix.m21(), randomPositionMatrix.m22(), randomPositionMatrix.m23(),
+                randomPositionMatrix.m30(), randomPositionMatrix.m31(), randomPositionMatrix.m32(), randomPositionMatrix.m33());
         PlayerInfo.addTransform(builder, playerPositionId);
         return PlayerInfo.endPlayerInfo(builder);
     }

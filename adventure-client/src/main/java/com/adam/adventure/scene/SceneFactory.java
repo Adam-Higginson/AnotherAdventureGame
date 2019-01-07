@@ -28,21 +28,6 @@ public class SceneFactory {
         this.uiConsoleComponentFactory = uiConsoleComponentFactory;
     }
 
-    public Scene createStartScene() {
-        final Entity networkEntity = entityFactory.create("Network manager")
-                .setShouldDestroyOnSceneChange(false)
-                .addComponent(new NetworkManagerComponent());
-
-        final Entity commandConsole = entityFactory.create("Command Console")
-                .setShouldDestroyOnSceneChange(false)
-                .addComponent(uiConsoleComponentFactory.buildDefaultUiConsoleComponent());
-
-
-        return createScene(START_MENU_SCENE_NAME)
-                .addEntity(networkEntity)
-                .addEntity(commandConsole);
-    }
-
     public Scene createScene(final String name) {
         return new Scene(eventBus, name, renderer);
     }

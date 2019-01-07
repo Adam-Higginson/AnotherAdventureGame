@@ -1,14 +1,12 @@
 package com.adam.adventure.entity.component.network;
 
-import com.adam.adventure.client.event.LoginToServerEvent;
+import com.adam.adventure.domain.PlayerInfo;
 import com.adam.adventure.domain.WorldState;
+import com.adam.adventure.entity.Entity;
 import com.adam.adventure.entity.EntityComponent;
-import com.adam.adventure.event.RequestConnectionToServerEvent;
-import com.adam.adventure.event.EventBus;
-import com.adam.adventure.event.EventSubscribe;
-import com.adam.adventure.event.WriteUiConsoleErrorEvent;
+import com.adam.adventure.event.*;
+import com.adam.adventure.scene.SceneManager;
 import com.adam.adventure.scene.event.NewSceneEvent;
-import com.adam.adventure.scene.event.SceneTransitionEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,8 +19,23 @@ public class NetworkManagerComponent extends EntityComponent {
 
     @Inject
     private EventBus eventBus;
+    @Inject
+    private SceneManager sceneManager;
 
+    //Created when connected
     private NetworkProcessor networkProcessor;
+    private final Entity playerEntity;
+    private WorldState initialWorldState;
+    private boolean awaitingPlayerSpawn;
+
+
+    /**
+     * @param playerEntity What entity to spawn when successfully logged into server.
+     */
+    public NetworkManagerComponent(final Entity playerEntity) {
+        this.playerEntity = playerEntity;
+        this.awaitingPlayerSpawn = true;
+    }
 
     @Override
     protected void activate() {
@@ -36,7 +49,7 @@ public class NetworkManagerComponent extends EntityComponent {
         try {
             final InetAddress address = InetAddress.getByName(requestConnectionToServerEvent.getAddressToConnectTo());
             this.networkProcessor = NetworkProcessor.login("Test-User", address, port);
-            final WorldState initialWorldState = this.networkProcessor.getInitialWorldState();
+            this.initialWorldState = this.networkProcessor.getInitialWorldState();
             eventBus.publishEvent(new NewSceneEvent(initialWorldState.getSceneInfo().getSceneName()));
         } catch (final Exception e) {
             eventBus.publishEvent(new WriteUiConsoleErrorEvent("Could not connect to address: " + addressToConnectTo + " with port: " + port));
@@ -44,5 +57,19 @@ public class NetworkManagerComponent extends EntityComponent {
         }
     }
 
+
+    @EventSubscribe
+    public void onSceneActivated(final SceneActivatedEvent sceneActivatedEvent) {
+        if (initialWorldState == null) {
+            return;
+        }
+
+        String newSceneName = sceneActivatedEvent.getSceneName();
+        String sceneName = initialWorldState.getSceneInfo().getSceneName();
+        if (newSceneName.equals(sceneName) && awaitingPlayerSpawn) {
+            sceneManager.getCurrentScene().addEntity(playerEntity);
+            awaitingPlayerSpawn = false;
+        }
+    }
 
 }

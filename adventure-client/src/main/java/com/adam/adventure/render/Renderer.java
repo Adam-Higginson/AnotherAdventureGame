@@ -83,7 +83,13 @@ public class Renderer {
     }
 
     private void after() {
-        renderQueue.forEach(renderable -> renderable.after(this));
+        renderQueue.forEach(renderable -> {
+            try {
+                renderable.after(this);
+            } catch (Exception e) {
+                LOG.error("Exception when executing after on renderable: {}", renderable.getClass(), e);
+            }
+        });
     }
 
 

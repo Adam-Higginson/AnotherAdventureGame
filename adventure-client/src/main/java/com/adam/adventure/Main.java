@@ -3,16 +3,16 @@ package com.adam.adventure;
 import com.adam.adventure.client.NetworkClient;
 import com.adam.adventure.entity.Entity;
 import com.adam.adventure.entity.EntityFactory;
-import com.adam.adventure.entity.component.AnimatedSpriteRendererComponent;
-import com.adam.adventure.entity.component.CameraTargetComponent;
-import com.adam.adventure.entity.component.KeyboardMovementComponent;
-import com.adam.adventure.entity.component.SpriteRendererComponent;
+import com.adam.adventure.entity.component.*;
+import com.adam.adventure.entity.component.console.UiConsoleComponentFactory;
 import com.adam.adventure.entity.component.event.ComponentEvent;
+import com.adam.adventure.entity.component.network.NetworkManagerComponent;
 import com.adam.adventure.event.EventBus;
 import com.adam.adventure.event.InitialisedEvent;
 import com.adam.adventure.loop.GameLoop;
 import com.adam.adventure.loop.LoopIteration;
 import com.adam.adventure.module.AdventureClientModule;
+import com.adam.adventure.render.Renderer;
 import com.adam.adventure.render.shader.ProgramFactory;
 import com.adam.adventure.render.shader.Shader;
 import com.adam.adventure.render.shader.ShaderCompiler;
@@ -22,7 +22,9 @@ import com.adam.adventure.render.texture.Texture;
 import com.adam.adventure.render.texture.TextureFactory;
 import com.adam.adventure.render.util.Rectangle;
 import com.adam.adventure.scene.Scene;
+import com.adam.adventure.scene.SceneFactory;
 import com.adam.adventure.scene.SceneManager;
+import com.adam.adventure.scene.event.NewSceneEvent;
 import com.adam.adventure.window.Window;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
@@ -52,6 +54,13 @@ public class Main {
         window.clearWindow(0.0f, 0.2f, 0.2f, 0.0f);
 
         compileShaders(injector.getInstance(ShaderCompiler.class), injector.getInstance(ProgramFactory.class));
+
+
+        addStartScene(injector.getInstance(EntityFactory.class),
+                injector.getInstance(TextureFactory.class),
+                injector.getInstance(UiConsoleComponentFactory.class),
+                injector.getInstance(SceneManager.class));
+
         addTestScene(injector.getInstance(EntityFactory.class),
                 injector.getInstance(TextureFactory.class),
                 injector.getInstance(SceneManager.class));
@@ -60,6 +69,7 @@ public class Main {
         //Notify everything that game is ready
         final EventBus eventBus = injector.getInstance(EventBus.class);
         eventBus.publishEvent(new InitialisedEvent());
+        eventBus.publishEvent(new NewSceneEvent("StartScene"));
 
         loop(window, injector.getInstance(LoopIteration.class));
 
@@ -80,18 +90,18 @@ public class Main {
     }
 
 
-    private Scene addTestScene(
-            final EntityFactory entityFactory,
-            final TextureFactory textureFactory,
-            final SceneManager sceneManager) throws IOException {
+    private void addStartScene(final EntityFactory entityFactory,
+                               final TextureFactory textureFactory,
+                               final UiConsoleComponentFactory uiConsoleComponentFactory,
+                               final SceneManager sceneManager) throws IOException {
+
+        final Entity commandConsole = entityFactory.create("Command Console")
+                .setShouldDestroyOnSceneChange(false)
+                .addComponent(uiConsoleComponentFactory.buildDefaultUiConsoleComponent());
 
         final Texture playerTexture;
-        final Texture tileTexture;
         try (final InputStream playerTextureInputStream = this.getClass().getResourceAsStream("/assets/sprites/player/player-test.png")) {
             playerTexture = textureFactory.loadTextureFromPng(playerTextureInputStream);
-        }
-        try (final InputStream tileTextureInputStream = this.getClass().getResourceAsStream("/assets/sprites/player/wood.png")) {
-            tileTexture = textureFactory.loadTextureFromPng(tileTextureInputStream);
         }
 
 
@@ -120,8 +130,6 @@ public class Main {
                 .build();
 
 
-        final Scene scene = sceneManager.getSceneFactory().createScene("Test Scene");
-        sceneManager.addScene("Test Scene", scene);
 
         //Create components
         final KeyboardMovementComponent keyboardMovementComponent = new KeyboardMovementComponent(.2f);
@@ -135,15 +143,42 @@ public class Main {
                 .build();
         final CameraTargetComponent cameraTargetComponent = new CameraTargetComponent();
 
-        final Sprite woodSprite = new Sprite(tileTexture, new Rectangle(0.0f, 0.0f, 16f, 16f), 64f, 64f);
-        final SpriteRendererComponent spriteRendererComponent = new SpriteRendererComponent(woodSprite);
 
         //Create player
         final Entity playerEntity = entityFactory.create("Player")
                 .addComponent(keyboardMovementComponent)
                 .addComponent(animatedSpriteRendererComponent)
                 .addComponent(cameraTargetComponent);
-        scene.addEntity(playerEntity);
+
+
+        final Entity networkEntity = entityFactory.create("Network manager")
+                .setShouldDestroyOnSceneChange(false)
+                .addComponent(new NetworkManagerComponent(playerEntity));
+
+
+        Scene scene = sceneManager.getSceneFactory().createScene("StartScene")
+                .addEntity(commandConsole)
+                .addEntity(networkEntity);
+        sceneManager.addScene("StartScene", scene);
+
+    }
+
+    private Scene addTestScene(
+            final EntityFactory entityFactory,
+            final TextureFactory textureFactory,
+            final SceneManager sceneManager) throws IOException {
+
+        final Texture tileTexture;
+        try (final InputStream tileTextureInputStream = this.getClass().getResourceAsStream("/assets/sprites/player/wood.png")) {
+            tileTexture = textureFactory.loadTextureFromPng(tileTextureInputStream);
+        }
+
+        final Scene scene = sceneManager.getSceneFactory().createScene("Test Scene");
+        sceneManager.addScene("Test Scene", scene);
+
+        //Create random wood tile
+        final Sprite woodSprite = new Sprite(tileTexture, new Rectangle(0.0f, 0.0f, 16f, 16f), 64f, 64f);
+        final SpriteRendererComponent spriteRendererComponent = new SpriteRendererComponent(woodSprite);
 
         final Entity tileEntity = entityFactory.create("Wood")
                 .addComponent(spriteRendererComponent);

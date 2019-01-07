@@ -1,11 +1,7 @@
 package com.adam.adventure.scene;
 
-import com.adam.adventure.event.EventBus;
-import com.adam.adventure.event.EventSubscribe;
-import com.adam.adventure.event.InitialisedEvent;
-import com.adam.adventure.event.WriteUiConsoleErrorEvent;
+import com.adam.adventure.event.*;
 import com.adam.adventure.scene.event.NewSceneEvent;
-import com.adam.adventure.scene.event.SceneTransitionEvent;
 import com.adam.adventure.update.event.NewLoopIterationEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,9 +31,6 @@ public class SceneManager {
         this.sceneNameToSceneSupplier = new HashMap<>();
         this.sceneFactory = sceneFactory;
 
-        final Scene startScene = sceneFactory.createStartScene();
-        sceneNameToSceneSupplier.put(startScene.getName(), startScene);
-
         eventBus.register(this);
     }
 
@@ -50,10 +43,8 @@ public class SceneManager {
         return sceneFactory;
     }
 
-    @EventSubscribe
-    public void onInitialisedEvent(final InitialisedEvent initialisedEvent) {
-        LOG.info("Initialised event received, setting current scene to start scene.");
-        eventBus.publishEvent(new NewSceneEvent(START_MENU_SCENE_NAME));
+    public Scene getCurrentScene() {
+        return currentScene;
     }
 
     @EventSubscribe
@@ -63,14 +54,8 @@ public class SceneManager {
             eventBus.publishEvent(new WriteUiConsoleErrorEvent("Expected scene: " + newSceneEvent.getSceneName() + " to be present, but could not be found!"));
             LOG.error("Could not find scene with name: {}", newSceneEvent.getSceneName());
         }
-        eventBus.publishEvent(new SceneTransitionEvent(scene));
-    }
 
-    @EventSubscribe
-    public void onSceneTransitionEvent(final SceneTransitionEvent sceneTransitionEvent) {
-        final Scene scene = sceneTransitionEvent.getScene();
         LOG.info("Activating scene: {}", scene.getName());
-
         //We update to scene in next frame rather than the current to allow for other processes to clean up
         sceneManagerState = SceneManagerState.TRANSITION_TO_SCENE;
         if (currentScene != null) {
@@ -90,5 +75,7 @@ public class SceneManager {
         }
 
         currentScene.update(newLoopIterationEvent.getElapsedTime());
+
+        eventBus.publishEvent(new SceneActivatedEvent(currentScene.getName()));
     }
 }
