@@ -1,6 +1,6 @@
 package com.adam.adventure.entity.component.console;
 
-import com.adam.adventure.event.ConnectionRequestEvent;
+import com.adam.adventure.event.RequestConnectionToServerEvent;
 import com.adam.adventure.event.EventBus;
 
 import javax.inject.Inject;
@@ -20,7 +20,7 @@ public class UiConsoleComponentFactory {
                     if (args.length < 3) {
                         console.writeError("Usage: connect <address> <port>");
                     } else {
-                        eventBus.publishEvent(new ConnectionRequestEvent(args[1], Integer.parseInt(args[2])));
+                        eventBus.publishEvent(new RequestConnectionToServerEvent(args[1], Integer.parseInt(args[2])));
                     }
                 });
     }

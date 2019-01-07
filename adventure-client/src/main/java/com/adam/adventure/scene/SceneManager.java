@@ -3,6 +3,7 @@ package com.adam.adventure.scene;
 import com.adam.adventure.event.EventBus;
 import com.adam.adventure.event.EventSubscribe;
 import com.adam.adventure.event.InitialisedEvent;
+import com.adam.adventure.event.WriteUiConsoleErrorEvent;
 import com.adam.adventure.scene.event.NewSceneEvent;
 import com.adam.adventure.scene.event.SceneTransitionEvent;
 import com.adam.adventure.update.event.NewLoopIterationEvent;
@@ -58,6 +59,10 @@ public class SceneManager {
     @EventSubscribe
     public void newSceneEvent(final NewSceneEvent newSceneEvent) {
         final Scene scene = sceneNameToSceneSupplier.get(newSceneEvent.getSceneName());
+        if (scene == null) {
+            eventBus.publishEvent(new WriteUiConsoleErrorEvent("Expected scene: " + newSceneEvent.getSceneName() + " to be present, but could not be found!"));
+            LOG.error("Could not find scene with name: {}", newSceneEvent.getSceneName());
+        }
         eventBus.publishEvent(new SceneTransitionEvent(scene));
     }
 

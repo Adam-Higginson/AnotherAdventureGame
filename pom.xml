@@ -56,6 +56,11 @@
                 <artifactId>guice-assistedinject</artifactId>
                 <version>${guice.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.joml</groupId>
+                <artifactId>joml</artifactId>
+                <version>1.9.12</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     

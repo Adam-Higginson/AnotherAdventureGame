@@ -1,13 +1,13 @@
 package com.adam.adventure.server;
 
-import com.adam.adventure.lib.flatbuffer.schema.LoginPacket;
+import com.adam.adventure.lib.flatbuffer.schema.packet.*;
+import com.google.flatbuffers.FlatBufferBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.SocketException;
 import java.nio.ByteBuffer;
 
 public class AdventureServer {
@@ -16,7 +16,7 @@ public class AdventureServer {
     private boolean running;
     private final int port;
 
-    public AdventureServer(final int port) throws SocketException {
+    public AdventureServer(final int port) {
         this.port = port;
     }
 
@@ -37,9 +37,56 @@ public class AdventureServer {
             final ByteBuffer byteBuffer = ByteBuffer.wrap(buffer, packet.getOffset(), packet.getLength());
             final LoginPacket loginPacket = LoginPacket.getRootAsLoginPacket(byteBuffer);
 
-            LOG.info("Received login request with username: {}", loginPacket.username());
+            String username = loginPacket.username();
+            LOG.info("Received login request with username: {}", username);
+
+            returnWorldState(datagramSocket, packet, username);
         }
 
+    }
+
+    private void returnWorldState(DatagramSocket datagramSocket, DatagramPacket packet, String username) throws IOException {
+        FlatBufferBuilder builder = new FlatBufferBuilder(256);
+        int playerUsernameId = builder.createString(username);
+        int sceneId = builder.createString("Test Scene");
+
+        SceneInfo.startSceneInfo(builder);
+        SceneInfo.addSceneName(builder, sceneId);
+        int sceneInfoId = SceneInfo.endSceneInfo(builder);
+
+        int playerInfoId = createPlayerInfo(builder, playerUsernameId);
+        int playersVectorId = WorldStatePacket.createPlayersVector(builder, new int[]{playerInfoId});
+
+        WorldStatePacket.startWorldStatePacket(builder);
+        WorldStatePacket.addActiveScene(builder, sceneInfoId);
+        WorldStatePacket.addCurrentPlayer(builder, playerInfoId);
+        WorldStatePacket.addPlayers(builder, playersVectorId);
+        int worldStatePacketId = WorldStatePacket.endWorldStatePacket(builder);
+
+        Packet.startPacket(builder);
+        Packet.addPacketType(builder, PacketType.WorldStatePacket);
+        Packet.addPacket(builder, worldStatePacketId);
+        int packetId = Packet.endPacket(builder);
+        builder.finish(packetId);
+
+
+        final byte[] worldStatePacketData = builder.sizedByteArray();
+        final DatagramPacket worldStatePacket = new DatagramPacket(worldStatePacketData, worldStatePacketData.length, packet.getAddress(), packet.getPort());
+        datagramSocket.send(worldStatePacket);
+    }
+
+    private int createPlayerInfo(FlatBufferBuilder builder, int playerUsernameId) {
+        PlayerInfo.startPlayerInfo(builder);
+        PlayerInfo.addUserId(builder, 555);
+        PlayerInfo.addUsername(builder, playerUsernameId);
+
+        int playerPositionId = Matrix4f.createMatrix4f(builder,
+                1.0f, 0.0f, 0.0f, 0.0f,
+                0.0f, 1.0f, 0.0f, 0.0f,
+                0.0f, 0.0f, 1.0f, 0.0f,
+                0.0f, 0.0f, 0.0f, 1.0f);
+        PlayerInfo.addTransform(builder, playerPositionId);
+        return PlayerInfo.endPlayerInfo(builder);
     }
 
     public void stop() {

@@ -4,7 +4,7 @@ public class WriteUiConsoleErrorEvent extends Event {
     private final String message;
 
     public WriteUiConsoleErrorEvent(final String message) {
-        this.message = message;
+        this.message = "[ERROR] " + message;
     }
 
     public String getMessage() {

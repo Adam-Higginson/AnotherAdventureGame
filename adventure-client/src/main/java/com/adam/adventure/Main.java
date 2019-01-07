@@ -51,9 +51,6 @@ public class Main {
         window.openWindow();
         window.clearWindow(0.0f, 0.2f, 0.2f, 0.0f);
 
-        final NetworkClient networkClient = injector.getInstance(NetworkClient.class);
-        networkClient.start();
-
         compileShaders(injector.getInstance(ShaderCompiler.class), injector.getInstance(ProgramFactory.class));
         addTestScene(injector.getInstance(EntityFactory.class),
                 injector.getInstance(TextureFactory.class),
@@ -66,7 +63,6 @@ public class Main {
 
         loop(window, injector.getInstance(LoopIteration.class));
 
-        networkClient.stop();
         window.close();
         glfwTerminate();
         glfwSetErrorCallback(null).free();

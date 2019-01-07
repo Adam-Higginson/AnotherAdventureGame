@@ -2,16 +2,12 @@ package com.adam.adventure.scene;
 
 import com.adam.adventure.entity.Entity;
 import com.adam.adventure.entity.EntityFactory;
-import com.adam.adventure.entity.component.KeyboardListenerComponent;
 import com.adam.adventure.entity.component.console.UiConsoleComponentFactory;
 import com.adam.adventure.entity.component.network.NetworkManagerComponent;
 import com.adam.adventure.event.EventBus;
 import com.adam.adventure.render.Renderer;
-import com.adam.adventure.scene.event.NewSceneEvent;
 
 import javax.inject.Inject;
-
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE;
 
 public class SceneFactory {
     static final String START_MENU_SCENE_NAME = "StartMenu";
@@ -33,27 +29,21 @@ public class SceneFactory {
     }
 
     public Scene createStartScene() {
-        final Entity keyboardListenerEntity = entityFactory.create("Keyboard Listener")
-                .addComponent(new KeyboardListenerComponent(
-                        GLFW_KEY_ESCAPE,
-                        this::onEscapePressed));
-
         final Entity networkEntity = entityFactory.create("Network manager")
+                .setShouldDestroyOnSceneChange(false)
                 .addComponent(new NetworkManagerComponent());
 
-        return createScene(START_MENU_SCENE_NAME)
-                .addEntity(keyboardListenerEntity)
-                .addEntity(networkEntity);
-    }
+        final Entity commandConsole = entityFactory.create("Command Console")
+                .setShouldDestroyOnSceneChange(false)
+                .addComponent(uiConsoleComponentFactory.buildDefaultUiConsoleComponent());
 
-    private void onEscapePressed() {
-        eventBus.publishEvent(new NewSceneEvent("Test Scene"));
+
+        return createScene(START_MENU_SCENE_NAME)
+                .addEntity(networkEntity)
+                .addEntity(commandConsole);
     }
 
     public Scene createScene(final String name) {
-        final Entity commandConsole = entityFactory.create("Command Console")
-                .addComponent(uiConsoleComponentFactory.buildDefaultUiConsoleComponent());
-
-        return new Scene(eventBus, name, renderer).addEntity(commandConsole);
+        return new Scene(eventBus, name, renderer);
     }
 }

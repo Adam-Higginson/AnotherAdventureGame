@@ -350,7 +350,6 @@
         <dependency>
             <groupId>org.joml</groupId>
             <artifactId>joml</artifactId>
-            <version>1.9.12</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.l33tlabs.twl/pngdecoder -->
         <dependency>

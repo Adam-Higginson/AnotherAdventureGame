@@ -1,6 +1,50 @@
 namespace com.adam.adventure.lib.flatbuffer.schema.packet;
 
+union Packet { WorldStatePacket, LoginPacket }
+
+struct Matrix4f {
+    m00:float;
+    m01:float;
+    m02:float;
+    m03:float;
+
+    m10:float;
+    m11:float;
+    m12:float;
+    m13:float;
+
+    m20:float;
+    m21:float;
+    m22:float;
+    m23:float;
+
+    m30:float;
+    m31:float;
+    m32:float;
+    m33:float;
+}
+
+table SceneInfo {
+    sceneName:string;
+    //Other things here maybe, e.g. other entities in the scene
+}
+
+table PlayerInfo {
+    userId:int;
+    username:string;
+    transform:Matrix4f;
+}
+
+table WorldStatePacket {
+    activeScene:SceneInfo;
+    currentPlayer:PlayerInfo;
+    players:[PlayerInfo];
+}
 
 table LoginPacket {
     username:string;
+}
+
+table Packet {
+    packet:Packet;
 }

@@ -14,8 +14,8 @@ public class NiftyUiRenderable implements Renderable {
 
     @Override
     public int getZIndex() {
-        //Doesn't matter
-        return 0;
+        //Always at the top
+        return Integer.MAX_VALUE;
     }
 
     @Override

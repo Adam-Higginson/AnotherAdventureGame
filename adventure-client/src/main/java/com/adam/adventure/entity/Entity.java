@@ -10,6 +10,7 @@ public class Entity {
     private final String name;
     private final Injector injector;
     private final ComponentContainer componentContainer;
+    private boolean shouldDestroyOnSceneChange;
 
     @Inject
     Entity(@Assisted final String name, final Injector injector) {
@@ -51,11 +52,18 @@ public class Entity {
      * Tells an entity it should be removed from the current scene.
      */
     public void destroy() {
-        componentContainer.destroy();
+        if (shouldDestroyOnSceneChange) {
+            componentContainer.destroy();
+        }
     }
 
     public void update(final float deltaTime) {
         componentContainer.update(deltaTime);
+    }
+
+    public Entity setShouldDestroyOnSceneChange(boolean shouldDestroyOnSceneChange) {
+        this.shouldDestroyOnSceneChange = shouldDestroyOnSceneChange;
+        return this;
     }
 
     @Override

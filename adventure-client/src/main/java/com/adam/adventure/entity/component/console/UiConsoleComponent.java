@@ -159,8 +159,8 @@ public class UiConsoleComponent extends EntityComponent implements KeyPressListe
                 visible(consoleVisible);
                 panel(new PanelBuilder(CONSOLE_PANEL) {{
                     childLayoutCenter();
-                    width("50%");
-                    height("20%");
+                    width("70%");
+                    height("30%");
                     align(Align.Right);
                     valignCenter();
                     control(new ConsoleBuilder(CONSOLE_CONTROL) {{

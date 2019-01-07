@@ -1,6 +1,6 @@
 package com.adam.adventure.client.event;
 
-import com.adam.adventure.lib.flatbuffer.schema.LoginPacket;
+import com.adam.adventure.lib.flatbuffer.schema.packet.LoginPacket;
 import com.google.flatbuffers.FlatBufferBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
