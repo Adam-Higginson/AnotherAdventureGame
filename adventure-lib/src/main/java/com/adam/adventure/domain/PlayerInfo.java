@@ -14,7 +14,7 @@ public class PlayerInfo {
     }
 
     private PlayerInfo(Builder builder) {
-        userId = builder.userId;
+        userId = builder.id;
         username = builder.username;
         transform = builder.transform;
     }
@@ -23,7 +23,15 @@ public class PlayerInfo {
         return new Builder();
     }
 
-    public int getUserId() {
+    public static Builder newBuilder(PlayerInfo copy) {
+        Builder builder = new Builder();
+        builder.id = copy.getId();
+        builder.username = copy.getUsername();
+        builder.transform = copy.getTransform();
+        return builder;
+    }
+
+    public int getId() {
         return userId;
     }
 
@@ -37,15 +45,15 @@ public class PlayerInfo {
 
 
     public static final class Builder {
-        private int userId;
+        private int id;
         private String username;
         private Matrix4f transform;
 
         private Builder() {
         }
 
-        public Builder withUserId(int val) {
-            userId = val;
+        public Builder withId(int val) {
+            id = val;
             return this;
         }
 

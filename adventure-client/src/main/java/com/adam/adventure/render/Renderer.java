@@ -43,16 +43,9 @@ public class Renderer {
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
 
-    public void initialise() {
-        LOG.info("Initialising renderer");
-        final long startTime = System.currentTimeMillis();
-        renderQueue.prepareForRetrieval();
-        renderQueue.forEach(renderable -> renderable.initialise(this));
-        LOG.info("Successfully initialised renderer in: {}ms", System.currentTimeMillis() - startTime);
-    }
-
     public void render() {
         clearScreen();
+        initialiseNewEntities();
         //Don't need to reinitialise these if nothing has changed in the camera and window. Dirty flags?
         viewMatrix = camera.getLookAt();
         projectionMatrix = new Matrix4f().ortho(0.0f, window.getWidth(), 0.0f, window.getHeight(), -1f, 1f);
@@ -60,6 +53,16 @@ public class Renderer {
         renderAllRenderables();
         after();
         window.swapBuffers();
+    }
+
+    private void initialiseNewEntities() {
+        renderQueue.forEachItemAwaitingInit(renderable -> {
+            try {
+                renderable.initialise(this);
+            } catch (final Exception e) {
+                LOG.error("Exception when initialising renderable: {}", renderable.getClass(), e);
+            }
+        });
     }
 
     private void prepare() {

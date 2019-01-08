@@ -2,7 +2,6 @@ package com.adam.adventure.scene;
 
 import com.adam.adventure.entity.Entity;
 import com.adam.adventure.event.EventBus;
-import com.adam.adventure.render.Renderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,12 +13,10 @@ public class Scene {
 
     private final String name;
     private final List<Entity> entities;
-    private final Renderer renderer;
     private boolean active;
 
-    Scene(final EventBus eventBus, final String name, final Renderer renderer) {
+    public Scene(final EventBus eventBus, final String name) {
         this.name = name;
-        this.renderer = renderer;
         entities = new ArrayList<>();
         eventBus.register(this);
     }
@@ -37,8 +34,6 @@ public class Scene {
         active = true;
         LOG.info("Activating scene: {}", name);
         entities.forEach(Entity::activate);
-        //TODO Remove this from here, a scene should have no concept of rendering
-        renderer.initialise();
     }
 
     void destroy() {

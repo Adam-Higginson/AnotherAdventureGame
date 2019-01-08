@@ -1,7 +1,6 @@
 package com.adam.adventure.entity.component;
 
 import com.adam.adventure.entity.EntityComponent;
-import com.adam.adventure.entity.component.event.ComponentEvent;
 import org.joml.Matrix4f;
 
 public class TransformComponent extends EntityComponent {

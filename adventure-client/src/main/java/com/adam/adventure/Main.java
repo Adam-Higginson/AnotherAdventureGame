@@ -1,6 +1,5 @@
 package com.adam.adventure;
 
-import com.adam.adventure.client.NetworkClient;
 import com.adam.adventure.entity.Entity;
 import com.adam.adventure.entity.EntityFactory;
 import com.adam.adventure.entity.component.*;
@@ -12,7 +11,6 @@ import com.adam.adventure.event.InitialisedEvent;
 import com.adam.adventure.loop.GameLoop;
 import com.adam.adventure.loop.LoopIteration;
 import com.adam.adventure.module.AdventureClientModule;
-import com.adam.adventure.render.Renderer;
 import com.adam.adventure.render.shader.ProgramFactory;
 import com.adam.adventure.render.shader.Shader;
 import com.adam.adventure.render.shader.ShaderCompiler;
@@ -22,9 +20,8 @@ import com.adam.adventure.render.texture.Texture;
 import com.adam.adventure.render.texture.TextureFactory;
 import com.adam.adventure.render.util.Rectangle;
 import com.adam.adventure.scene.Scene;
-import com.adam.adventure.scene.SceneFactory;
 import com.adam.adventure.scene.SceneManager;
-import com.adam.adventure.scene.event.NewSceneEvent;
+import com.adam.adventure.scene.NewSceneEvent;
 import com.adam.adventure.window.Window;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
@@ -160,7 +157,6 @@ public class Main {
                 .addEntity(commandConsole)
                 .addEntity(networkEntity);
         sceneManager.addScene("StartScene", scene);
-
     }
 
     private Scene addTestScene(

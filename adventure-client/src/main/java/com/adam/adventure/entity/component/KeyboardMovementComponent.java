@@ -1,7 +1,6 @@
 package com.adam.adventure.entity.component;
 
 import com.adam.adventure.entity.EntityComponent;
-import com.adam.adventure.entity.InputLocked;
 import com.adam.adventure.entity.component.event.ComponentEvent;
 import com.adam.adventure.input.InputManager;
 import org.joml.Vector3f;
@@ -25,7 +24,6 @@ public class KeyboardMovementComponent extends EntityComponent {
 
 
     @Override
-    @InputLocked
     protected void update(final float deltaTime) {
         if (inputLocked) {
             return;

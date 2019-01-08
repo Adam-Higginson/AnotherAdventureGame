@@ -1,4 +1,4 @@
-package com.adam.adventure.scene.event;
+package com.adam.adventure.scene;
 
 import com.adam.adventure.event.Event;
 

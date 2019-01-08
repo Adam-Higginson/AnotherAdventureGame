@@ -1,4 +1,4 @@
-package com.adam.adventure.entity;
+package com.adam.adventure.module;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -6,9 +6,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Ensures that the update method of an entity is only called if it is free to consume input
+ * Logs out the time taken to invoke this method
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface InputLocked {
+public @interface Timed {
 }

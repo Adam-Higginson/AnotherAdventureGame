@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.nio.ByteBuffer;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class AdventureServer {
     private static final Logger LOG = LoggerFactory.getLogger(AdventureServer.class);
@@ -28,11 +29,12 @@ public class AdventureServer {
     }
 
     private void acceptData(final DatagramSocket datagramSocket) throws IOException {
+        LOG.info("Adventure server started...");
         final byte[] buffer = new byte[256];
 
         while (running) {
 
-            // receive request
+            // receiver request
             final DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
             datagramSocket.receive(packet);
             final ByteBuffer byteBuffer = ByteBuffer.wrap(buffer, packet.getOffset(), packet.getLength());
@@ -82,7 +84,9 @@ public class AdventureServer {
         PlayerInfo.addUsername(builder, playerUsernameId);
 
 
-        org.joml.Matrix4f randomPositionMatrix = new org.joml.Matrix4f().translate(5, 5, 1);
+        org.joml.Matrix4f randomPositionMatrix = new org.joml.Matrix4f().translate(ThreadLocalRandom.current().nextInt(0, 500),
+                ThreadLocalRandom.current().nextInt(0, 500),
+                0);
 
         int playerPositionId = Matrix4f.createMatrix4f(builder,
                 randomPositionMatrix.m00(), randomPositionMatrix.m01(), randomPositionMatrix.m02(), randomPositionMatrix.m03(),

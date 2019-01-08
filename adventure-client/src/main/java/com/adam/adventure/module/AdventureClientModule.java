@@ -15,6 +15,7 @@ import com.adam.adventure.update.PublishEventUpdateStrategy;
 import com.adam.adventure.update.UpdateStrategy;
 import com.adam.adventure.window.Window;
 import com.google.inject.AbstractModule;
+import com.google.inject.matcher.Matchers;
 import org.joml.Vector3f;
 
 import javax.inject.Singleton;
@@ -37,6 +38,9 @@ public class AdventureClientModule extends AbstractModule {
         bind(SceneManager.class).in(Singleton.class);
 
         install(new EntityModule());
+
+        bindInterceptor(Matchers.any(), Matchers.annotatedWith(Timed.class),
+                new TimedInterceptor());
     }
 
     private Window buildWindow() {

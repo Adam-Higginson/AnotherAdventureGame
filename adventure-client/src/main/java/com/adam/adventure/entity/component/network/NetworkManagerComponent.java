@@ -1,12 +1,11 @@
 package com.adam.adventure.entity.component.network;
 
-import com.adam.adventure.domain.PlayerInfo;
 import com.adam.adventure.domain.WorldState;
 import com.adam.adventure.entity.Entity;
 import com.adam.adventure.entity.EntityComponent;
 import com.adam.adventure.event.*;
 import com.adam.adventure.scene.SceneManager;
-import com.adam.adventure.scene.event.NewSceneEvent;
+import com.adam.adventure.scene.NewSceneEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,6 +66,7 @@ public class NetworkManagerComponent extends EntityComponent {
         String newSceneName = sceneActivatedEvent.getSceneName();
         String sceneName = initialWorldState.getSceneInfo().getSceneName();
         if (newSceneName.equals(sceneName) && awaitingPlayerSpawn) {
+            playerEntity.setTransform(initialWorldState.getCurrentPlayer().getTransform());
             sceneManager.getCurrentScene().addEntity(playerEntity);
             awaitingPlayerSpawn = false;
         }

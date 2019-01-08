@@ -1,7 +1,9 @@
 package com.adam.adventure.scene;
 
-import com.adam.adventure.event.*;
-import com.adam.adventure.scene.event.NewSceneEvent;
+import com.adam.adventure.event.EventBus;
+import com.adam.adventure.event.EventSubscribe;
+import com.adam.adventure.event.SceneActivatedEvent;
+import com.adam.adventure.event.WriteUiConsoleErrorEvent;
 import com.adam.adventure.update.event.NewLoopIterationEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,8 +11,6 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import java.util.HashMap;
 import java.util.Map;
-
-import static com.adam.adventure.scene.SceneFactory.START_MENU_SCENE_NAME;
 
 public class SceneManager {
     private enum SceneManagerState {ACTIVE_SCENE, TRANSITION_TO_SCENE}

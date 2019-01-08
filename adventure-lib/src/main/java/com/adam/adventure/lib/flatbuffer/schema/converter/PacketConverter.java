@@ -32,7 +32,7 @@ public class PacketConverter {
     public com.adam.adventure.domain.PlayerInfo fromPacketPlayerInfo(final PlayerInfo packetPlayerInfo) {
         return com.adam.adventure.domain.PlayerInfo.newBuilder()
                 .withUsername(packetPlayerInfo.username())
-                .withUserId(packetPlayerInfo.userId())
+                .withId(packetPlayerInfo.userId())
                 .withTransform(fromPacketMatrix4f(packetPlayerInfo.transform()))
                 .build();
     }
