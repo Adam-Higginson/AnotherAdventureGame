@@ -14,7 +14,6 @@ public class PacketConverter {
     public WorldState fromPacket(final WorldStatePacket worldStatePacket) {
 
         final SceneInfo sceneInfo = new SceneInfo(worldStatePacket.activeScene().sceneName());
-        final com.adam.adventure.domain.PlayerInfo playerInfo = fromPacketPlayerInfo(worldStatePacket.currentPlayer());
 
         final List<com.adam.adventure.domain.PlayerInfo> players = new ArrayList<>(worldStatePacket.playersLength());
         for (int i = 0; i< worldStatePacket.playersLength(); i++) {
@@ -24,7 +23,6 @@ public class PacketConverter {
 
         return WorldState.newBuilder()
                 .withSceneInfo(sceneInfo)
-                .withCurrentPlayer(playerInfo)
                 .withPlayers(players)
                 .build();
     }

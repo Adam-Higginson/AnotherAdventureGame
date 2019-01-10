@@ -1,7 +1,6 @@
 package com.adam.adventure.server.tick.event.processor;
 
 import com.adam.adventure.server.event.NewPlayerEvent;
-import com.adam.adventure.server.tick.event.PlayerSessionRegisteredEvent;
 import com.adam.adventure.server.tick.event.ServerTickEvent;
 import com.google.inject.Injector;
 
@@ -18,7 +17,6 @@ public class ServerTickEventProcessorRegistry {
     ServerTickEventProcessorRegistry(final Injector injector) {
         this.eventTypeToConsumer = new HashMap<>();
         put(NewPlayerEvent.class, injector.getInstance(NewPlayerEventProcessor.class));
-        put(PlayerSessionRegisteredEvent.class, injector.getInstance(PlayerSessionRegisteredEventProcessor.class));
     }
 
     public void process(ServerTickEvent obj) {

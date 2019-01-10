@@ -2,8 +2,8 @@ package com.adam.adventure.server.player;
 
 import com.adam.adventure.entity.Entity;
 import com.adam.adventure.entity.EntityFactory;
-import com.adam.adventure.lib.flatbuffer.schema.Player;
-import com.adam.adventure.server.PlayerManager;
+import com.adam.adventure.server.tick.OutputMessageQueue;
+import com.adam.adventure.server.tick.Tickable;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -16,18 +16,19 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 
 @Slf4j
-public class PlayerSessionRegistry {
+public class PlayerSessionRegistry implements Tickable {
     private final EntityFactory entityFactory;
     private final AtomicInteger playerIdSequence;
-    private final Map<Integer, PlayerSession> playerData;
+    private final Map<Integer, PlayerSession> playerIdToSession;
 
     @Inject
     public PlayerSessionRegistry(final EntityFactory entityFactory) {
         this.entityFactory = entityFactory;
         this.playerIdSequence = new AtomicInteger(0);
-        this.playerData = new ConcurrentHashMap<>();
+        this.playerIdToSession = new ConcurrentHashMap<>();
     }
 
 
@@ -45,13 +46,19 @@ public class PlayerSessionRegistry {
                 .id(playerId)
                 .username(username)
                 .lastReceivedUpdate(LocalDateTime.now())
+                .state(PlayerSession.State.LOGGING_IN)
                 .build();
 
-        playerData.put(playerId, playerSession);
-
+        playerIdToSession.put(playerId, playerSession);
         return playerSession;
     }
 
+
+    public void forEachActivePlayerSession(final Consumer<PlayerSession> playerSessionConsumer) {
+        playerIdToSession.values().stream()
+                .filter(session -> session.getState() == PlayerSession.State.ACTIVE)
+                .forEach(playerSessionConsumer);
+    }
 
     private Matrix4f buildRandomPositionMatrix() {
         return new Matrix4f().translate(ThreadLocalRandom.current().nextInt(0, 500),
@@ -59,15 +66,23 @@ public class PlayerSessionRegistry {
                 0);
     }
 
+    @Override
+    public void tick(final OutputMessageQueue outputMessageQueue) {
+        //TODO
+    }
+
 
     @Builder
     @Getter
     public static class PlayerSession {
+        public enum State { LOGGING_IN, ACTIVE };
+
         private Entity playerEntity;
         private InetAddress address;
         private int port;
         private int id;
         private String username;
         private LocalDateTime lastReceivedUpdate;
+        private State state;
     }
 }

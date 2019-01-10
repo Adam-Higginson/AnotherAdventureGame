@@ -85,7 +85,9 @@ public class EventBus {
 
         private void invoke(final Event event) {
             try {
+                method.setAccessible(true);
                 method.invoke(instance, event);
+                method.setAccessible(false);
             } catch (final IllegalAccessException | InvocationTargetException e) {
                 throw new IllegalStateException(e);
             }

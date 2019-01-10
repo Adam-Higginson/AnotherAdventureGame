@@ -16,27 +16,22 @@ public final class WorldStatePacket extends Table {
 
   public SceneInfo activeScene() { return activeScene(new SceneInfo()); }
   public SceneInfo activeScene(SceneInfo obj) { int o = __offset(4); return o != 0 ? obj.__assign(__indirect(o + bb_pos), bb) : null; }
-  public PlayerInfo currentPlayer() { return currentPlayer(new PlayerInfo()); }
-  public PlayerInfo currentPlayer(PlayerInfo obj) { int o = __offset(6); return o != 0 ? obj.__assign(__indirect(o + bb_pos), bb) : null; }
   public PlayerInfo players(int j) { return players(new PlayerInfo(), j); }
-  public PlayerInfo players(PlayerInfo obj, int j) { int o = __offset(8); return o != 0 ? obj.__assign(__indirect(__vector(o) + j * 4), bb) : null; }
-  public int playersLength() { int o = __offset(8); return o != 0 ? __vector_len(o) : 0; }
+  public PlayerInfo players(PlayerInfo obj, int j) { int o = __offset(6); return o != 0 ? obj.__assign(__indirect(__vector(o) + j * 4), bb) : null; }
+  public int playersLength() { int o = __offset(6); return o != 0 ? __vector_len(o) : 0; }
 
   public static int createWorldStatePacket(FlatBufferBuilder builder,
       int activeSceneOffset,
-      int currentPlayerOffset,
       int playersOffset) {
-    builder.startObject(3);
+    builder.startObject(2);
     WorldStatePacket.addPlayers(builder, playersOffset);
-    WorldStatePacket.addCurrentPlayer(builder, currentPlayerOffset);
     WorldStatePacket.addActiveScene(builder, activeSceneOffset);
     return WorldStatePacket.endWorldStatePacket(builder);
   }
 
-  public static void startWorldStatePacket(FlatBufferBuilder builder) { builder.startObject(3); }
+  public static void startWorldStatePacket(FlatBufferBuilder builder) { builder.startObject(2); }
   public static void addActiveScene(FlatBufferBuilder builder, int activeSceneOffset) { builder.addOffset(0, activeSceneOffset, 0); }
-  public static void addCurrentPlayer(FlatBufferBuilder builder, int currentPlayerOffset) { builder.addOffset(1, currentPlayerOffset, 0); }
-  public static void addPlayers(FlatBufferBuilder builder, int playersOffset) { builder.addOffset(2, playersOffset, 0); }
+  public static void addPlayers(FlatBufferBuilder builder, int playersOffset) { builder.addOffset(1, playersOffset, 0); }
   public static int createPlayersVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addOffset(data[i]); return builder.endVector(); }
   public static void startPlayersVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
   public static int endWorldStatePacket(FlatBufferBuilder builder) {

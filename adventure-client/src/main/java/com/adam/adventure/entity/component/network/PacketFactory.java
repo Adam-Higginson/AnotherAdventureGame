@@ -5,6 +5,7 @@ import com.adam.adventure.lib.flatbuffer.schema.converter.PacketConverter;
 import com.adam.adventure.lib.flatbuffer.schema.packet.LoginPacket;
 import com.adam.adventure.lib.flatbuffer.schema.packet.Packet;
 import com.adam.adventure.lib.flatbuffer.schema.packet.PacketType;
+import com.adam.adventure.lib.flatbuffer.schema.packet.PlayerInfo;
 import com.adam.adventure.lib.flatbuffer.schema.packet.WorldStatePacket;
 import com.google.flatbuffers.FlatBufferBuilder;
 
@@ -22,12 +23,16 @@ class PacketFactory {
     byte[] newLoginPacket(final String username) {
         final FlatBufferBuilder builder = new FlatBufferBuilder(32);
         final int usernameId = builder.createString(username);
+
+        PlayerInfo.startPlayerInfo(builder);
+        PlayerInfo.addUsername(builder, usernameId);
+        int playerInfoId = PlayerInfo.endPlayerInfo(builder);
         LoginPacket.startLoginPacket(builder);
-        LoginPacket.addUsername(builder, usernameId);
+        LoginPacket.addPlayer(builder, playerInfoId);
         final int loginPacketId = LoginPacket.endLoginPacket(builder);
         builder.finish(loginPacketId);
 
-        return builder.sizedByteArray();
+        return wrapIntoPacket(builder, loginPacketId, PacketType.LoginPacket);
     }
 
     WorldState fromPacket(final byte[] buffer, final DatagramPacket packet) {
@@ -35,5 +40,15 @@ class PacketFactory {
         final Packet loginPacket = Packet.getRootAsPacket(byteBuffer);
         WorldStatePacket worldStatePacket = (WorldStatePacket) loginPacket.packet(new WorldStatePacket());
         return packetConverter.fromPacket(worldStatePacket);
+    }
+
+    private byte[] wrapIntoPacket(final FlatBufferBuilder builder, final int id, final byte packetType) {
+        Packet.startPacket(builder);
+        Packet.addPacketType(builder, packetType);
+        Packet.addPacket(builder, id);
+        int packetId = Packet.endPacket(builder);
+        builder.finish(packetId);
+
+        return builder.sizedByteArray();
     }
 }

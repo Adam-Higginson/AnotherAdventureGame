@@ -14,19 +14,18 @@ public final class LoginPacket extends Table {
   public void __init(int _i, ByteBuffer _bb) { bb_pos = _i; bb = _bb; }
   public LoginPacket __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public String username() { int o = __offset(4); return o != 0 ? __string(o + bb_pos) : null; }
-  public ByteBuffer usernameAsByteBuffer() { return __vector_as_bytebuffer(4, 1); }
-  public ByteBuffer usernameInByteBuffer(ByteBuffer _bb) { return __vector_in_bytebuffer(_bb, 4, 1); }
+  public PlayerInfo player() { return player(new PlayerInfo()); }
+  public PlayerInfo player(PlayerInfo obj) { int o = __offset(4); return o != 0 ? obj.__assign(__indirect(o + bb_pos), bb) : null; }
 
   public static int createLoginPacket(FlatBufferBuilder builder,
-      int usernameOffset) {
+      int playerOffset) {
     builder.startObject(1);
-    LoginPacket.addUsername(builder, usernameOffset);
+    LoginPacket.addPlayer(builder, playerOffset);
     return LoginPacket.endLoginPacket(builder);
   }
 
   public static void startLoginPacket(FlatBufferBuilder builder) { builder.startObject(1); }
-  public static void addUsername(FlatBufferBuilder builder, int usernameOffset) { builder.addOffset(0, usernameOffset, 0); }
+  public static void addPlayer(FlatBufferBuilder builder, int playerOffset) { builder.addOffset(0, playerOffset, 0); }
   public static int endLoginPacket(FlatBufferBuilder builder) {
     int o = builder.endObject();
     return o;

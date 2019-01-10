@@ -66,7 +66,7 @@ public class NetworkManagerComponent extends EntityComponent {
         String newSceneName = sceneActivatedEvent.getSceneName();
         String sceneName = initialWorldState.getSceneInfo().getSceneName();
         if (newSceneName.equals(sceneName) && awaitingPlayerSpawn) {
-            playerEntity.setTransform(initialWorldState.getCurrentPlayer().getTransform());
+            //playerEntity.setTransform(initialWorldState.getCurrentPlayer().getTransform());
             sceneManager.getCurrentScene().addEntity(playerEntity);
             awaitingPlayerSpawn = false;
         }

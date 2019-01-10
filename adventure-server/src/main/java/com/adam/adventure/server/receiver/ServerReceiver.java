@@ -2,6 +2,7 @@ package com.adam.adventure.server.receiver;
 
 import com.adam.adventure.lib.flatbuffer.schema.packet.Packet;
 import com.adam.adventure.lib.flatbuffer.schema.packet.PacketType;
+import com.adam.adventure.server.module.ServerDatagramSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,8 +23,8 @@ public class ServerReceiver implements Runnable {
     private boolean running;
 
     @Inject
-    ServerReceiver(@Named("serverDatagramSocket") final DatagramSocket datagramSocket,
-                          final Map<Byte, BiConsumer<DatagramPacket, Packet>> packetTypeToPacketProcessors) {
+    ServerReceiver(@ServerDatagramSocket final DatagramSocket datagramSocket,
+                   final Map<Byte, BiConsumer<DatagramPacket, Packet>> packetTypeToPacketProcessors) {
         this.datagramSocket = datagramSocket;
         this.packetTypeToPacketProcessors = packetTypeToPacketProcessors;
         this.running = true;

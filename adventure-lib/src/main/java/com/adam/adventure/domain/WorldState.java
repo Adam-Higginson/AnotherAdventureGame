@@ -6,7 +6,6 @@ import java.util.List;
 public class WorldState
 {
     private SceneInfo sceneInfo;
-    private PlayerInfo currentPlayer;
     private List<PlayerInfo> players;
 
     public WorldState() {
@@ -15,7 +14,6 @@ public class WorldState
 
     private WorldState(Builder builder) {
         sceneInfo = builder.sceneInfo;
-        currentPlayer = builder.currentPlayer;
         players = builder.players;
     }
 
@@ -27,9 +25,6 @@ public class WorldState
         return sceneInfo;
     }
 
-    public PlayerInfo getCurrentPlayer() {
-        return currentPlayer;
-    }
 
     public List<PlayerInfo> getPlayers() {
         return players;
@@ -38,7 +33,6 @@ public class WorldState
 
     public static final class Builder {
         private SceneInfo sceneInfo;
-        private PlayerInfo currentPlayer;
         private List<PlayerInfo> players;
 
         private Builder() {
@@ -46,11 +40,6 @@ public class WorldState
 
         public Builder withSceneInfo(SceneInfo val) {
             sceneInfo = val;
-            return this;
-        }
-
-        public Builder withCurrentPlayer(PlayerInfo val) {
-            currentPlayer = val;
             return this;
         }
 
