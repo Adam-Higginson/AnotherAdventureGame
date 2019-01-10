@@ -1,15 +1,15 @@
 package com.adam.adventure.server.event;
 
-import com.adam.adventure.event.Event;
+import com.adam.adventure.server.tick.event.ServerTickEvent;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
-public class NewPlayerEvent extends Event {
-    private final int playerId;
+import java.net.InetAddress;
 
-    public NewPlayerEvent(int playerId) {
-        this.playerId = playerId;
-    }
-
-    public int getPlayerId() {
-        return playerId;
-    }
+@Getter
+@AllArgsConstructor
+public class NewPlayerEvent extends ServerTickEvent {
+    private final String username;
+    private final InetAddress address;
+    private final int port;
 }

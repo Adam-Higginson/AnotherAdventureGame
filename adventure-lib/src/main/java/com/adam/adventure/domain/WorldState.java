@@ -1,5 +1,6 @@
 package com.adam.adventure.domain;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class WorldState
@@ -7,6 +8,10 @@ public class WorldState
     private SceneInfo sceneInfo;
     private PlayerInfo currentPlayer;
     private List<PlayerInfo> players;
+
+    public WorldState() {
+        this.players = new ArrayList<>();
+    }
 
     private WorldState(Builder builder) {
         sceneInfo = builder.sceneInfo;

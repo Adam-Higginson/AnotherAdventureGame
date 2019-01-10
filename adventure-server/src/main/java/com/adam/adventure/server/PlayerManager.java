@@ -48,6 +48,10 @@ public class PlayerManager {
         return playerTableRow;
     }
 
+    public PlayerTableRow getPlayer(final int userId) {
+        return playerData.get(userId);
+    }
+
     private Matrix4f buildRandomPositionMatrix() {
         return new Matrix4f().translate(ThreadLocalRandom.current().nextInt(0, 500),
                 ThreadLocalRandom.current().nextInt(0, 500),

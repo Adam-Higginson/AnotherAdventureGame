@@ -12,12 +12,10 @@ import java.util.function.BiConsumer;
 
 public class LoginPacketProcessor implements BiConsumer<DatagramPacket, Packet> {
 
-    private final PlayerManager playerManager;
     private final EventBus eventBus;
 
     @Inject
-    public LoginPacketProcessor(PlayerManager playerManager, EventBus eventBus) {
-        this.playerManager = playerManager;
+    public LoginPacketProcessor(final EventBus eventBus) {
         this.eventBus = eventBus;
     }
 
@@ -26,7 +24,6 @@ public class LoginPacketProcessor implements BiConsumer<DatagramPacket, Packet> 
         LoginPacket loginPacket = (LoginPacket) packet.packet(new LoginPacket());
         String username = loginPacket.username();
 
-        PlayerManager.PlayerTableRow playerTableRow = playerManager.addPlayer(username, datagramPacket.getAddress(), datagramPacket.getPort());
-        eventBus.publishEvent(new NewPlayerEvent(playerTableRow.getId()));
+        eventBus.publishEvent(new NewPlayerEvent(username, datagramPacket.getAddress(), datagramPacket.getPort()));
     }
 }

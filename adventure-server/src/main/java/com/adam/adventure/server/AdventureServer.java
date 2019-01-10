@@ -1,103 +1,62 @@
 package com.adam.adventure.server;
 
-import com.adam.adventure.lib.flatbuffer.schema.converter.PacketConverter;
-import com.adam.adventure.lib.flatbuffer.schema.packet.*;
-import com.google.flatbuffers.FlatBufferBuilder;
+import com.adam.adventure.server.module.AdventureServerModule;
+import com.adam.adventure.server.receiver.ServerReceiver;
+import com.adam.adventure.server.tick.ServerTickScheduler;
+import com.adam.adventure.server.tick.ServerTickSchedulerFactory;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import picocli.CommandLine;
 
-import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.nio.ByteBuffer;
-import java.util.concurrent.ThreadLocalRandom;
+@Slf4j
+public class AdventureServer implements Runnable {
 
-public class AdventureServer {
-    private static final Logger LOG = LoggerFactory.getLogger(AdventureServer.class);
+    @CommandLine.Option(names = {"-t", "--tickrate"}, description = "The tickrate of the server", required = true)
+    private int tickrate;
 
-    private boolean running;
-    private final int port;
+    @CommandLine.Option(names = {"-p", "--port"}, description = "The port to bind the server to", required = true)
+    private int port;
 
-    public AdventureServer(final int port) {
-        this.port = port;
+    public void run() {
+        LOG.info("Starting adventure server on port: {} with tickrate: {}", port, tickrate);
+
+        final Injector injector = Guice.createInjector(new AdventureServerModule(port));
+
+        ServerTickScheduler serverTickScheduler = injector.getInstance(ServerTickSchedulerFactory.class)
+                .create(tickrate);
+        serverTickScheduler.start();
+        final ServerReceiver serverReceiver = injector.getInstance(ServerReceiver.class);
+        final Thread serverReceiveThread = new Thread(serverReceiver);
+        serverReceiveThread.start();
+
+        LOG.info("Adventure server started.");
+
+        addShutdownHook(serverReceiver, serverReceiveThread, serverTickScheduler);
     }
 
-    public void start() throws IOException {
-        running = true;
-        final DatagramSocket datagramSocket = new DatagramSocket(port);
-        acceptData(datagramSocket);
+    private void addShutdownHook(final ServerReceiver serverReceiver,
+                                 final Thread serverReceiveThread,
+                                 final ServerTickScheduler serverTickScheduler) {
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                try {
+                    LOG.info("Stopping adventure server...");
+                    serverReceiver.stop();
+                    serverReceiveThread.join(1000);
+                    serverTickScheduler.stop();
+                    LOG.info("Adventure server stopped");
+                } catch (Exception e) {
+                    LOG.error("Error when stopping adventure server", e);
+                }
+            }
+        });
     }
 
-    private void acceptData(final DatagramSocket datagramSocket) throws IOException {
-        LOG.info("Adventure server started...");
-        final byte[] buffer = new byte[256];
-
-        while (running) {
-
-            // receiver request
-            final DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-            datagramSocket.receive(packet);
-            final ByteBuffer byteBuffer = ByteBuffer.wrap(buffer, packet.getOffset(), packet.getLength());
-            final LoginPacket loginPacket = LoginPacket.getRootAsLoginPacket(byteBuffer);
-
-            String username = loginPacket.username();
-            LOG.info("Received login request with username: {}", username);
-
-            returnWorldState(datagramSocket, packet, username);
-        }
-
-    }
-
-    private void returnWorldState(DatagramSocket datagramSocket, DatagramPacket packet, String username) throws IOException {
-        FlatBufferBuilder builder = new FlatBufferBuilder(256);
-        int playerUsernameId = builder.createString(username);
-        int sceneId = builder.createString("Test Scene");
-
-        SceneInfo.startSceneInfo(builder);
-        SceneInfo.addSceneName(builder, sceneId);
-        int sceneInfoId = SceneInfo.endSceneInfo(builder);
-
-        int playerInfoId = createPlayerInfo(builder, playerUsernameId);
-        int playersVectorId = WorldStatePacket.createPlayersVector(builder, new int[]{playerInfoId});
-
-        WorldStatePacket.startWorldStatePacket(builder);
-        WorldStatePacket.addActiveScene(builder, sceneInfoId);
-        WorldStatePacket.addCurrentPlayer(builder, playerInfoId);
-        WorldStatePacket.addPlayers(builder, playersVectorId);
-        int worldStatePacketId = WorldStatePacket.endWorldStatePacket(builder);
-
-        Packet.startPacket(builder);
-        Packet.addPacketType(builder, PacketType.WorldStatePacket);
-        Packet.addPacket(builder, worldStatePacketId);
-        int packetId = Packet.endPacket(builder);
-        builder.finish(packetId);
-
-
-        final byte[] worldStatePacketData = builder.sizedByteArray();
-        final DatagramPacket worldStatePacket = new DatagramPacket(worldStatePacketData, worldStatePacketData.length, packet.getAddress(), packet.getPort());
-        datagramSocket.send(worldStatePacket);
-    }
-
-    private int createPlayerInfo(FlatBufferBuilder builder, int playerUsernameId) {
-        PlayerInfo.startPlayerInfo(builder);
-        PlayerInfo.addUserId(builder, 555);
-        PlayerInfo.addUsername(builder, playerUsernameId);
-
-
-        org.joml.Matrix4f randomPositionMatrix = new org.joml.Matrix4f().translate(ThreadLocalRandom.current().nextInt(0, 500),
-                ThreadLocalRandom.current().nextInt(0, 500),
-                0);
-
-        int playerPositionId = Matrix4f.createMatrix4f(builder,
-                randomPositionMatrix.m00(), randomPositionMatrix.m01(), randomPositionMatrix.m02(), randomPositionMatrix.m03(),
-                randomPositionMatrix.m10(), randomPositionMatrix.m11(), randomPositionMatrix.m12(), randomPositionMatrix.m13(),
-                randomPositionMatrix.m20(), randomPositionMatrix.m21(), randomPositionMatrix.m22(), randomPositionMatrix.m23(),
-                randomPositionMatrix.m30(), randomPositionMatrix.m31(), randomPositionMatrix.m32(), randomPositionMatrix.m33());
-        PlayerInfo.addTransform(builder, playerPositionId);
-        return PlayerInfo.endPlayerInfo(builder);
-    }
-
-    public void stop() {
-        running = false;
+    public static void main(String[] args) {
+        CommandLine.run(new AdventureServer(), args);
     }
 }
