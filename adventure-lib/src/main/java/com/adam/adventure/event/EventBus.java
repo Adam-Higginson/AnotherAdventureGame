@@ -89,7 +89,7 @@ public class EventBus {
                 method.invoke(instance, event);
                 method.setAccessible(false);
             } catch (final IllegalAccessException | InvocationTargetException e) {
-                throw new IllegalStateException(e);
+                LOG.error("Error in event bus when trying to process event: {}", event.getClass().getSimpleName(), e);
             }
         }
 

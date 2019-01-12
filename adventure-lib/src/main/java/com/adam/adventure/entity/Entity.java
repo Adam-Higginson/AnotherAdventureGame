@@ -11,6 +11,7 @@ public class Entity {
     private final Injector injector;
     private final ComponentContainer componentContainer;
     private boolean shouldDestroyOnSceneChange;
+    private boolean active;
 
     @Inject
     Entity(@Assisted final String name, final Injector injector) {
@@ -48,7 +49,10 @@ public class Entity {
      * Tells the entity that it should now be active in the context of the current scene
      */
     public void activate() {
-        componentContainer.activate();
+        if (!active) {
+            active = true;
+            componentContainer.activate();
+        }
     }
 
     /**
@@ -57,16 +61,23 @@ public class Entity {
     public void destroy() {
         if (shouldDestroyOnSceneChange) {
             componentContainer.destroy();
+            active = false;
         }
     }
 
     public void update(final float deltaTime) {
-        componentContainer.update(deltaTime);
+        if (active) {
+            componentContainer.update(deltaTime);
+        }
     }
 
-    public Entity setShouldDestroyOnSceneChange(boolean shouldDestroyOnSceneChange) {
+    public Entity setShouldDestroyOnSceneChange(final boolean shouldDestroyOnSceneChange) {
         this.shouldDestroyOnSceneChange = shouldDestroyOnSceneChange;
         return this;
+    }
+
+    public boolean shouldDestroyOnSceneChange() {
+        return shouldDestroyOnSceneChange;
     }
 
     @Override

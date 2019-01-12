@@ -66,8 +66,8 @@ public class PlayerSessionRegistry {
     }
 
     private Matrix4f buildRandomPositionMatrix() {
-        return new Matrix4f().translate(ThreadLocalRandom.current().nextInt(0, 500),
-                ThreadLocalRandom.current().nextInt(0, 500),
+        return new Matrix4f().translate(ThreadLocalRandom.current().nextInt(-500, 500),
+                ThreadLocalRandom.current().nextInt(-500, 500),
                 0);
     }
 

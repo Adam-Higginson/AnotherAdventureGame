@@ -1,5 +1,6 @@
 package com.adam.adventure.scene;
 
+import com.adam.adventure.entity.Entity;
 import com.adam.adventure.event.EventBus;
 import com.adam.adventure.event.EventSubscribe;
 import com.adam.adventure.event.SceneActivatedEvent;
@@ -9,8 +10,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class SceneManager {
     private enum SceneManagerState {ACTIVE_SCENE, TRANSITION_TO_SCENE}
@@ -49,20 +53,33 @@ public class SceneManager {
 
     @EventSubscribe
     public void newSceneEvent(final NewSceneEvent newSceneEvent) {
-        final Scene scene = sceneNameToSceneSupplier.get(newSceneEvent.getSceneName());
-        if (scene == null) {
+        final Scene newScene = sceneNameToSceneSupplier.get(newSceneEvent.getSceneName());
+        if (newScene == null) {
             eventBus.publishEvent(new WriteUiConsoleErrorEvent("Expected scene: " + newSceneEvent.getSceneName() + " to be present, but could not be found!"));
             LOG.error("Could not find scene with name: {}", newSceneEvent.getSceneName());
+            return;
         }
 
-        LOG.info("Activating scene: {}", scene.getName());
+        LOG.info("Activating scene: {}", newScene.getName());
         //We update to scene in next frame rather than the current to allow for other processes to clean up
         sceneManagerState = SceneManagerState.TRANSITION_TO_SCENE;
         if (currentScene != null) {
             currentScene.destroy();
+            getNonDestroyableEntitiesInCurrentScene()
+                    .forEach(newScene::addEntity);
         }
 
-        currentScene = scene;
+        currentScene = newScene;
+    }
+
+    private List<Entity> getNonDestroyableEntitiesInCurrentScene() {
+        if (currentScene == null) {
+            return new ArrayList<>();
+        }
+
+        return currentScene.getEntities().stream()
+                .filter(entity -> !entity.shouldDestroyOnSceneChange())
+                .collect(Collectors.toList());
     }
 
     @EventSubscribe
@@ -75,7 +92,6 @@ public class SceneManager {
         }
 
         currentScene.update(newLoopIterationEvent.getElapsedTime());
-
         eventBus.publishEvent(new SceneActivatedEvent(currentScene.getName()));
     }
 }

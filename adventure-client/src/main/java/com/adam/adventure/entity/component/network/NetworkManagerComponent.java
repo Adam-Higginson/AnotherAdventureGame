@@ -106,15 +106,15 @@ public class NetworkManagerComponent extends EntityComponent {
             currentPlayerIds = new HashSet<>();
         } else {
             currentPlayerIds = activeWorldState.getPlayers().stream()
-                    .filter(player -> player.getId() != playerInfo.getId())
                     .map(PlayerInfo::getId)
                     .collect(Collectors.toSet());
         }
 
         latestWorldState.getPlayers().stream()
+                .filter(player -> player.getId() != playerInfo.getId())
                 .filter(player -> !currentPlayerIds.contains(player.getId()))
                 .forEach(newPlayer -> {
-                    LOG.info("Adding player: {}", newPlayer.getId());
+                    LOG.info("New player joined: {} with username: {}", newPlayer.getUsername(), newPlayer.getId());
                     eventBus.publishEvent(new WriteUiConsoleInfoEvent(newPlayer.getUsername() + " has joined."));
                     final Entity player = otherPlayerEntitySupplier.get();
                     player.setTransform(newPlayer.getTransform());
