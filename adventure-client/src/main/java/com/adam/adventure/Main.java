@@ -2,7 +2,10 @@ package com.adam.adventure;
 
 import com.adam.adventure.entity.Entity;
 import com.adam.adventure.entity.EntityFactory;
-import com.adam.adventure.entity.component.*;
+import com.adam.adventure.entity.component.AnimatedSpriteRendererComponent;
+import com.adam.adventure.entity.component.CameraTargetComponent;
+import com.adam.adventure.entity.component.KeyboardMovementComponent;
+import com.adam.adventure.entity.component.SpriteRendererComponent;
 import com.adam.adventure.entity.component.console.UiConsoleComponentFactory;
 import com.adam.adventure.entity.component.event.ComponentEvent;
 import com.adam.adventure.entity.component.network.NetworkManagerComponent;
@@ -19,9 +22,9 @@ import com.adam.adventure.render.texture.SpriteAnimation;
 import com.adam.adventure.render.texture.Texture;
 import com.adam.adventure.render.texture.TextureFactory;
 import com.adam.adventure.render.util.Rectangle;
+import com.adam.adventure.scene.NewSceneEvent;
 import com.adam.adventure.scene.Scene;
 import com.adam.adventure.scene.SceneManager;
-import com.adam.adventure.scene.NewSceneEvent;
 import com.adam.adventure.window.Window;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
@@ -127,7 +130,6 @@ public class Main {
                 .build();
 
 
-
         //Create components
         final KeyboardMovementComponent keyboardMovementComponent = new KeyboardMovementComponent(.2f);
         final Sprite sprite = new Sprite(playerTexture, new Rectangle(0.0f, 0.0f, 96f, 96f), 64f, 64f);
@@ -150,10 +152,17 @@ public class Main {
 
         final Entity networkEntity = entityFactory.create("Network manager")
                 .setShouldDestroyOnSceneChange(false)
-                .addComponent(new NetworkManagerComponent(playerEntity));
+                .addComponent(new NetworkManagerComponent(() -> playerEntity, () -> entityFactory.create("Player2")
+                        .addComponent(new AnimatedSpriteRendererComponent.Builder(sprite)
+                                .onEventStopAnimation(ComponentEvent.ENTITY_NO_MOVEMENT)
+                                .onEventSetAnimation(ComponentEvent.ENTITY_MOVE_NORTH, moveUpAnimation)
+                                .onEventSetAnimation(ComponentEvent.ENTITY_MOVE_EAST, moveEastAnimation)
+                                .onEventSetAnimation(ComponentEvent.ENTITY_MOVE_WEST, moveWestAnimation)
+                                .onEventSetAnimation(ComponentEvent.ENTITY_MOVE_SOUTH, moveDownAnimation)
+                                .build())));
 
 
-        Scene scene = sceneManager.getSceneFactory().createScene("StartScene")
+        final Scene scene = sceneManager.getSceneFactory().createScene("StartScene")
                 .addEntity(commandConsole)
                 .addEntity(networkEntity);
         sceneManager.addScene("StartScene", scene);

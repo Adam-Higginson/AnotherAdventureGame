@@ -45,9 +45,8 @@ public class PlayerLoginCompleter {
     }
 
     private void returnLoginSuccessfulPacket(final PlayerSession playerSession, final OutputPacketQueue outputPacketQueue) {
-        outputPacketQueue.addOutputPacket(() -> {
-            LOG.info("Completing log in of player: {}", playerSession.getUsername());
-            playerSessionRegistry.updatePlayerState(playerSession.getId(), PlayerSession.State.ACTIVE);
+        outputPacketQueue.addOutputPacketSupplier(() -> {
+            LOG.info("Sending login successful packet to player: {}", playerSession.getUsername());
 
             final PlayerInfo playerInfo = PlayerInfo.newBuilder()
                     .withId(playerSession.getId())

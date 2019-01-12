@@ -34,7 +34,17 @@ public class PlayerSession {
         return builder;
     }
 
-    public enum State {LOGGING_IN, ACTIVE}
+    public enum State {
+        /**
+         * The player has sent a login packet and the server may have sent a login success packet. The server is now
+         * waiting for a client ready packet before sending updates.
+         */
+        LOGGING_IN,
+        /**
+         * The player has sent a client ready packet and is now accepting world state updates.
+         */
+        ACTIVE
+    }
 
     private final Entity playerEntity;
     private final InetAddress address;

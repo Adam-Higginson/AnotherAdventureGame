@@ -4,7 +4,6 @@ import com.adam.adventure.entity.EntityComponent;
 import com.adam.adventure.event.EventBus;
 import com.adam.adventure.event.EventSubscribe;
 import com.adam.adventure.event.LockInputEvent;
-import com.adam.adventure.event.WriteUiConsoleErrorEvent;
 import com.adam.adventure.input.InputManager;
 import com.adam.adventure.input.KeyPressListener;
 import com.adam.adventure.render.ui.UiManager;
@@ -115,10 +114,12 @@ public class UiConsoleComponent extends EntityComponent implements KeyPressListe
         }
     }
 
+
     @EventSubscribe
-    public void onConsoleMessageEvent(final WriteUiConsoleErrorEvent writeUiConsoleErrorEvent) {
-        writeError(writeUiConsoleErrorEvent.getMessage());
+    public void onConsoleMessageEvent(final ConsoleEvent consoleEvent) {
+        consoleEvent.handle(this);
     }
+
 
     private void toggleConsole() {
         if (consoleVisible) {

@@ -2,6 +2,7 @@ package com.adam.adventure.server.receiver;
 
 import com.adam.adventure.lib.flatbuffer.schema.packet.Packet;
 import com.adam.adventure.lib.flatbuffer.schema.packet.PacketType;
+import com.adam.adventure.server.receiver.processor.ClientReadyPacketProcessor;
 import com.adam.adventure.server.receiver.processor.LoginPacketProcessor;
 import com.google.inject.AbstractModule;
 import com.google.inject.TypeLiteral;
@@ -14,9 +15,14 @@ public class ReceiverModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        MapBinder.newMapBinder(binder(),
+        //@formatter:off
+        final MapBinder<Byte, BiConsumer<DatagramPacket, Packet>> mapBinder
+                = MapBinder.newMapBinder(binder(),
                 new TypeLiteral<Byte>() {},
-                new TypeLiteral<BiConsumer<DatagramPacket, Packet>>() {})
-        .addBinding(PacketType.LoginPacket).to(LoginPacketProcessor.class);
+                new TypeLiteral<BiConsumer<DatagramPacket, Packet>>() {});
+        //@formatter:on
+
+        mapBinder.addBinding(PacketType.LoginPacket).to(LoginPacketProcessor.class);
+        mapBinder.addBinding(PacketType.ClientReadyPacket).to(ClientReadyPacketProcessor.class);
     }
 }

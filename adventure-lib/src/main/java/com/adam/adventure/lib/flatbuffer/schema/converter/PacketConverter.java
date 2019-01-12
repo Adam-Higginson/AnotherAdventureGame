@@ -1,6 +1,5 @@
 package com.adam.adventure.lib.flatbuffer.schema.converter;
 
-import com.adam.adventure.domain.SceneInfo;
 import com.adam.adventure.domain.WorldState;
 import com.adam.adventure.lib.flatbuffer.schema.packet.*;
 import com.google.flatbuffers.FlatBufferBuilder;
@@ -13,7 +12,7 @@ public class PacketConverter {
 
     public WorldState fromPacket(final WorldStatePacket worldStatePacket) {
 
-        final SceneInfo sceneInfo = new SceneInfo(worldStatePacket.activeScene().sceneName());
+        final com.adam.adventure.domain.SceneInfo sceneInfo = new com.adam.adventure.domain.SceneInfo(worldStatePacket.activeScene().sceneName());
 
         final List<com.adam.adventure.domain.PlayerInfo> players = new ArrayList<>(worldStatePacket.playersLength());
         for (int i = 0; i < worldStatePacket.playersLength(); i++) {
@@ -49,17 +48,51 @@ public class PacketConverter {
         return wrapIntoPacket(builder, loginPacketId, PacketType.LoginPacket);
     }
 
-    public byte[] buildLoginSuccessfulPacket(final com.adam.adventure.domain.PlayerInfo playerInfo) {
-        final FlatBufferBuilder flatBufferBuilder = new FlatBufferBuilder();
-        final int playerInfoId = buildPlayerInfoId(flatBufferBuilder, playerInfo);
+    public byte[] buildClientReadyPacket(final com.adam.adventure.domain.PlayerInfo playerInfo) {
+        final FlatBufferBuilder builder = new FlatBufferBuilder(32);
+        final int playerInfoId = buildPlayerInfoId(builder, playerInfo);
 
-        LoginSuccessfulPacket.startLoginSuccessfulPacket(flatBufferBuilder);
-        LoginSuccessfulPacket.addPlayer(flatBufferBuilder, playerInfoId);
-        int loginSuccessfulPacketId = LoginSuccessfulPacket.endLoginSuccessfulPacket(flatBufferBuilder);
-
-        return wrapIntoPacket(flatBufferBuilder, loginSuccessfulPacketId, PacketType.LoginSuccessfulPacket);
+        ClientReadyPacket.startClientReadyPacket(builder);
+        ClientReadyPacket.addPlayer(builder, playerInfoId);
+        final int clientReadyPacketId = ClientReadyPacket.endClientReadyPacket(builder);
+        return wrapIntoPacket(builder, clientReadyPacketId, PacketType.ClientReadyPacket);
     }
 
+    public byte[] buildLoginSuccessfulPacket(final com.adam.adventure.domain.PlayerInfo playerInfo) {
+        final FlatBufferBuilder builder = new FlatBufferBuilder();
+        final int playerInfoId = buildPlayerInfoId(builder, playerInfo);
+
+        LoginSuccessfulPacket.startLoginSuccessfulPacket(builder);
+        LoginSuccessfulPacket.addPlayer(builder, playerInfoId);
+        final int loginSuccessfulPacketId = LoginSuccessfulPacket.endLoginSuccessfulPacket(builder);
+
+        return wrapIntoPacket(builder, loginSuccessfulPacketId, PacketType.LoginSuccessfulPacket);
+    }
+
+
+    public byte[] buildWorldStatePacket(final WorldState worldState) {
+        final FlatBufferBuilder builder = new FlatBufferBuilder();
+        final int[] playerInfoIds = new int[worldState.getPlayers().size()];
+        for (int i = 0; i < worldState.getPlayers().size(); i++) {
+            playerInfoIds[i] = buildPlayerInfoId(builder, worldState.getPlayers().get(i));
+        }
+        final int playersVectorId = WorldStatePacket.createPlayersVector(builder, playerInfoIds);
+        final int sceneInfoId = buildSceneInfo(worldState, builder);
+
+        WorldStatePacket.startWorldStatePacket(builder);
+        WorldStatePacket.addActiveScene(builder, sceneInfoId);
+        WorldStatePacket.addPlayers(builder, playersVectorId);
+        final int worldStatePacketId = WorldStatePacket.endWorldStatePacket(builder);
+
+        return wrapIntoPacket(builder, worldStatePacketId, PacketType.WorldStatePacket);
+    }
+
+    private int buildSceneInfo(final WorldState worldState, final FlatBufferBuilder builder) {
+        final int sceneNameId = builder.createString(worldState.getSceneInfo().getSceneName());
+        SceneInfo.startSceneInfo(builder);
+        SceneInfo.addSceneName(builder, sceneNameId);
+        return SceneInfo.endSceneInfo(builder);
+    }
 
     public LoginSuccessfulPacket getLoginSuccessfulPacket(final byte[] buffer, final int offset, final int length) {
         final ByteBuffer byteBuffer = ByteBuffer.wrap(buffer, offset, length);

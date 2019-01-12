@@ -8,8 +8,9 @@ public final class PacketType {
   public static final byte WorldStatePacket = 1;
   public static final byte LoginPacket = 2;
   public static final byte LoginSuccessfulPacket = 3;
+  public static final byte ClientReadyPacket = 4;
 
-  public static final String[] names = { "NONE", "WorldStatePacket", "LoginPacket", "LoginSuccessfulPacket", };
+  public static final String[] names = { "NONE", "WorldStatePacket", "LoginPacket", "LoginSuccessfulPacket", "ClientReadyPacket", };
 
   public static String name(int e) { return names[e]; }
 }

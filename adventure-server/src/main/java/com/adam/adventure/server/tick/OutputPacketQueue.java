@@ -15,7 +15,7 @@ public class OutputPacketQueue {
         this.outputPackets = new LinkedBlockingQueue<>();
     }
 
-    public void addOutputPacket(final Supplier<DatagramPacket> outputMessage) {
+    public void addOutputPacketSupplier(final Supplier<DatagramPacket> outputMessage) {
         outputPackets.add(outputMessage);
     }
 

@@ -6,12 +6,18 @@ package com.adam.adventure.event;
  * server.
  */
 public class RequestConnectionToServerEvent extends Event {
+    private final String username;
     private final String addressToConnectTo;
     private final int port;
 
-    public RequestConnectionToServerEvent(final String addressToConnectTo, final int port) {
+    public RequestConnectionToServerEvent(final String username, final String addressToConnectTo, final int port) {
+        this.username = username;
         this.addressToConnectTo = addressToConnectTo;
         this.port = port;
+    }
+
+    public String getUsername() {
+        return username;
     }
 
     public String getAddressToConnectTo() {

@@ -1,13 +1,18 @@
 package com.adam.adventure.event;
 
-public class WriteUiConsoleErrorEvent extends Event {
+import com.adam.adventure.entity.component.console.ConsoleEvent;
+import com.adam.adventure.entity.component.console.UiConsoleComponent;
+
+public class WriteUiConsoleErrorEvent extends ConsoleEvent {
     private final String message;
 
     public WriteUiConsoleErrorEvent(final String message) {
         this.message = "[ERROR] " + message;
     }
 
-    public String getMessage() {
-        return message;
+
+    @Override
+    public void handle(final UiConsoleComponent console) {
+        console.writeError(message);
     }
 }
