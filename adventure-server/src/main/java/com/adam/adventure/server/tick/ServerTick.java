@@ -3,112 +3,86 @@ package com.adam.adventure.server.tick;
 import com.adam.adventure.event.EventBus;
 import com.adam.adventure.event.EventSubscribe;
 import com.adam.adventure.server.module.ServerDatagramSocket;
-import com.adam.adventure.server.player.PlayerSessionRegistry;
-import com.adam.adventure.server.state.WorldStateTickable;
 import com.adam.adventure.server.tick.event.ServerTickEvent;
 import com.adam.adventure.server.tick.event.processor.ServerTickEventProcessorRegistry;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;
+import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 @Slf4j
 class ServerTick implements Runnable {
 
-    private final ConcurrentLinkedQueue<ServerTickEvent> serverTickEvents;
-    private final Lock serverTickEventsLock;
+    private final BlockingQueue<ServerTickEvent> serverTickEvents;
     private final DatagramSocket datagramSocket;
+    private final EventBus eventBus;
     private final ServerTickEventProcessorRegistry serverTickEventProcessorRegistry;
-    private final PlayerSessionRegistry playerSessionRegistry;
-    private final WorldStateTickable worldStateTickable;
 
     /**
      * Messages which need to be written to the socket
      */
-    private final OutputMessageQueue outputMessageQueue;
+    private final OutputPacketQueue outputPacketQueue;
 
     @Inject
     public ServerTick(
             @ServerDatagramSocket final DatagramSocket datagramSocket,
             final EventBus eventBus,
-            final ServerTickEventProcessorRegistry serverTickEventProcessorRegistry,
-            final PlayerSessionRegistry playerSessionRegistry,
-            final WorldStateTickable worldStateTickable) {
+            final ServerTickEventProcessorRegistry serverTickEventProcessorRegistry) {
         this.datagramSocket = datagramSocket;
+        this.eventBus = eventBus;
         this.serverTickEventProcessorRegistry = serverTickEventProcessorRegistry;
-        this.playerSessionRegistry = playerSessionRegistry;
-        this.worldStateTickable = worldStateTickable;
-        this.serverTickEvents = new ConcurrentLinkedQueue<>();
-        this.serverTickEventsLock = new ReentrantLock();
-        this.outputMessageQueue = new OutputMessageQueue();
+        this.serverTickEvents = new LinkedBlockingQueue<>();
+        this.outputPacketQueue = new OutputPacketQueue();
 
         eventBus.register(this);
     }
 
     /**
-     * Executes a single invocation of a server tickTickables.
+     * Executes a single invocation of a server tick.
      */
     @Override
     public void run() {
         handleNewEvents();
-        tickTickables();
+        publishServerTickEvent();
         writeOutputMessages();
     }
 
     private void handleNewEvents() {
-        final List<ServerTickEvent> eventsToHandle = drainQueue();
+        final List<ServerTickEvent> eventsToHandle = new ArrayList<>(serverTickEvents.size());
+        serverTickEvents.drainTo(eventsToHandle);
 
         eventsToHandle.forEach(event -> {
             try {
                 serverTickEventProcessorRegistry.process(event);
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 LOG.error("Error when processing event: {}", event.getClass().getSimpleName(), e);
             }
         });
     }
 
-    private void tickTickables() {
-        playerSessionRegistry.tick(outputMessageQueue);
-        worldStateTickable.tick(outputMessageQueue);
+    private void publishServerTickEvent() {
+        eventBus.publishEvent(new OnNewServerTickEvent(outputPacketQueue));
     }
 
+
     private void writeOutputMessages() {
-        outputMessageQueue.pollEach(outputMessage -> {
+        outputPacketQueue.drain().forEach(outputPacketSupplier -> {
             try {
-                outputMessage.write(datagramSocket);
-            } catch (Exception e) {
-                LOG.error("Error when writing output message", e);
+                final DatagramPacket datagramPacket = outputPacketSupplier.get();
+                datagramSocket.send(datagramPacket);
+            } catch (final Throwable t) {
+                LOG.error("Error when writing output message", t);
             }
         });
     }
 
-    private List<ServerTickEvent> drainQueue() {
-        final List<ServerTickEvent> eventsToHandle = new ArrayList<>(serverTickEvents.size());
-        try {
-            serverTickEventsLock.lock();
-            ServerTickEvent serverTickEvent = serverTickEvents.poll();
-            while (serverTickEvent != null) {
-                eventsToHandle.add(serverTickEvent);
-                serverTickEvent = serverTickEvents.poll();
-            }
-        } finally {
-            serverTickEventsLock.unlock();
-        }
-        return eventsToHandle;
-    }
-
     @EventSubscribe
     public void onServerTickEvent(final ServerTickEvent serverTickEvent) {
-        try {
-            serverTickEventsLock.lock();
-            serverTickEvents.add(serverTickEvent);
-        } finally {
-            serverTickEventsLock.unlock();
-        }
+        serverTickEvents.add(serverTickEvent);
     }
 }

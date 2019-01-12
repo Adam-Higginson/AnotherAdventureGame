@@ -1,6 +1,6 @@
 namespace com.adam.adventure.lib.flatbuffer.schema.packet;
 
-union PacketType { WorldStatePacket, LoginPacket }
+union PacketType { WorldStatePacket, LoginPacket, LoginSuccessfulPacket }
 
 struct Matrix4f {
     m00:float;
@@ -41,6 +41,10 @@ table WorldStatePacket {
 }
 
 table LoginPacket {
+    player:PlayerInfo;
+}
+
+table LoginSuccessfulPacket {
     player:PlayerInfo;
 }
 

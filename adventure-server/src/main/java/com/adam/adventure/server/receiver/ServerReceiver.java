@@ -52,8 +52,7 @@ public class ServerReceiver implements Runnable {
         }
     }
 
-    private Packet receivePacket(final DatagramPacket datagramPacket, byte[] buffer) throws IOException {
-
+    private Packet receivePacket(final DatagramPacket datagramPacket, byte[] buffer) {
         final ByteBuffer byteBuffer = ByteBuffer.wrap(buffer, datagramPacket.getOffset(), datagramPacket.getLength());
         return Packet.getRootAsPacket(byteBuffer);
     }

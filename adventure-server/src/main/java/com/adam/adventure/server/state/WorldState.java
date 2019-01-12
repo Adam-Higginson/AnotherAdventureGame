@@ -1,7 +1,7 @@
 package com.adam.adventure.server.state;
 
 import com.adam.adventure.domain.SceneInfo;
-import com.adam.adventure.server.player.PlayerSessionRegistry;
+import com.adam.adventure.server.player.PlayerSession;
 import lombok.Builder;
 import lombok.Data;
 
@@ -11,5 +11,5 @@ import java.util.List;
 @Builder
 public class WorldState {
     private SceneInfo sceneInfo;
-    private List<PlayerSessionRegistry.PlayerSession> players;
+    private List<PlayerSession> players;
 }

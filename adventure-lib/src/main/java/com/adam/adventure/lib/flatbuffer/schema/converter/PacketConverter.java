@@ -2,10 +2,10 @@ package com.adam.adventure.lib.flatbuffer.schema.converter;
 
 import com.adam.adventure.domain.SceneInfo;
 import com.adam.adventure.domain.WorldState;
-import com.adam.adventure.lib.flatbuffer.schema.packet.Matrix4f;
-import com.adam.adventure.lib.flatbuffer.schema.packet.PlayerInfo;
-import com.adam.adventure.lib.flatbuffer.schema.packet.WorldStatePacket;
+import com.adam.adventure.lib.flatbuffer.schema.packet.*;
+import com.google.flatbuffers.FlatBufferBuilder;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,8 +16,8 @@ public class PacketConverter {
         final SceneInfo sceneInfo = new SceneInfo(worldStatePacket.activeScene().sceneName());
 
         final List<com.adam.adventure.domain.PlayerInfo> players = new ArrayList<>(worldStatePacket.playersLength());
-        for (int i = 0; i< worldStatePacket.playersLength(); i++) {
-            PlayerInfo player = worldStatePacket.players(i);
+        for (int i = 0; i < worldStatePacket.playersLength(); i++) {
+            final PlayerInfo player = worldStatePacket.players(i);
             players.add(fromPacketPlayerInfo(player));
         }
 
@@ -33,6 +33,67 @@ public class PacketConverter {
                 .withId(packetPlayerInfo.userId())
                 .withTransform(fromPacketMatrix4f(packetPlayerInfo.transform()))
                 .build();
+    }
+
+    public byte[] buildLoginPacket(final String username) {
+        final FlatBufferBuilder builder = new FlatBufferBuilder(32);
+        final int usernameId = builder.createString(username);
+
+        PlayerInfo.startPlayerInfo(builder);
+        PlayerInfo.addUsername(builder, usernameId);
+        final int playerInfoId = PlayerInfo.endPlayerInfo(builder);
+        LoginPacket.startLoginPacket(builder);
+        LoginPacket.addPlayer(builder, playerInfoId);
+        final int loginPacketId = LoginPacket.endLoginPacket(builder);
+
+        return wrapIntoPacket(builder, loginPacketId, PacketType.LoginPacket);
+    }
+
+    public byte[] buildLoginSuccessfulPacket(final com.adam.adventure.domain.PlayerInfo playerInfo) {
+        final FlatBufferBuilder flatBufferBuilder = new FlatBufferBuilder();
+        final int playerInfoId = buildPlayerInfoId(flatBufferBuilder, playerInfo);
+
+        LoginSuccessfulPacket.startLoginSuccessfulPacket(flatBufferBuilder);
+        LoginSuccessfulPacket.addPlayer(flatBufferBuilder, playerInfoId);
+        int loginSuccessfulPacketId = LoginSuccessfulPacket.endLoginSuccessfulPacket(flatBufferBuilder);
+
+        return wrapIntoPacket(flatBufferBuilder, loginSuccessfulPacketId, PacketType.LoginSuccessfulPacket);
+    }
+
+
+    public LoginSuccessfulPacket getLoginSuccessfulPacket(final byte[] buffer, final int offset, final int length) {
+        final ByteBuffer byteBuffer = ByteBuffer.wrap(buffer, offset, length);
+        final Packet packet = Packet.getRootAsPacket(byteBuffer);
+        return (LoginSuccessfulPacket) packet.packet(new LoginSuccessfulPacket());
+    }
+
+    private byte[] wrapIntoPacket(final FlatBufferBuilder builder, final int id, final byte packetType) {
+        Packet.startPacket(builder);
+        Packet.addPacketType(builder, packetType);
+        Packet.addPacket(builder, id);
+        final int packetId = Packet.endPacket(builder);
+        builder.finish(packetId);
+
+        return builder.sizedByteArray();
+    }
+
+
+    private int buildPlayerInfoId(final FlatBufferBuilder builder, final com.adam.adventure.domain.PlayerInfo playerInfo) {
+        final int usernameId = builder.createString(playerInfo.getUsername());
+
+        PlayerInfo.startPlayerInfo(builder);
+        PlayerInfo.addUsername(builder, usernameId);
+        PlayerInfo.addTransform(builder, buildPacketMatrix4fId(builder, playerInfo.getTransform()));
+        PlayerInfo.addUserId(builder, playerInfo.getId());
+        return PlayerInfo.endPlayerInfo(builder);
+    }
+
+    private int buildPacketMatrix4fId(final FlatBufferBuilder builder, final org.joml.Matrix4f matrix4f) {
+        return Matrix4f.createMatrix4f(builder,
+                matrix4f.m00(), matrix4f.m01(), matrix4f.m02(), matrix4f.m03(),
+                matrix4f.m10(), matrix4f.m11(), matrix4f.m12(), matrix4f.m13(),
+                matrix4f.m20(), matrix4f.m21(), matrix4f.m22(), matrix4f.m23(),
+                matrix4f.m30(), matrix4f.m31(), matrix4f.m32(), matrix4f.m33());
     }
 
     public org.joml.Matrix4f fromPacketMatrix4f(final Matrix4f packetMatrix4f) {
