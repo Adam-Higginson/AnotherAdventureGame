@@ -17,11 +17,14 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class SceneManager {
-    private enum SceneManagerState {ACTIVE_SCENE, TRANSITION_TO_SCENE}
+
+
+    private enum SceneManagerState {ACTIVE_SCENE, TRANSITION_TO_SCENE;}
 
     private static final Logger LOG = LoggerFactory.getLogger(SceneManager.class);
 
     private Scene currentScene;
+
     private final EventBus eventBus;
     private final Map<String, Scene> sceneNameToSceneSupplier;
     private final SceneFactory sceneFactory;
@@ -43,6 +46,15 @@ public class SceneManager {
         return this;
     }
 
+    /**
+     * Forces the destruction of the current scene and all associated entities
+     */
+    public void forceDestroy() {
+        if (currentScene != null) {
+            currentScene.forceDestroy();
+        }
+    }
+
     public SceneFactory getSceneFactory() {
         return sceneFactory;
     }
@@ -52,6 +64,7 @@ public class SceneManager {
     }
 
     @EventSubscribe
+    @SuppressWarnings("unused")
     public void newSceneEvent(final NewSceneEvent newSceneEvent) {
         final Scene newScene = sceneNameToSceneSupplier.get(newSceneEvent.getSceneName());
         if (newScene == null) {

@@ -1,6 +1,6 @@
 package com.adam.adventure.server.state;
 
-import com.adam.adventure.domain.PlayerInfo;
+import com.adam.adventure.domain.EntityInfo;
 import com.adam.adventure.domain.SceneInfo;
 import com.adam.adventure.domain.WorldState;
 import com.adam.adventure.event.EventBus;
@@ -10,13 +10,15 @@ import com.adam.adventure.server.player.PlayerSession;
 import com.adam.adventure.server.player.PlayerSessionRegistry;
 import com.adam.adventure.server.tick.OnNewServerTickEvent;
 import com.adam.adventure.server.tick.OutputPacketQueue;
+import com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;
 import java.net.DatagramPacket;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -32,8 +34,10 @@ public class WorldStateManager {
         this.playerSessionRegistry = playerSessionRegistry;
         this.packetConverter = packetConverter;
         this.worldState = WorldState.newBuilder()
-                .withPlayers(new LinkedList<>())
-                .withSceneInfo(new SceneInfo("Test Scene"))
+                .withSceneInfo(SceneInfo.newBuilder()
+                        .sceneName("Test Scene")
+                        .entities(new ArrayList<>())
+                        .build())
                 .build();
 
         eventBus.register(this);
@@ -42,9 +46,11 @@ public class WorldStateManager {
     @EventSubscribe
     public void onNewServerTickEvent(final OnNewServerTickEvent onNewServerTickEvent) {
 
-        final Set<Integer> currentPlayerIdsInWorldState = worldState.getPlayers()
+        final Set<UUID> currentPlayerIdsInWorldState = worldState.getSceneInfo()
+                .getEntities()
                 .stream()
-                .map(PlayerInfo::getId)
+                .filter(entity -> entity.getType() == EntityInfo.EntityType.PLAYER)
+                .map(EntityInfo::getId)
                 .collect(Collectors.toSet());
 
         final List<PlayerSession> activePlayerSessions = playerSessionRegistry
@@ -54,12 +60,13 @@ public class WorldStateManager {
                 .stream()
                 .filter(activePlayer -> !currentPlayerIdsInWorldState.contains(activePlayer.getId()))
                 .forEach(activePlayerNotInWorld -> {
-                    final PlayerInfo playerInfo = PlayerInfo.newBuilder()
-                            .withId(activePlayerNotInWorld.getId())
-                            .withUsername(activePlayerNotInWorld.getUsername())
-                            .withTransform(activePlayerNotInWorld.getPlayerEntity().getTransform())
+                    final EntityInfo playerInfo = EntityInfo.newBuilder()
+                            .id(activePlayerNotInWorld.getId())
+                            .attributes(ImmutableMap.of("username", activePlayerNotInWorld.getUsername()))
+                            .transform(activePlayerNotInWorld.getPlayerEntity().getTransform())
+                            .type(EntityInfo.EntityType.PLAYER)
                             .build();
-                    worldState.getPlayers().add(playerInfo);
+                    worldState.getSceneInfo().getEntities().add(playerInfo);
 
                     //TODO If player has logged out/timed out you would remove them here
                 });

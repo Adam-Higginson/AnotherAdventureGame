@@ -22,11 +22,11 @@ public class LoginPacketProcessor implements BiConsumer<DatagramPacket, Packet> 
     }
 
     @Override
-    public void accept(final DatagramPacket datagramPacket, Packet packet) {
-        LoginPacket loginPacket = (LoginPacket) packet.packet(new LoginPacket());
-        String username = loginPacket.player().username();
-        InetAddress address = datagramPacket.getAddress();
-        int port = datagramPacket.getPort();
+    public void accept(final DatagramPacket datagramPacket, final Packet packet) {
+        final LoginPacket loginPacket = (LoginPacket) packet.packet(new LoginPacket());
+        final String username = loginPacket.playerUsername();
+        final InetAddress address = datagramPacket.getAddress();
+        final int port = datagramPacket.getPort();
 
         LOG.info("Received new login request from username: {} with address: {}, port: {}", username, address, port);
 

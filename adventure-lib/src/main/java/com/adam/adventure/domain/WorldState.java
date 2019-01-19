@@ -1,20 +1,13 @@
 package com.adam.adventure.domain;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
-public class WorldState
-{
-    private SceneInfo sceneInfo;
-    private List<PlayerInfo> players;
+public class WorldState {
+    private final SceneInfo sceneInfo;
 
-    public WorldState() {
-        this.players = new ArrayList<>();
-    }
-
-    private WorldState(Builder builder) {
+    private WorldState(final Builder builder) {
         sceneInfo = builder.sceneInfo;
-        players = builder.players;
     }
 
     public static Builder newBuilder() {
@@ -25,26 +18,21 @@ public class WorldState
         return sceneInfo;
     }
 
-
-    public List<PlayerInfo> getPlayers() {
-        return players;
+    public List<EntityInfo> getPlayerEntities() {
+        return sceneInfo.getEntities()
+                .stream()
+                .filter(entity -> entity.getType() == EntityInfo.EntityType.PLAYER)
+                .collect(Collectors.toList());
     }
-
 
     public static final class Builder {
         private SceneInfo sceneInfo;
-        private List<PlayerInfo> players;
 
         private Builder() {
         }
 
-        public Builder withSceneInfo(SceneInfo val) {
+        public Builder withSceneInfo(final SceneInfo val) {
             sceneInfo = val;
-            return this;
-        }
-
-        public Builder withPlayers(List<PlayerInfo> val) {
-            players = val;
             return this;
         }
 

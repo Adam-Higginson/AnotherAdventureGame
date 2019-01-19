@@ -11,21 +11,19 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Slf4j
 public class PlayerSessionRegistry {
     private final EntityFactory entityFactory;
-    private final AtomicInteger playerIdSequence;
     private final PlayerSessionMap playerSessionMap;
 
     @Inject
     public PlayerSessionRegistry(final EntityFactory entityFactory) {
         this.entityFactory = entityFactory;
-        this.playerIdSequence = new AtomicInteger(0);
         this.playerSessionMap = new PlayerSessionMap();
     }
 
@@ -39,7 +37,7 @@ public class PlayerSessionRegistry {
             return playerSessionMap.getById(existingPlayerSession.getId());
         }
 
-        final int playerId = playerIdSequence.incrementAndGet();
+        final UUID playerId = UUID.randomUUID();
         LOG.info("Adding player: {} with id: {}", username, playerId);
 
         final Entity playerEntity = entityFactory.create("Player-" + playerId);
@@ -59,7 +57,7 @@ public class PlayerSessionRegistry {
         return playerSession;
     }
 
-    public void updatePlayerState(final int playerId, final PlayerSession.State newState) {
+    public void updatePlayerState(final UUID playerId, final PlayerSession.State newState) {
         final PlayerSession playerSession = playerSessionMap.removeById(playerId);
         final PlayerSession newPlayerSession = PlayerSession.builder(playerSession)
                 .state(newState)
@@ -67,7 +65,7 @@ public class PlayerSessionRegistry {
         playerSessionMap.put(newPlayerSession);
     }
 
-    public void updatePlayerAddress(final int playerId, final InetAddress address, final int port) {
+    public void updatePlayerAddress(final UUID playerId, final InetAddress address, final int port) {
         final PlayerSession playerSession = playerSessionMap.removeById(playerId);
         final PlayerSession newPlayerSession = PlayerSession.builder(playerSession)
                 .address(address)
@@ -91,10 +89,10 @@ public class PlayerSessionRegistry {
 
 
     private class PlayerSessionMap {
-        private final Map<Integer, PlayerSession> playerIdToSession = new ConcurrentHashMap<>();
+        private final Map<UUID, PlayerSession> playerIdToSession = new ConcurrentHashMap<>();
         private final Map<String, PlayerSession> playerUsernameToSession = new ConcurrentHashMap<>();
 
-        PlayerSession getById(final int id) {
+        PlayerSession getById(final UUID id) {
             return playerIdToSession.get(id);
         }
 
@@ -102,7 +100,7 @@ public class PlayerSessionRegistry {
             return playerUsernameToSession.get(username);
         }
 
-        PlayerSession removeById(final int id) {
+        PlayerSession removeById(final UUID id) {
             final PlayerSession existingSession = playerIdToSession.remove(id);
             if (existingSession != null) {
                 playerUsernameToSession.remove(existingSession.getUsername());

@@ -1,11 +1,12 @@
 package com.adam.adventure.server.player;
 
-import com.adam.adventure.domain.PlayerInfo;
+import com.adam.adventure.domain.EntityInfo;
 import com.adam.adventure.event.EventBus;
 import com.adam.adventure.event.EventSubscribe;
 import com.adam.adventure.lib.flatbuffer.schema.converter.PacketConverter;
 import com.adam.adventure.server.tick.OnNewServerTickEvent;
 import com.adam.adventure.server.tick.OutputPacketQueue;
+import com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;
@@ -48,10 +49,11 @@ public class PlayerLoginCompleter {
         outputPacketQueue.addOutputPacketSupplier(() -> {
             LOG.info("Sending login successful packet to player: {}", playerSession.getUsername());
 
-            final PlayerInfo playerInfo = PlayerInfo.newBuilder()
-                    .withId(playerSession.getId())
-                    .withUsername(playerSession.getUsername())
-                    .withTransform(playerSession.getPlayerEntity().getTransform())
+            final EntityInfo playerInfo = EntityInfo.newBuilder()
+                    .id(playerSession.getId())
+                    .attributes(ImmutableMap.of("username", playerSession.getUsername()))
+                    .transform(playerSession.getPlayerEntity().getTransform())
+                    .type(EntityInfo.EntityType.PLAYER)
                     .build();
             final byte[] loginSuccessfulPacket = packetConverter.buildLoginSuccessfulPacket(playerInfo);
             return new DatagramPacket(loginSuccessfulPacket, loginSuccessfulPacket.length, playerSession.getAddress(), playerSession.getPort());

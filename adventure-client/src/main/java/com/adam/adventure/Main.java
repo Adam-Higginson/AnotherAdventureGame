@@ -73,6 +73,7 @@ public class Main {
 
         loop(window, injector.getInstance(LoopIteration.class));
 
+        injector.getInstance(SceneManager.class).forceDestroy();
         window.close();
         glfwTerminate();
         glfwSetErrorCallback(null).free();

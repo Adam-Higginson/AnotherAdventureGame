@@ -14,18 +14,18 @@ public final class LoginSuccessfulPacket extends Table {
   public void __init(int _i, ByteBuffer _bb) { bb_pos = _i; bb = _bb; }
   public LoginSuccessfulPacket __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public PlayerInfo player() { return player(new PlayerInfo()); }
-  public PlayerInfo player(PlayerInfo obj) { int o = __offset(4); return o != 0 ? obj.__assign(__indirect(o + bb_pos), bb) : null; }
+  public EntityInfo playerEntity() { return playerEntity(new EntityInfo()); }
+  public EntityInfo playerEntity(EntityInfo obj) { int o = __offset(4); return o != 0 ? obj.__assign(__indirect(o + bb_pos), bb) : null; }
 
   public static int createLoginSuccessfulPacket(FlatBufferBuilder builder,
-      int playerOffset) {
+      int playerEntityOffset) {
     builder.startObject(1);
-    LoginSuccessfulPacket.addPlayer(builder, playerOffset);
+    LoginSuccessfulPacket.addPlayerEntity(builder, playerEntityOffset);
     return LoginSuccessfulPacket.endLoginSuccessfulPacket(builder);
   }
 
   public static void startLoginSuccessfulPacket(FlatBufferBuilder builder) { builder.startObject(1); }
-  public static void addPlayer(FlatBufferBuilder builder, int playerOffset) { builder.addOffset(0, playerOffset, 0); }
+  public static void addPlayerEntity(FlatBufferBuilder builder, int playerEntityOffset) { builder.addOffset(0, playerEntityOffset, 0); }
   public static int endLoginSuccessfulPacket(FlatBufferBuilder builder) {
     int o = builder.endObject();
     return o;

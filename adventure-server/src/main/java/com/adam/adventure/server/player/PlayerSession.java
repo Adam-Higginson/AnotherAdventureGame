@@ -5,6 +5,7 @@ import lombok.Getter;
 
 import java.net.InetAddress;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Getter
 public class PlayerSession {
@@ -49,7 +50,7 @@ public class PlayerSession {
     private final Entity playerEntity;
     private final InetAddress address;
     private final int port;
-    private final int id;
+    private final UUID id;
     private final String username;
     private final LocalDateTime lastReceivedUpdate;
     private final State state;
@@ -59,7 +60,7 @@ public class PlayerSession {
         private Entity playerEntity;
         private InetAddress address;
         private int port;
-        private int id;
+        private UUID id;
         private String username;
         private LocalDateTime lastReceivedUpdate;
         private State state;
@@ -82,7 +83,7 @@ public class PlayerSession {
             return this;
         }
 
-        public Builder id(final int id) {
+        public Builder id(final UUID id) {
             this.id = id;
             return this;
         }

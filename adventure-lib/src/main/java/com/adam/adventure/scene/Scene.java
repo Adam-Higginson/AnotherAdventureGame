@@ -75,4 +75,8 @@ public class Scene {
         }
     }
 
+    void forceDestroy() {
+        entities.forEach(entity -> entity.setShouldDestroyOnSceneChange(true));
+        destroy();
+    }
 }

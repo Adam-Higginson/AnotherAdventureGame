@@ -1,6 +1,6 @@
 package com.adam.adventure.entity.component.network;
 
-import com.adam.adventure.domain.PlayerInfo;
+import com.adam.adventure.domain.EntityInfo;
 import com.adam.adventure.domain.WorldState;
 import com.adam.adventure.entity.Entity;
 import com.adam.adventure.entity.EntityComponent;
@@ -25,6 +25,7 @@ import java.nio.ByteBuffer;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -44,13 +45,14 @@ public class NetworkManagerComponent extends EntityComponent {
     private DatagramSocket datagramSocket;
     private InetAddress serverAddress;
     private int serverPort;
-    private PlayerInfo playerInfo;
+    private EntityInfo playerEntityInfo;
 
     private volatile boolean shouldReceivePackets;
     private WorldState activeWorldState;
     private volatile WorldState latestWorldState;
 
     private boolean awaitingPlayerSpawn;
+    private Thread receiveThread;
 
 
     /**
@@ -76,11 +78,22 @@ public class NetworkManagerComponent extends EntityComponent {
 
     @Override
     protected void destroy() {
+        LOG.info("Destroying network manager...");
         shouldReceivePackets = false;
         awaitingPlayerSpawn = false;
+        if (receiveThread != null) {
+            try {
+                receiveThread.join(1000L);
+            } catch (InterruptedException e) {
+                LOG.warn("Interrupted when waiting for receive thread to stop...", e);
+                Thread.currentThread().interrupt();
+            }
+        }
+
         if (datagramSocket != null) {
             datagramSocket.close();
         }
+        LOG.info("Network manager stopped");
     }
 
 
@@ -96,33 +109,8 @@ public class NetworkManagerComponent extends EntityComponent {
     }
 
 
-    private void checkForNewPlayers() {
-        if (latestWorldState == null) {
-            return;
-        }
-
-        final Set<Integer> currentPlayerIds;
-        if (activeWorldState == null) {
-            currentPlayerIds = new HashSet<>();
-        } else {
-            currentPlayerIds = activeWorldState.getPlayers().stream()
-                    .map(PlayerInfo::getId)
-                    .collect(Collectors.toSet());
-        }
-
-        latestWorldState.getPlayers().stream()
-                .filter(player -> player.getId() != playerInfo.getId())
-                .filter(player -> !currentPlayerIds.contains(player.getId()))
-                .forEach(newPlayer -> {
-                    LOG.info("New player joined: {} with username: {}", newPlayer.getUsername(), newPlayer.getId());
-                    eventBus.publishEvent(new WriteUiConsoleInfoEvent(newPlayer.getUsername() + " has joined."));
-                    final Entity player = otherPlayerEntitySupplier.get();
-                    player.setTransform(newPlayer.getTransform());
-                    sceneManager.getCurrentScene().addEntity(player);
-                });
-    }
-
     @EventSubscribe
+    @SuppressWarnings("unused")
     public void onConnect(final RequestConnectionToServerEvent requestConnectionToServerEvent) {
         this.serverPort = requestConnectionToServerEvent.getPort();
         try {
@@ -135,6 +123,7 @@ public class NetworkManagerComponent extends EntityComponent {
     }
 
     @EventSubscribe
+    @SuppressWarnings("unused")
     public void onSceneActivated(final SceneActivatedEvent sceneActivatedEvent) {
         if (activeWorldState == null) {
             //We've not set the scene
@@ -142,13 +131,14 @@ public class NetworkManagerComponent extends EntityComponent {
         }
 
         if (awaitingPlayerSpawn) {
-            final Optional<PlayerInfo> currentPlayer = activeWorldState.getPlayers()
+            final Optional<EntityInfo> currentPlayer = activeWorldState
+                    .getPlayerEntities()
                     .stream()
-                    .filter(player -> player.getId() == playerInfo.getId())
+                    .filter(player -> player.getId().equals(playerEntityInfo.getId()))
                     .findAny();
 
             if (currentPlayer.isEmpty()) {
-                LOG.warn("World state did not return our player id: {}!", playerInfo.getId());
+                LOG.warn("World state did not return our player id: {}!", playerEntityInfo.getId());
                 return;
             }
 
@@ -165,7 +155,7 @@ public class NetworkManagerComponent extends EntityComponent {
         awaitLoginSuccessfulPacket();
         sendClientReadyPacket();
         receivePacketsInBackground();
-        LOG.info("Successfully logged in, received player info: {}", playerInfo);
+        LOG.info("Successfully logged in, received player entity info: {}", playerEntityInfo);
     }
 
     private void sendLoginPacket(final String username) throws IOException {
@@ -182,7 +172,7 @@ public class NetworkManagerComponent extends EntityComponent {
         datagramSocket.receive(incomingPacket);
 
         final LoginSuccessfulPacket loginSuccessfulPacket = packetConverter.getLoginSuccessfulPacket(buffer, incomingPacket.getOffset(), incomingPacket.getLength());
-        playerInfo = packetConverter.fromPacketPlayerInfo(loginSuccessfulPacket.player());
+        playerEntityInfo = packetConverter.fromPacketEntityInfo(loginSuccessfulPacket.playerEntity());
         LOG.info("Successfully received login successful packet");
     }
 
@@ -191,14 +181,43 @@ public class NetworkManagerComponent extends EntityComponent {
      */
     private void sendClientReadyPacket() throws IOException {
         LOG.info("Sending client ready packet");
-        final byte[] clientReadyPacket = packetConverter.buildClientReadyPacket(playerInfo);
+        final byte[] clientReadyPacket = packetConverter.buildClientReadyPacket(playerEntityInfo);
         final DatagramPacket packet = new DatagramPacket(clientReadyPacket, clientReadyPacket.length, serverAddress, serverPort);
         datagramSocket.send(packet);
     }
 
     private void receivePacketsInBackground() {
         shouldReceivePackets = true;
-        new Thread(new ReceiveRunnable()).start();
+        receiveThread = new Thread(new ReceiveRunnable());
+        receiveThread.start();
+    }
+
+    private void checkForNewPlayers() {
+        if (latestWorldState == null) {
+            return;
+        }
+
+        final Set<UUID> currentPlayerIds;
+        if (activeWorldState == null) {
+            currentPlayerIds = new HashSet<>();
+        } else {
+            currentPlayerIds = activeWorldState.getPlayerEntities()
+                    .stream()
+                    .map(EntityInfo::getId)
+                    .collect(Collectors.toSet());
+        }
+
+        latestWorldState.getPlayerEntities()
+                .stream()
+                .filter(player -> player.getId() != playerEntityInfo.getId())
+                .filter(player -> !currentPlayerIds.contains(player.getId()))
+                .forEach(newPlayer -> {
+                    LOG.info("New player joined: {} with username: {}", newPlayer.getAttributes().get("username"), newPlayer.getId());
+                    eventBus.publishEvent(new WriteUiConsoleInfoEvent(newPlayer.getAttributes().get("username") + " has joined."));
+                    final Entity player = otherPlayerEntitySupplier.get();
+                    player.setTransform(newPlayer.getTransform());
+                    sceneManager.getCurrentScene().addEntity(player);
+                });
     }
 
 
@@ -226,6 +245,8 @@ public class NetworkManagerComponent extends EntityComponent {
                     LOG.error("Exception thrown when receiving packet", e);
                 }
             }
+
+            LOG.info("Network receive thread stopped");
         }
     }
 

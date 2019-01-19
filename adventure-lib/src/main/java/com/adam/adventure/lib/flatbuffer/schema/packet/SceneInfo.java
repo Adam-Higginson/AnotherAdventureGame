@@ -17,16 +17,24 @@ public final class SceneInfo extends Table {
   public String sceneName() { int o = __offset(4); return o != 0 ? __string(o + bb_pos) : null; }
   public ByteBuffer sceneNameAsByteBuffer() { return __vector_as_bytebuffer(4, 1); }
   public ByteBuffer sceneNameInByteBuffer(ByteBuffer _bb) { return __vector_in_bytebuffer(_bb, 4, 1); }
+  public EntityInfo entities(int j) { return entities(new EntityInfo(), j); }
+  public EntityInfo entities(EntityInfo obj, int j) { int o = __offset(6); return o != 0 ? obj.__assign(__indirect(__vector(o) + j * 4), bb) : null; }
+  public int entitiesLength() { int o = __offset(6); return o != 0 ? __vector_len(o) : 0; }
 
   public static int createSceneInfo(FlatBufferBuilder builder,
-      int sceneNameOffset) {
-    builder.startObject(1);
+      int sceneNameOffset,
+      int entitiesOffset) {
+    builder.startObject(2);
+    SceneInfo.addEntities(builder, entitiesOffset);
     SceneInfo.addSceneName(builder, sceneNameOffset);
     return SceneInfo.endSceneInfo(builder);
   }
 
-  public static void startSceneInfo(FlatBufferBuilder builder) { builder.startObject(1); }
+  public static void startSceneInfo(FlatBufferBuilder builder) { builder.startObject(2); }
   public static void addSceneName(FlatBufferBuilder builder, int sceneNameOffset) { builder.addOffset(0, sceneNameOffset, 0); }
+  public static void addEntities(FlatBufferBuilder builder, int entitiesOffset) { builder.addOffset(1, entitiesOffset, 0); }
+  public static int createEntitiesVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addOffset(data[i]); return builder.endVector(); }
+  public static void startEntitiesVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
   public static int endSceneInfo(FlatBufferBuilder builder) {
     int o = builder.endObject();
     return o;

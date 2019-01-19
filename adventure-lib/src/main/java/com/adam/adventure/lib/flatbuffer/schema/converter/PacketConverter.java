@@ -6,64 +6,88 @@ import com.google.flatbuffers.FlatBufferBuilder;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 
 public class PacketConverter {
 
     public WorldState fromPacket(final WorldStatePacket worldStatePacket) {
+        return WorldState.newBuilder()
+                .withSceneInfo(fromPacketSceneInfo(worldStatePacket.activeScene()))
+                .build();
+    }
 
-        final com.adam.adventure.domain.SceneInfo sceneInfo = new com.adam.adventure.domain.SceneInfo(worldStatePacket.activeScene().sceneName());
 
-        final List<com.adam.adventure.domain.PlayerInfo> players = new ArrayList<>(worldStatePacket.playersLength());
-        for (int i = 0; i < worldStatePacket.playersLength(); i++) {
-            final PlayerInfo player = worldStatePacket.players(i);
-            players.add(fromPacketPlayerInfo(player));
+    public com.adam.adventure.domain.SceneInfo fromPacketSceneInfo(final SceneInfo packetSceneInfo) {
+        final List<com.adam.adventure.domain.EntityInfo> entityInfo = new ArrayList<>(packetSceneInfo.entitiesLength());
+        for (int i = 0; i < packetSceneInfo.entitiesLength(); i++) {
+            entityInfo.add(fromPacketEntityInfo(packetSceneInfo.entities(i)));
         }
 
-        return WorldState.newBuilder()
-                .withSceneInfo(sceneInfo)
-                .withPlayers(players)
+        return com.adam.adventure.domain.SceneInfo.newBuilder()
+                .sceneName(packetSceneInfo.sceneName())
+                .entities(entityInfo)
                 .build();
     }
 
-    public com.adam.adventure.domain.PlayerInfo fromPacketPlayerInfo(final PlayerInfo packetPlayerInfo) {
-        return com.adam.adventure.domain.PlayerInfo.newBuilder()
-                .withUsername(packetPlayerInfo.username())
-                .withId(packetPlayerInfo.userId())
-                .withTransform(fromPacketMatrix4f(packetPlayerInfo.transform()))
+    public com.adam.adventure.domain.EntityInfo fromPacketEntityInfo(final EntityInfo packetEntityInfo) {
+        return com.adam.adventure.domain.EntityInfo.newBuilder()
+                .id(UUID.fromString(packetEntityInfo.id()))
+                .transform(fromPacketMatrix4f(packetEntityInfo.transform()))
+                .attributes(fromPacketMap(packetEntityInfo.attributes()))
+                .type(fromPacketEntityType(packetEntityInfo.type()))
                 .build();
     }
+
+    public com.adam.adventure.domain.EntityInfo.EntityType fromPacketEntityType(final byte packetEntityType) {
+        switch (packetEntityType) {
+            case EntityType.STANDARD:
+                return com.adam.adventure.domain.EntityInfo.EntityType.STANDARD;
+            case EntityType.PLAYER:
+                return com.adam.adventure.domain.EntityInfo.EntityType.PLAYER;
+        }
+
+        return null;
+    }
+
+    public java.util.Map<String, String> fromPacketMap(final Map packetMap) {
+        final java.util.Map<String, String> map = new HashMap<>();
+        for (int i = 0; i < packetMap.entriesLength(); i++) {
+            map.put(packetMap.entries(i).key(), packetMap.entries(i).value());
+        }
+
+        return map;
+    }
+
 
     public byte[] buildLoginPacket(final String username) {
         final FlatBufferBuilder builder = new FlatBufferBuilder(32);
         final int usernameId = builder.createString(username);
 
-        PlayerInfo.startPlayerInfo(builder);
-        PlayerInfo.addUsername(builder, usernameId);
-        final int playerInfoId = PlayerInfo.endPlayerInfo(builder);
         LoginPacket.startLoginPacket(builder);
-        LoginPacket.addPlayer(builder, playerInfoId);
+        LoginPacket.addPlayerUsername(builder, usernameId);
         final int loginPacketId = LoginPacket.endLoginPacket(builder);
 
         return wrapIntoPacket(builder, loginPacketId, PacketType.LoginPacket);
     }
 
-    public byte[] buildClientReadyPacket(final com.adam.adventure.domain.PlayerInfo playerInfo) {
+    public byte[] buildClientReadyPacket(final com.adam.adventure.domain.EntityInfo entityInfo) {
         final FlatBufferBuilder builder = new FlatBufferBuilder(32);
-        final int playerInfoId = buildPlayerInfoId(builder, playerInfo);
+        final int entityInfoId = buildEntityInfoId(builder, entityInfo);
 
         ClientReadyPacket.startClientReadyPacket(builder);
-        ClientReadyPacket.addPlayer(builder, playerInfoId);
+        ClientReadyPacket.addPlayerEntity(builder, entityInfoId);
         final int clientReadyPacketId = ClientReadyPacket.endClientReadyPacket(builder);
         return wrapIntoPacket(builder, clientReadyPacketId, PacketType.ClientReadyPacket);
     }
 
-    public byte[] buildLoginSuccessfulPacket(final com.adam.adventure.domain.PlayerInfo playerInfo) {
+    public byte[] buildLoginSuccessfulPacket(final com.adam.adventure.domain.EntityInfo entityInfo) {
         final FlatBufferBuilder builder = new FlatBufferBuilder();
-        final int playerInfoId = buildPlayerInfoId(builder, playerInfo);
+        final int entityInfoId = buildEntityInfoId(builder, entityInfo);
 
         LoginSuccessfulPacket.startLoginSuccessfulPacket(builder);
-        LoginSuccessfulPacket.addPlayer(builder, playerInfoId);
+        LoginSuccessfulPacket.addPlayerEntity(builder, entityInfoId);
         final int loginSuccessfulPacketId = LoginSuccessfulPacket.endLoginSuccessfulPacket(builder);
 
         return wrapIntoPacket(builder, loginSuccessfulPacketId, PacketType.LoginSuccessfulPacket);
@@ -72,16 +96,10 @@ public class PacketConverter {
 
     public byte[] buildWorldStatePacket(final WorldState worldState) {
         final FlatBufferBuilder builder = new FlatBufferBuilder();
-        final int[] playerInfoIds = new int[worldState.getPlayers().size()];
-        for (int i = 0; i < worldState.getPlayers().size(); i++) {
-            playerInfoIds[i] = buildPlayerInfoId(builder, worldState.getPlayers().get(i));
-        }
-        final int playersVectorId = WorldStatePacket.createPlayersVector(builder, playerInfoIds);
         final int sceneInfoId = buildSceneInfo(worldState, builder);
 
         WorldStatePacket.startWorldStatePacket(builder);
         WorldStatePacket.addActiveScene(builder, sceneInfoId);
-        WorldStatePacket.addPlayers(builder, playersVectorId);
         final int worldStatePacketId = WorldStatePacket.endWorldStatePacket(builder);
 
         return wrapIntoPacket(builder, worldStatePacketId, PacketType.WorldStatePacket);
@@ -89,8 +107,16 @@ public class PacketConverter {
 
     private int buildSceneInfo(final WorldState worldState, final FlatBufferBuilder builder) {
         final int sceneNameId = builder.createString(worldState.getSceneInfo().getSceneName());
+        final int[] entityInfoIds = worldState.getSceneInfo().getEntities()
+                .stream()
+                .mapToInt(entity -> buildEntityInfoId(builder, entity))
+                .toArray();
+        final int entitiesVectorId = SceneInfo.createEntitiesVector(builder, entityInfoIds);
+
         SceneInfo.startSceneInfo(builder);
         SceneInfo.addSceneName(builder, sceneNameId);
+        SceneInfo.addEntities(builder, entitiesVectorId);
+
         return SceneInfo.endSceneInfo(builder);
     }
 
@@ -111,15 +137,40 @@ public class PacketConverter {
     }
 
 
-    private int buildPlayerInfoId(final FlatBufferBuilder builder, final com.adam.adventure.domain.PlayerInfo playerInfo) {
-        final int usernameId = builder.createString(playerInfo.getUsername());
+    private int buildEntityInfoId(final FlatBufferBuilder builder, final com.adam.adventure.domain.EntityInfo entityInfo) {
+        final int idStringId = builder.createString(entityInfo.getId().toString());
+        final int attributesId = buildMapId(builder, entityInfo.getAttributes());
 
-        PlayerInfo.startPlayerInfo(builder);
-        PlayerInfo.addUsername(builder, usernameId);
-        PlayerInfo.addTransform(builder, buildPacketMatrix4fId(builder, playerInfo.getTransform()));
-        PlayerInfo.addUserId(builder, playerInfo.getId());
-        return PlayerInfo.endPlayerInfo(builder);
+        EntityInfo.startEntityInfo(builder);
+        EntityInfo.addId(builder, idStringId);
+        EntityInfo.addTransform(builder, buildPacketMatrix4fId(builder, entityInfo.getTransform()));
+        EntityInfo.addAttributes(builder, attributesId);
+        EntityInfo.addType(builder, (byte) entityInfo.getType().ordinal());
+        return EntityInfo.endEntityInfo(builder);
     }
+
+
+    private int buildMapId(final FlatBufferBuilder builder, final java.util.Map<String, String> map) {
+        final int[] entryIds = map.entrySet().stream()
+                .mapToInt(entry -> buildEntryId(builder, entry.getKey(), entry.getValue()))
+                .toArray();
+        final int entriesId = Map.createEntriesVector(builder, entryIds);
+
+        Map.startMap(builder);
+        Map.addEntries(builder, entriesId);
+        return Map.endMap(builder);
+    }
+
+    private int buildEntryId(final FlatBufferBuilder builder, final String key, final String value) {
+        final int keyId = builder.createString(key);
+        final int valueId = builder.createString(value);
+
+        MapEntry.startMapEntry(builder);
+        MapEntry.addKey(builder, keyId);
+        MapEntry.addValue(builder, valueId);
+        return MapEntry.endMapEntry(builder);
+    }
+
 
     private int buildPacketMatrix4fId(final FlatBufferBuilder builder, final org.joml.Matrix4f matrix4f) {
         return Matrix4f.createMatrix4f(builder,

@@ -4,8 +4,10 @@ import com.adam.adventure.server.tick.event.ServerTickEvent;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.util.UUID;
+
 @AllArgsConstructor
 @Getter
 public class ClientReadyEvent extends ServerTickEvent {
-    private final int playerId;
+    private final UUID playerId;
 }

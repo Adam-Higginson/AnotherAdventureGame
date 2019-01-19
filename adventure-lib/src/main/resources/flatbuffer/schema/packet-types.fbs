@@ -24,38 +24,50 @@ struct Matrix4f {
     m33:float;
 }
 
-table SceneInfo {
-    sceneName:string;
-    //Other things here maybe, e.g. other entities in the scene
+
+table Map {
+    entries:[MapEntry];
 }
 
-table PlayerInfo {
-    userId:int;
-    username:string;
-    transform:Matrix4f;
+table MapEntry {
+    key:string;
+    value:string;
 }
+
+enum EntityType:byte { STANDARD, PLAYER }
+
+table EntityInfo {
+    id:string;
+    transform:Matrix4f;
+    type:EntityType;
+    attributes:Map;
+}
+
+table SceneInfo {
+    sceneName:string;
+    entities:[EntityInfo];
+}
+
 
 //Sent by the server to indicate the state of the world
 table WorldStatePacket {
     activeScene:SceneInfo;
-    players:[PlayerInfo];
 }
 
 //Sent by the client to indicate they'd like to login to the server
 table LoginPacket {
-    player:PlayerInfo;
+    playerUsername:string;
 }
 
 //Returned by the server to state player information
 table LoginSuccessfulPacket {
-    player:PlayerInfo;
+    playerEntity:EntityInfo;
 }
 
 //Send by the client to say it is now ready to start receiving regular updates from the server
 table ClientReadyPacket {
-    player:PlayerInfo;
+    playerEntity:EntityInfo;
 }
-
 
 table Packet {
     packet:PacketType;

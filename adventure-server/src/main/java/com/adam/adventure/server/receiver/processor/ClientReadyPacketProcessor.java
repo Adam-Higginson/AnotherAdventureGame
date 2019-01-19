@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;
 import java.net.DatagramPacket;
+import java.util.UUID;
 import java.util.function.BiConsumer;
 
 @Slf4j
@@ -24,7 +25,7 @@ public class ClientReadyPacketProcessor implements BiConsumer<DatagramPacket, Pa
     @Override
     public void accept(final DatagramPacket datagramPacket, final Packet packet) {
         final ClientReadyPacket clientReadyPacket = (ClientReadyPacket) packet.packet(new ClientReadyPacket());
-        final int playerId = clientReadyPacket.player().userId();
+        final UUID playerId = UUID.fromString(clientReadyPacket.playerEntity().id());
         LOG.info("Received client ready packet from player id: {}", playerId);
 
         eventBus.publishEvent(new ClientReadyEvent(playerId));
