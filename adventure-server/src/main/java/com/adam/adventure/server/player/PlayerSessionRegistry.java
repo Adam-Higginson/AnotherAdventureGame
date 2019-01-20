@@ -2,16 +2,14 @@ package com.adam.adventure.server.player;
 
 import com.adam.adventure.entity.Entity;
 import com.adam.adventure.entity.EntityFactory;
+import com.adam.adventure.server.entity.component.NetworkIdComponent;
 import lombok.extern.slf4j.Slf4j;
 import org.joml.Matrix4f;
 
 import javax.inject.Inject;
 import java.net.InetAddress;
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
@@ -42,6 +40,7 @@ public class PlayerSessionRegistry {
 
         final Entity playerEntity = entityFactory.create("Player-" + playerId);
         playerEntity.setTransform(buildRandomPositionMatrix());
+        playerEntity.addComponent(new NetworkIdComponent(playerId));
 
         final PlayerSession playerSession = PlayerSession.builder()
                 .playerEntity(playerEntity)
@@ -72,6 +71,10 @@ public class PlayerSessionRegistry {
                 .port(port)
                 .build();
         playerSessionMap.put(newPlayerSession);
+    }
+
+    public Optional<PlayerSession> getById(final UUID playerId) {
+        return Optional.ofNullable(playerSessionMap.getById(playerId));
     }
 
 

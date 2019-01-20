@@ -22,6 +22,8 @@ public class ComponentContainer {
     }
 
     public ComponentContainer addComponent(final EntityComponent component) {
+        entityComponentTypeToInstance.values()
+                .forEach(entityComponent -> entityComponent.onNewComponentAdded(component));
         entityComponentTypeToInstance.put(component.getClass(), component);
         return this;
     }
@@ -42,6 +44,7 @@ public class ComponentContainer {
 
     public void update(final float deltaTime) {
         getAllComponents().forEach(component -> component.update(deltaTime));
+        getAllComponents().forEach(component -> component.afterUpdate(deltaTime));
     }
 
     public Entity getEntity() {

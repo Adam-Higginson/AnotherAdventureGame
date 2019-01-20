@@ -79,6 +79,7 @@ public class SpriteRenderable implements Renderable {
     private void applyUniforms(final Program program) {
         final UniformMatrix4f modelUniform = program.getUniform("model", UniformMatrix4f.class);
         final Matrix4f transformMatrix = entity.getTransform();
+
         modelUniform.useUniform(transformMatrix);
 
         final Uniform2f textureDimensionsUniform = program.getUniform("textureDimensions", Uniform2f.class);

@@ -61,25 +61,27 @@ public class PacketConverter {
     }
 
 
-    public byte[] buildLoginPacket(final String username) {
-        final FlatBufferBuilder builder = new FlatBufferBuilder(32);
+    public int buildLoginPacket(final FlatBufferBuilder builder,
+                                final String username,
+                                final long packetId) {
         final int usernameId = builder.createString(username);
 
         LoginPacket.startLoginPacket(builder);
         LoginPacket.addPlayerUsername(builder, usernameId);
         final int loginPacketId = LoginPacket.endLoginPacket(builder);
 
-        return wrapIntoPacket(builder, loginPacketId, PacketType.LoginPacket);
+        return wrapIntoPacket(builder, loginPacketId, PacketType.LoginPacket, packetId);
     }
 
-    public byte[] buildClientReadyPacket(final com.adam.adventure.domain.EntityInfo entityInfo) {
-        final FlatBufferBuilder builder = new FlatBufferBuilder(32);
+    public int buildClientReadyPacket(final FlatBufferBuilder builder,
+                                      final com.adam.adventure.domain.EntityInfo entityInfo,
+                                      final long packetId) {
         final int entityInfoId = buildEntityInfoId(builder, entityInfo);
 
         ClientReadyPacket.startClientReadyPacket(builder);
         ClientReadyPacket.addPlayerEntity(builder, entityInfoId);
         final int clientReadyPacketId = ClientReadyPacket.endClientReadyPacket(builder);
-        return wrapIntoPacket(builder, clientReadyPacketId, PacketType.ClientReadyPacket);
+        return wrapIntoPacket(builder, clientReadyPacketId, PacketType.ClientReadyPacket, packetId);
     }
 
     public byte[] buildLoginSuccessfulPacket(final com.adam.adventure.domain.EntityInfo entityInfo) {
@@ -103,6 +105,21 @@ public class PacketConverter {
         final int worldStatePacketId = WorldStatePacket.endWorldStatePacket(builder);
 
         return wrapIntoPacket(builder, worldStatePacketId, PacketType.WorldStatePacket);
+    }
+
+    public int buildEntityTransformPacket(
+            final FlatBufferBuilder builder,
+            final UUID entityId,
+            final org.joml.Matrix4f transform,
+            final long packetId) {
+        final int entityIdId = builder.createString(entityId.toString());
+
+        EntityTransformPacket.startEntityTransformPacket(builder);
+        EntityTransformPacket.addEntityId(builder, entityIdId);
+        EntityTransformPacket.addTransform(builder, buildPacketMatrix4fId(builder, transform));
+        final int entityTransformPacketId = EntityTransformPacket.endEntityTransformPacket(builder);
+
+        return wrapIntoPacket(builder, entityTransformPacketId, PacketType.EntityTransformPacket, packetId);
     }
 
     private int buildSceneInfo(final WorldState worldState, final FlatBufferBuilder builder) {
@@ -134,6 +151,14 @@ public class PacketConverter {
         builder.finish(packetId);
 
         return builder.sizedByteArray();
+    }
+
+    private int wrapIntoPacket(final FlatBufferBuilder builder, final int id, final byte packetType, final long packetId) {
+        Packet.startPacket(builder);
+        Packet.addPacketType(builder, packetType);
+        Packet.addPacket(builder, id);
+        Packet.addPacketId(builder, packetId);
+        return Packet.endPacket(builder);
     }
 
 

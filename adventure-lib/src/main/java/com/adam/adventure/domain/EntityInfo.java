@@ -9,7 +9,7 @@ public class EntityInfo {
     public enum EntityType {STANDARD, PLAYER}
 
     private final UUID id;
-    private final Matrix4f transform;
+    private Matrix4f transform;
     private final Map<String, String> attributes;
     private final EntityType type;
 
@@ -41,12 +41,26 @@ public class EntityInfo {
         return transform;
     }
 
+    public void setTransform(final Matrix4f transform) {
+        this.transform = transform;
+    }
+
     public Map<String, String> getAttributes() {
         return attributes;
     }
 
     public EntityType getType() {
         return type;
+    }
+
+    @Override
+    public String toString() {
+        return "EntityInfo{" +
+                "id=" + id +
+                ", transform=" + transform +
+                ", attributes=" + attributes +
+                ", type=" + type +
+                '}';
     }
 
     public static final class Builder {

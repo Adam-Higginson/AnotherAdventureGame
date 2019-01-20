@@ -2,6 +2,7 @@ package com.adam.adventure.entity.component;
 
 import com.adam.adventure.entity.EntityComponent;
 import com.adam.adventure.entity.component.event.ComponentEvent;
+import com.adam.adventure.entity.component.event.MovementComponentEvent;
 import com.adam.adventure.render.RenderQueue;
 import com.adam.adventure.render.renderable.SpriteRenderable;
 import com.adam.adventure.render.sprite.Sprite;
@@ -22,9 +23,9 @@ public class AnimatedSpriteRendererComponent extends EntityComponent {
     private RenderQueue rendererQueue;
 
     private final Sprite sprite;
-    private final Map<ComponentEvent, SpriteAnimation> eventToSpriteAnimation;
-    private final Set<ComponentEvent> stopAnimationEvents;
-    private ComponentEvent activeComponentEvent;
+    private final Map<MovementComponentEvent.MovementType, SpriteAnimation> eventToSpriteAnimation;
+    private final Set<MovementComponentEvent.MovementType> stopAnimationEvents;
+    private MovementComponentEvent.MovementType activeMovementType;
     private SpriteAnimation activeSpriteAnimation;
 
     public AnimatedSpriteRendererComponent(final Builder builder) {
@@ -34,8 +35,8 @@ public class AnimatedSpriteRendererComponent extends EntityComponent {
     }
 
     public AnimatedSpriteRendererComponent(final Sprite sprite,
-                                           final Map<ComponentEvent, SpriteAnimation> eventToSpriteAnimation,
-                                           final Set<ComponentEvent> stopAnimationEvents) {
+                                           final Map<MovementComponentEvent.MovementType, SpriteAnimation> eventToSpriteAnimation,
+                                           final Set<MovementComponentEvent.MovementType> stopAnimationEvents) {
         this.sprite = sprite;
         this.eventToSpriteAnimation = eventToSpriteAnimation;
         this.stopAnimationEvents = stopAnimationEvents;
@@ -57,12 +58,17 @@ public class AnimatedSpriteRendererComponent extends EntityComponent {
 
     @Override
     public void onComponentEvent(final ComponentEvent componentEvent) {
-        if (activeComponentEvent != componentEvent) {
-            if (stopAnimationEvents.contains(componentEvent) && activeSpriteAnimation != null) {
+        if (!(componentEvent instanceof MovementComponentEvent)) {
+            return;
+        }
+        final MovementComponentEvent movementComponentEvent = (MovementComponentEvent) componentEvent;
+
+        if (activeMovementType != movementComponentEvent.getMovementType()) {
+            if (stopAnimationEvents.contains(movementComponentEvent.getMovementType()) && activeSpriteAnimation != null) {
                 activeSpriteAnimation.setLooping(false);
             } else {
-                LOG.debug("Current component event = {} new one = {}", activeComponentEvent, componentEvent);
-                final SpriteAnimation newSpriteAnimation = eventToSpriteAnimation.get(componentEvent);
+                LOG.debug("Current component event = {} new one = {}", activeMovementType, movementComponentEvent.getMovementType());
+                final SpriteAnimation newSpriteAnimation = eventToSpriteAnimation.get(movementComponentEvent.getMovementType());
                 if (newSpriteAnimation != null) {
                     if (activeSpriteAnimation != null) {
                         activeSpriteAnimation.setPaused(true);
@@ -76,26 +82,26 @@ public class AnimatedSpriteRendererComponent extends EntityComponent {
             }
         }
 
-        activeComponentEvent = componentEvent;
+        activeMovementType = movementComponentEvent.getMovementType();
     }
 
     public static class Builder {
         private final Sprite sprite;
-        private final Map<ComponentEvent, SpriteAnimation> eventToSpriteAnimation;
-        private final Set<ComponentEvent> stopAnimationEvents;
+        private final Map<MovementComponentEvent.MovementType, SpriteAnimation> eventToSpriteAnimation;
+        private final Set<MovementComponentEvent.MovementType> stopAnimationEvents;
 
         public Builder(final Sprite sprite) {
             this.sprite = sprite;
-            this.eventToSpriteAnimation = new EnumMap<>(ComponentEvent.class);
-            this.stopAnimationEvents = EnumSet.noneOf(ComponentEvent.class);
+            this.eventToSpriteAnimation = new EnumMap<>(MovementComponentEvent.MovementType.class);
+            this.stopAnimationEvents = EnumSet.noneOf(MovementComponentEvent.MovementType.class);
         }
 
-        public Builder onEventSetAnimation(final ComponentEvent event, final SpriteAnimation spriteAnimation) {
+        public Builder onEventSetAnimation(final MovementComponentEvent.MovementType event, final SpriteAnimation spriteAnimation) {
             eventToSpriteAnimation.put(event, spriteAnimation);
             return this;
         }
 
-        public Builder onEventStopAnimation(final ComponentEvent event) {
+        public Builder onEventStopAnimation(final MovementComponentEvent.MovementType event) {
             this.stopAnimationEvents.add(event);
             return this;
         }
