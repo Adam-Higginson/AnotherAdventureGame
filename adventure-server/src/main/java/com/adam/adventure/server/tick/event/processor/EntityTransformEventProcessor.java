@@ -22,7 +22,7 @@ public class EntityTransformEventProcessor implements Consumer<EntityTransformEv
     public void accept(final EntityTransformEvent entityTransformEvent) {
         //For now assume entity must be a player
         playerSessionRegistry.getById(entityTransformEvent.getEntityId())
-                .ifPresentOrElse(playerSession -> playerSession.getPlayerEntity().setTransform(entityTransformEvent.getTransform()),
+                .ifPresentOrElse(playerSession -> playerSession.getPlayerEntity().getTransform().set(entityTransformEvent.getTransform()),
                         () -> LOG.error("Received player id of: {} but could not find this player", entityTransformEvent.getEntityId()));
     }
 }
