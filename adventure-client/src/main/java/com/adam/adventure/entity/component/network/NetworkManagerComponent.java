@@ -2,16 +2,15 @@ package com.adam.adventure.entity.component.network;
 
 import com.adam.adventure.domain.EntityInfo;
 import com.adam.adventure.domain.WorldState;
+import com.adam.adventure.domain.message.PacketableMessage;
 import com.adam.adventure.entity.Entity;
 import com.adam.adventure.entity.EntityComponent;
 import com.adam.adventure.event.*;
 import com.adam.adventure.lib.flatbuffer.schema.converter.PacketConverter;
-import com.adam.adventure.lib.flatbuffer.schema.packet.LoginSuccessfulPacket;
-import com.adam.adventure.lib.flatbuffer.schema.packet.Packet;
-import com.adam.adventure.lib.flatbuffer.schema.packet.PacketType;
-import com.adam.adventure.lib.flatbuffer.schema.packet.WorldStatePacket;
+import com.adam.adventure.lib.flatbuffer.schema.packet.*;
 import com.adam.adventure.scene.NewSceneEvent;
 import com.adam.adventure.scene.SceneManager;
+import com.google.flatbuffers.FlatBufferBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,12 +21,11 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.nio.ByteBuffer;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 public class NetworkManagerComponent extends EntityComponent {
     private static final int SOCKET_TIMEOUT_MILLIS = 200;
@@ -39,40 +37,45 @@ public class NetworkManagerComponent extends EntityComponent {
     private SceneManager sceneManager;
     @Inject
     private PacketConverter packetConverter;
+    @Inject
+    private PacketTracker packetTracker;
 
     private final Supplier<Entity> playerEntitySupplier;
     private final Supplier<Entity> otherPlayerEntitySupplier;
+    private final Map<UUID, NetworkIdentityComponent> idToNetworkIdentities;
+    private final OutputMessageQueue outputMessageQueue;
+
     private DatagramSocket datagramSocket;
     private InetAddress serverAddress;
     private int serverPort;
     private EntityInfo playerEntityInfo;
-
     private volatile boolean shouldReceivePackets;
     private WorldState activeWorldState;
     private volatile WorldState latestWorldState;
-
-    private boolean awaitingPlayerSpawn;
     private Thread receiveThread;
 
 
     /**
      * @param playerEntitySupplier What entity to spawn when successfully logged into server.
      */
-    public NetworkManagerComponent(final Supplier<Entity> playerEntitySupplier, final Supplier<Entity> otherPlayerEntitySupplier) {
+    public NetworkManagerComponent(final Supplier<Entity> playerEntitySupplier,
+                                   final Supplier<Entity> otherPlayerEntitySupplier) {
         this.playerEntitySupplier = playerEntitySupplier;
         this.otherPlayerEntitySupplier = otherPlayerEntitySupplier;
+        this.idToNetworkIdentities = new HashMap<>();
+        this.outputMessageQueue = new OutputMessageQueue();
     }
 
     @Override
     protected void activate() {
         try {
             datagramSocket = new DatagramSocket();
+            datagramSocket.setSoTimeout(SOCKET_TIMEOUT_MILLIS);
         } catch (final SocketException e) {
             LOG.error("Exception when attempting to create socket!", e);
             eventBus.publishEvent(new WriteUiConsoleErrorEvent("Could not activate network manager!"));
         }
 
-        awaitingPlayerSpawn = true;
         eventBus.register(this);
     }
 
@@ -80,11 +83,10 @@ public class NetworkManagerComponent extends EntityComponent {
     protected void destroy() {
         LOG.info("Destroying network manager...");
         shouldReceivePackets = false;
-        awaitingPlayerSpawn = false;
         if (receiveThread != null) {
             try {
                 receiveThread.join(1000L);
-            } catch (InterruptedException e) {
+            } catch (final InterruptedException e) {
                 LOG.warn("Interrupted when waiting for receive thread to stop...", e);
                 Thread.currentThread().interrupt();
             }
@@ -93,6 +95,8 @@ public class NetworkManagerComponent extends EntityComponent {
         if (datagramSocket != null) {
             datagramSocket.close();
         }
+
+        this.idToNetworkIdentities.clear();
         LOG.info("Network manager stopped");
     }
 
@@ -104,8 +108,46 @@ public class NetworkManagerComponent extends EntityComponent {
             eventBus.publishEvent(new NewSceneEvent(latestWorldState.getSceneInfo().getSceneName()));
         }
 
-        checkForNewPlayers();
         activeWorldState = latestWorldState;
+        if (activeWorldState != null) {
+            processUpdatedEntities();
+        }
+
+        drainOutputMessageQueue();
+    }
+
+    private void drainOutputMessageQueue() {
+        final List<PacketableMessage<?>> messagesToSend = outputMessageQueue.drain();
+        if (messagesToSend.isEmpty()) {
+            return;
+        }
+
+        final byte[] dataToSend = buildPacketBatchFromMessages(messagesToSend);
+        final DatagramPacket datagramPacket = new DatagramPacket(dataToSend, dataToSend.length, serverAddress, serverPort);
+        try {
+            datagramSocket.send(datagramPacket);
+        } catch (final IOException e) {
+            LOG.error("Exception when writing packet to server!", e);
+        }
+    }
+
+    private byte[] buildPacketBatchFromMessages(final List<PacketableMessage<?>> messagesToSend) {
+        final FlatBufferBuilder builder = new FlatBufferBuilder();
+        final int[] packetLocations = messagesToSend
+                .stream()
+                .mapToInt(message -> message.serialise(builder, packetConverter, packetTracker.getNextPacketId()))
+                .toArray();
+
+        return buildPacketBatch(builder, packetLocations);
+    }
+
+    private byte[] buildPacketBatch(final FlatBufferBuilder builder, final int[] packetLocations) {
+        final int packetsVectorLocation = PacketBatch.createPacketsVector(builder, packetLocations);
+        PacketBatch.startPacketBatch(builder);
+        PacketBatch.addPackets(builder, packetsVectorLocation);
+        final int packetBatchId = PacketBatch.endPacketBatch(builder);
+        builder.finish(packetBatchId);
+        return builder.sizedByteArray();
     }
 
 
@@ -122,45 +164,21 @@ public class NetworkManagerComponent extends EntityComponent {
         }
     }
 
-    @EventSubscribe
-    @SuppressWarnings("unused")
-    public void onSceneActivated(final SceneActivatedEvent sceneActivatedEvent) {
-        if (activeWorldState == null) {
-            //We've not set the scene
-            return;
-        }
-
-        if (awaitingPlayerSpawn) {
-            final Optional<EntityInfo> currentPlayer = activeWorldState
-                    .getPlayerEntities()
-                    .stream()
-                    .filter(player -> player.getId().equals(playerEntityInfo.getId()))
-                    .findAny();
-
-            if (currentPlayer.isEmpty()) {
-                LOG.warn("World state did not return our player id: {}!", playerEntityInfo.getId());
-                return;
-            }
-
-            final Entity player = playerEntitySupplier.get();
-            player.setTransform(currentPlayer.get().getTransform());
-            sceneManager.getCurrentScene().addEntity(player);
-            awaitingPlayerSpawn = false;
-        }
-    }
-
 
     private void login(final String username) throws IOException {
         sendLoginPacket(username);
         awaitLoginSuccessfulPacket();
-        sendClientReadyPacket();
         receivePacketsInBackground();
+        sendClientReadyPacket();
         LOG.info("Successfully logged in, received player entity info: {}", playerEntityInfo);
     }
 
     private void sendLoginPacket(final String username) throws IOException {
         LOG.info("Logging into server with address: {}, port: {}, for username: {}", serverAddress, serverPort, username);
-        final byte[] loginPacket = packetConverter.buildLoginPacket(username);
+        final FlatBufferBuilder builder = new FlatBufferBuilder();
+        final int loginPacketLocation = packetConverter.buildLoginPacket(builder, username, packetTracker.getNextPacketId());
+        final byte[] loginPacket = buildPacketBatch(builder, new int[]{loginPacketLocation});
+
         final DatagramPacket packet = new DatagramPacket(loginPacket, loginPacket.length, serverAddress, serverPort);
         datagramSocket.send(packet);
     }
@@ -168,7 +186,6 @@ public class NetworkManagerComponent extends EntityComponent {
     private void awaitLoginSuccessfulPacket() throws IOException {
         final byte[] buffer = new byte[256];
         final DatagramPacket incomingPacket = new DatagramPacket(buffer, buffer.length);
-        datagramSocket.setSoTimeout(SOCKET_TIMEOUT_MILLIS);
         datagramSocket.receive(incomingPacket);
 
         final LoginSuccessfulPacket loginSuccessfulPacket = packetConverter.getLoginSuccessfulPacket(buffer, incomingPacket.getOffset(), incomingPacket.getLength());
@@ -181,7 +198,9 @@ public class NetworkManagerComponent extends EntityComponent {
      */
     private void sendClientReadyPacket() throws IOException {
         LOG.info("Sending client ready packet");
-        final byte[] clientReadyPacket = packetConverter.buildClientReadyPacket(playerEntityInfo);
+        final FlatBufferBuilder builder = new FlatBufferBuilder();
+        final int clientReadyPacketLocation = packetConverter.buildClientReadyPacket(builder, playerEntityInfo, packetTracker.getNextPacketId());
+        final byte[] clientReadyPacket = buildPacketBatch(builder, new int[]{clientReadyPacketLocation});
         final DatagramPacket packet = new DatagramPacket(clientReadyPacket, clientReadyPacket.length, serverAddress, serverPort);
         datagramSocket.send(packet);
     }
@@ -192,32 +211,54 @@ public class NetworkManagerComponent extends EntityComponent {
         receiveThread.start();
     }
 
-    private void checkForNewPlayers() {
-        if (latestWorldState == null) {
-            return;
-        }
 
-        final Set<UUID> currentPlayerIds;
-        if (activeWorldState == null) {
-            currentPlayerIds = new HashSet<>();
-        } else {
-            currentPlayerIds = activeWorldState.getPlayerEntities()
-                    .stream()
-                    .map(EntityInfo::getId)
-                    .collect(Collectors.toSet());
-        }
-
-        latestWorldState.getPlayerEntities()
+    private void processUpdatedEntities() {
+        //For now assume all entities in world state have been updated
+        activeWorldState.getSceneInfo()
+                .getEntities()
                 .stream()
-                .filter(player -> player.getId() != playerEntityInfo.getId())
-                .filter(player -> !currentPlayerIds.contains(player.getId()))
-                .forEach(newPlayer -> {
-                    LOG.info("New player joined: {} with username: {}", newPlayer.getAttributes().get("username"), newPlayer.getId());
-                    eventBus.publishEvent(new WriteUiConsoleInfoEvent(newPlayer.getAttributes().get("username") + " has joined."));
-                    final Entity player = otherPlayerEntitySupplier.get();
-                    player.setTransform(newPlayer.getTransform());
-                    sceneManager.getCurrentScene().addEntity(player);
+                .forEach(entityInfo -> {
+                    final NetworkIdentityComponent existingIdentity = idToNetworkIdentities.get(entityInfo.getId());
+                    if (existingIdentity == null) {
+                        onNewEntityFromServer(entityInfo);
+                    } else {
+                        existingIdentity.processNetworkUpdates(entityInfo);
+                    }
                 });
+    }
+
+
+    private void onNewEntityFromServer(final EntityInfo entityInfo) {
+        if (entityInfo.getType() == EntityInfo.EntityType.PLAYER) {
+            addNewPlayer(entityInfo);
+        } else {
+            //TODO here is where you would spawn other things...
+        }
+    }
+
+    private void addNewPlayer(final EntityInfo playerEntityInfo) {
+        LOG.info("New player joined: {} with username: {}", playerEntityInfo.getAttributes().get("username"), playerEntityInfo.getId());
+        eventBus.publishEvent(new WriteUiConsoleInfoEvent(playerEntityInfo.getAttributes().get("username") + " has joined."));
+
+        final Entity player = buildNewPlayerEntity(playerEntityInfo);
+        sceneManager.getCurrentScene().addEntity(player);
+    }
+
+    private Entity buildNewPlayerEntity(final EntityInfo newPlayerEntityInfo) {
+        final Entity player;
+        if (newPlayerEntityInfo.getId().equals(playerEntityInfo.getId())) {
+            LOG.info("Spawning player");
+            player = playerEntitySupplier.get();
+        } else {
+            LOG.info("Spawning new player with id: {}", newPlayerEntityInfo.getId());
+            player = otherPlayerEntitySupplier.get();
+        }
+
+        final NetworkIdentityComponent networkIdentityComponent
+                = new NetworkIdentityComponent(newPlayerEntityInfo.getId(), outputMessageQueue);
+        idToNetworkIdentities.put(newPlayerEntityInfo.getId(), networkIdentityComponent);
+        player.addComponent(networkIdentityComponent);
+        return player;
     }
 
 
@@ -249,5 +290,4 @@ public class NetworkManagerComponent extends EntityComponent {
             LOG.info("Network receive thread stopped");
         }
     }
-
 }

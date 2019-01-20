@@ -1,6 +1,6 @@
 namespace com.adam.adventure.lib.flatbuffer.schema.packet;
 
-union PacketType { WorldStatePacket, LoginPacket, LoginSuccessfulPacket, ClientReadyPacket }
+union PacketType { WorldStatePacket, LoginPacket, LoginSuccessfulPacket, ClientReadyPacket, EntityTransformPacket }
 
 struct Matrix4f {
     m00:float;
@@ -64,11 +64,22 @@ table LoginSuccessfulPacket {
     playerEntity:EntityInfo;
 }
 
-//Send by the client to say it is now ready to start receiving regular updates from the server
+//Sent by the client to say it is now ready to start receiving regular updates from the server
 table ClientReadyPacket {
     playerEntity:EntityInfo;
 }
 
+//Sent by the client to indicate an entity transform
+table EntityTransformPacket {
+    entityId:string;
+    transform:Matrix4f;
+}
+
 table Packet {
     packet:PacketType;
+    packetId:long;
+}
+
+table PacketBatch {
+    packets:[Packet];
 }

@@ -5,6 +5,7 @@ import com.google.inject.assistedinject.Assisted;
 import org.joml.Matrix4f;
 
 import javax.inject.Inject;
+import java.util.Optional;
 
 public class Entity {
     private final String name;
@@ -43,6 +44,10 @@ public class Entity {
 
     public String getName() {
         return name;
+    }
+
+    public <T extends EntityComponent> Optional<T> getComponent(final Class<T> componentType) {
+        return componentContainer.getComponent(componentType);
     }
 
     /**

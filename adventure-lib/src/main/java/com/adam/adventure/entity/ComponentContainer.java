@@ -22,6 +22,8 @@ public class ComponentContainer {
     }
 
     public ComponentContainer addComponent(final EntityComponent component) {
+        entityComponentTypeToInstance.values()
+                .forEach(entityComponent -> entityComponent.onNewComponentAdded(component));
         entityComponentTypeToInstance.put(component.getClass(), component);
         return this;
     }

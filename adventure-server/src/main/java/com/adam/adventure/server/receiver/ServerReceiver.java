@@ -1,6 +1,7 @@
 package com.adam.adventure.server.receiver;
 
 import com.adam.adventure.lib.flatbuffer.schema.packet.Packet;
+import com.adam.adventure.lib.flatbuffer.schema.packet.PacketBatch;
 import com.adam.adventure.server.module.ServerDatagramSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,23 +35,25 @@ public class ServerReceiver implements Runnable {
 
     @Override
     public void run() {
-        final byte[] buffer = new byte[256];
+        final byte[] buffer = new byte[1024];
 
         while (running) {
             try {
                 final DatagramPacket datagramPacket = new DatagramPacket(buffer, buffer.length);
                 datagramSocket.receive(datagramPacket);
-                final Packet packet = receivePacket(datagramPacket, buffer);
-                processPacket(datagramPacket, packet);
+                final PacketBatch packetBatch = receivePacketBatch(datagramPacket, buffer);
+                for (int i = 0; i < packetBatch.packetsLength(); i++) {
+                    processPacket(datagramPacket, packetBatch.packets(i));
+                }
             } catch (final Exception e) {
                 LOG.error("Exception thrown when receiving packet", e);
             }
         }
     }
 
-    private Packet receivePacket(final DatagramPacket datagramPacket, final byte[] buffer) {
+    private PacketBatch receivePacketBatch(final DatagramPacket datagramPacket, final byte[] buffer) {
         final ByteBuffer byteBuffer = ByteBuffer.wrap(buffer, datagramPacket.getOffset(), datagramPacket.getLength());
-        return Packet.getRootAsPacket(byteBuffer);
+        return PacketBatch.getRootAsPacketBatch(byteBuffer);
     }
 
     private void processPacket(final DatagramPacket datagramPacket, final Packet packet) {

@@ -42,6 +42,11 @@ public class PlayerSession {
          */
         LOGGING_IN,
         /**
+         * The server is now
+         * waiting for a client ready packet before sending updates.
+         */
+        AWAITING_CLIENT_READY,
+        /**
          * The player has sent a client ready packet and is now accepting world state updates.
          */
         ACTIVE

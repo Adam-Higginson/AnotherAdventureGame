@@ -1,7 +1,7 @@
 package com.adam.adventure.entity.component;
 
 import com.adam.adventure.entity.EntityComponent;
-import com.adam.adventure.entity.component.event.ComponentEvent;
+import com.adam.adventure.entity.component.event.MovementComponentEvent;
 import com.adam.adventure.input.InputManager;
 import org.joml.Vector3f;
 
@@ -29,27 +29,27 @@ public class KeyboardMovementComponent extends EntityComponent {
             return;
         }
 
-        ComponentEvent event = ComponentEvent.ENTITY_NO_MOVEMENT;
+        MovementComponentEvent.MovementType movementType = MovementComponentEvent.MovementType.ENTITY_NO_MOVEMENT;
 
         if (inputManager.isKeyPressed(GLFW_KEY_W)) {
             moveUp(deltaTime);
-            event = ComponentEvent.ENTITY_MOVE_NORTH;
+            movementType = MovementComponentEvent.MovementType.ENTITY_MOVE_NORTH;
         }
         if (inputManager.isKeyPressed(GLFW_KEY_S)) {
             moveDown(deltaTime);
-            event = ComponentEvent.ENTITY_MOVE_SOUTH;
+            movementType = MovementComponentEvent.MovementType.ENTITY_MOVE_SOUTH;
         }
         if (inputManager.isKeyPressed(GLFW_KEY_A)) {
             moveLeft(deltaTime);
-            event = ComponentEvent.ENTITY_MOVE_WEST;
+            movementType = MovementComponentEvent.MovementType.ENTITY_MOVE_WEST;
         }
         if (inputManager.isKeyPressed(GLFW_KEY_D)) {
             moveRight(deltaTime);
-            event = ComponentEvent.ENTITY_MOVE_EAST;
+            movementType = MovementComponentEvent.MovementType.ENTITY_MOVE_EAST;
         }
 
         //This only supports broadcasting of one component event to stop events cancelling themselves out.
-        broadcastComponentEvent(event);
+        broadcastComponentEvent(new MovementComponentEvent(movementType));
     }
 
 

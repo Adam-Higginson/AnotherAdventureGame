@@ -3,6 +3,7 @@ package com.adam.adventure.entity;
 import com.adam.adventure.entity.component.TransformComponent;
 import com.adam.adventure.entity.component.event.ComponentEvent;
 
+import java.util.Collection;
 import java.util.Optional;
 
 public abstract class EntityComponent {
@@ -21,6 +22,10 @@ public abstract class EntityComponent {
 
     public <T extends EntityComponent> Optional<T> getComponent(final Class<T> componentType) {
         return componentContainer.getComponent(componentType);
+    }
+
+    public Collection<EntityComponent> getAllComponents() {
+        return componentContainer.getAllComponents();
     }
 
     public TransformComponent getTransformComponent() {
@@ -45,5 +50,9 @@ public abstract class EntityComponent {
 
     protected final void broadcastComponentEvent(final ComponentEvent componentEvent) {
         componentContainer.broadcastComponentEvent(componentEvent);
+    }
+
+    protected void onNewComponentAdded(final EntityComponent component) {
+        //By default nothing happens
     }
 }

@@ -39,6 +39,7 @@ public class PlayerLoginCompleter {
                 .forEach(playerSession -> {
                     try {
                         returnLoginSuccessfulPacket(playerSession, outputPacketQueue);
+                        playerSessionRegistry.updatePlayerState(playerSession.getId(), PlayerSession.State.AWAITING_CLIENT_READY);
                     } catch (final Exception e) {
                         LOG.error("Exception when attempting to return login successful for player: {}", playerSession.getUsername(), e);
                     }
