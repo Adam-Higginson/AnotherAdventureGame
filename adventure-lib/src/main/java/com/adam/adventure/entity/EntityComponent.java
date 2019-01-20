@@ -40,6 +40,13 @@ public abstract class EntityComponent {
         // By default nothing happens
     }
 
+    /**
+     * Called after all other update methods have been called
+     */
+    protected void afterUpdate(final float deltaTime) {
+
+    }
+
     protected void destroy() {
         // By default nothing happens
     }

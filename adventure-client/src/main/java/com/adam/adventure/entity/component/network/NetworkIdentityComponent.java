@@ -37,14 +37,14 @@ class NetworkIdentityComponent extends EntityComponent {
 
     //Called by network manager when a new entity info is received
     void processNetworkUpdates(final EntityInfo entityInfo) {
-        networkComponents.forEach(networkComponent -> networkComponent.receiveUpdates(entityInfo));
+        networkComponents.forEach(networkComponent -> networkComponent.receiveNetworkUpdates(entityInfo));
     }
 
     @Override
     protected void update(final float deltaTime) {
         //Here we could check that the update time hasn't been exceeded...
         //Hmmm, should we group together here?
-        networkComponents.forEach(networkComponent -> networkComponent.writeUpdates(id, outputMessageQueue));
+        networkComponents.forEach(networkComponent -> networkComponent.writeNetworkUpdates(id, outputMessageQueue));
     }
 
 

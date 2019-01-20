@@ -102,7 +102,7 @@ public class NetworkManagerComponent extends EntityComponent {
 
 
     @Override
-    protected void update(final float deltaTime) {
+    protected void afterUpdate(final float deltaTime) {
         if (activeWorldState == null && latestWorldState != null) {
             //For now only publish initial scene transition
             eventBus.publishEvent(new NewSceneEvent(latestWorldState.getSceneInfo().getSceneName()));

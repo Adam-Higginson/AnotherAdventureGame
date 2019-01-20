@@ -155,16 +155,41 @@ public class Main {
                 .addComponent(cameraTargetComponent);
 
 
+        final Sprite otherPlayerSprite = new Sprite(playerTexture, new Rectangle(0.0f, 0.0f, 96f, 96f), 64f, 64f);
+        final SpriteAnimation moveUpAnimation1 = new SpriteAnimation.Builder(50, true)
+                .addAnimationFrame(new Rectangle(0.0f, 384.f, 96f, 96f))
+                .addAnimationFrame(new Rectangle(96f, 384.f, 96f, 96f))
+                .addAnimationFrame(new Rectangle(192f, 384.f, 96f, 96f))
+                .build();
+
+        final SpriteAnimation moveEastAnimation1 = new SpriteAnimation.Builder(50, true)
+                .addAnimationFrame(new Rectangle(0.0f, 480.f, 96f, 96f))
+                .addAnimationFrame(new Rectangle(96f, 480.f, 96f, 96f))
+                .addAnimationFrame(new Rectangle(192f, 480.f, 96f, 96f))
+                .build();
+
+        final SpriteAnimation moveWestAnimation1 = new SpriteAnimation.Builder(50, true)
+                .addAnimationFrame(new Rectangle(0.0f, 576.f, 96f, 96f))
+                .addAnimationFrame(new Rectangle(96f, 576.f, 96f, 96f))
+                .addAnimationFrame(new Rectangle(192f, 576.f, 96f, 96f))
+                .build();
+
+        final SpriteAnimation moveDownAnimation1 = new SpriteAnimation.Builder(50, true)
+                .addAnimationFrame(new Rectangle(0.0f, 672.f, 96f, 96f))
+                .addAnimationFrame(new Rectangle(96f, 672.f, 96f, 96f))
+                .addAnimationFrame(new Rectangle(192f, 672.f, 96f, 96f))
+                .build();
+
         final Entity networkEntity = entityFactory.create("Network manager")
                 .setShouldDestroyOnSceneChange(false)
                 .addComponent(new NetworkManagerComponent(() -> playerEntity, () -> entityFactory.create("Player2")
                         .addComponent(new NetworkTransformComponent(false))
-                        .addComponent(new AnimatedSpriteRendererComponent.Builder(sprite)
+                        .addComponent(new AnimatedSpriteRendererComponent.Builder(otherPlayerSprite)
                                 .onEventStopAnimation(MovementComponentEvent.MovementType.ENTITY_NO_MOVEMENT)
-                                .onEventSetAnimation(MovementComponentEvent.MovementType.ENTITY_MOVE_NORTH, moveUpAnimation)
-                                .onEventSetAnimation(MovementComponentEvent.MovementType.ENTITY_MOVE_EAST, moveEastAnimation)
-                                .onEventSetAnimation(MovementComponentEvent.MovementType.ENTITY_MOVE_WEST, moveWestAnimation)
-                                .onEventSetAnimation(MovementComponentEvent.MovementType.ENTITY_MOVE_SOUTH, moveDownAnimation)
+                                .onEventSetAnimation(MovementComponentEvent.MovementType.ENTITY_MOVE_NORTH, moveUpAnimation1)
+                                .onEventSetAnimation(MovementComponentEvent.MovementType.ENTITY_MOVE_EAST, moveEastAnimation1)
+                                .onEventSetAnimation(MovementComponentEvent.MovementType.ENTITY_MOVE_WEST, moveWestAnimation1)
+                                .onEventSetAnimation(MovementComponentEvent.MovementType.ENTITY_MOVE_SOUTH, moveDownAnimation1)
                                 .build())));
 
 
