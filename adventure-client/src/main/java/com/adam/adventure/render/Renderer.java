@@ -89,7 +89,7 @@ public class Renderer {
         renderQueue.forEach(renderable -> {
             try {
                 renderable.after(this);
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 LOG.error("Exception when executing after on renderable: {}", renderable.getClass(), e);
             }
         });
