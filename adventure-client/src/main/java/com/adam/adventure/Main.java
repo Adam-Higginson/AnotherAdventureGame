@@ -231,6 +231,21 @@ public class Main {
         final Entity tileEntity = entityFactory.create("Wood")
                 .addComponent(spriteRendererComponent);
         scene.addEntity(tileEntity);
+
+
+        //Create new player tile
+        final Texture playerMaleTexture;
+        try (final InputStream playerMaleTextureInputStream = this.getClass().getResourceAsStream("/assets/sprites/player/PlayerCharacterMale.png")) {
+            playerMaleTexture = textureFactory.loadTextureFromPng(playerMaleTextureInputStream);
+        }
+
+        final Sprite newPlayerSprite = new Sprite(playerMaleTexture, new Rectangle(0.0f, 64.0f, 32f, 32f), 32f, 32f);
+        final SpriteRendererComponent newPlayerSpriteRenderer = new SpriteRendererComponent(newPlayerSprite);
+
+        final Entity newPlayerSpriteEntity = entityFactory.create("NewPlayer")
+                .addComponent(newPlayerSpriteRenderer);
+        scene.addEntity(newPlayerSpriteEntity);
+
         return scene;
     }
 
