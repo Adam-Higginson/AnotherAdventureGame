@@ -102,9 +102,11 @@ public class SceneManager {
             //Transition to new scene if we need to
             currentScene.activate();
             sceneManagerState = SceneManagerState.ACTIVE_SCENE;
+            eventBus.publishEvent(new SceneActivatedEvent(currentScene.getName()));
         }
 
-        currentScene.update(newLoopIterationEvent.getElapsedTime());
-        eventBus.publishEvent(new SceneActivatedEvent(currentScene.getName()));
+        if (currentScene != null) {
+            currentScene.update(newLoopIterationEvent.getElapsedTime());
+        }
     }
 }

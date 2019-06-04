@@ -22,6 +22,7 @@
     <modules>
         <module>adventure-server</module>
         <module>adventure-lib</module>
+        <module>adventure-client</module>
     </modules>
 
     <dependencyManagement>

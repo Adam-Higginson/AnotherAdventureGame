@@ -38,6 +38,7 @@ import java.io.InputStream;
 import java.net.URL;
 
 import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.opengl.GL11.GL_TRUE;
 
 public class Main {
 
@@ -46,6 +47,10 @@ public class Main {
         if (!glfwInit()) {
             throw new IllegalStateException("Unable to initialize GLFW");
         }
+        //Needed to stop AWT running under the main thread which causes issues for GLFW on OSX
+        System.setProperty("java.awt.headless", "true");
+
+        configureOpenGlContext();
 
         final Injector injector = Guice.createInjector(new AdventureClientModule());
 
@@ -80,6 +85,13 @@ public class Main {
         window.close();
         glfwTerminate();
         glfwSetErrorCallback(null).free();
+    }
+
+    private void configureOpenGlContext() {
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     }
 
     private void compileShaders(final ShaderCompiler shaderCompiler, final ProgramFactory programFactory) throws IOException {

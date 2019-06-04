@@ -52,21 +52,18 @@ public class AdventureServer implements Runnable {
                                  final Thread serverReceiveThread,
                                  final ServerTickScheduler serverTickScheduler,
                                  final DatagramSocket datagramSocket) {
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                try {
-                    LOG.info("Stopping adventure server...");
-                    serverReceiver.stop();
-                    serverReceiveThread.join(1000);
-                    serverTickScheduler.stop();
-                    datagramSocket.close();
-                    LOG.info("Adventure server stopped");
-                } catch (final Exception e) {
-                    LOG.error("Error when stopping adventure server", e);
-                }
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                LOG.info("Stopping adventure server...");
+                serverReceiver.stop();
+                serverReceiveThread.join(1000);
+                serverTickScheduler.stop();
+                datagramSocket.close();
+                LOG.info("Adventure server stopped");
+            } catch (final Exception e) {
+                LOG.error("Error when stopping adventure server", e);
             }
-        });
+        }));
     }
 
     public static void main(final String[] args) {

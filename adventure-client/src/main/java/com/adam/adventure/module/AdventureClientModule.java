@@ -29,7 +29,6 @@ public class AdventureClientModule extends AbstractModule {
         bind(Camera.class).toInstance(new Camera(new Vector3f(0.0f, 0.0f, 1.0f)));
         bind(UpdateStrategy.class).to(PublishEventUpdateStrategy.class).in(Singleton.class);
         bind(LoopIteration.class).to(LoopIterationImpl.class).in(Singleton.class);
-
         bind(InputManager.class).in(Singleton.class);
         bind(TextureFactory.class).in(Singleton.class);
         bind(Renderer.class).in(Singleton.class);
