@@ -9,24 +9,20 @@ import org.lwjgl.glfw.GLFWCursorPosCallback;
 import org.lwjgl.glfw.GLFWKeyCallback;
 import org.lwjgl.glfw.GLFWMouseButtonCallback;
 import org.lwjgl.glfw.GLFWScrollCallback;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.nio.DoubleBuffer;
 import java.nio.IntBuffer;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.logging.Logger;
 
 import static org.lwjgl.glfw.GLFW.*;
 
-/**
- * Port of <code>de.lessvoid.nifty.renderer.lwjgl.LwjglInputSystem</code>
- * to LWJGL3/GLFW.
- *
- * @author Brian Groenke
- */
 public class NiftyInputSystem implements InputSystem {
 
-    private final Logger log = Logger.getLogger(NiftyInputSystem.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(NiftyInputSystem.class);
+
     private final long glfwWindow;
     private final DoubleBuffer cursorX = BufferUtils.createDoubleBuffer(1);
     private final DoubleBuffer cursorY = BufferUtils.createDoubleBuffer(1);
@@ -74,13 +70,13 @@ public class NiftyInputSystem implements InputSystem {
     }
 
     public void startup() throws Exception {
-        log.finer("Initializing LWJGL3 input system...");
+        LOG.info("Initializing LWJGL3 input system...");
 
         initialized = true;
     }
 
     public void shutdown() {
-        log.finer("Shutting down LWJGL3 input system...");
+        LOG.info("Shutting down LWJGL3 input system...");
         mouseEventsOut.clear();
         keyboardEventsOut.clear();
 
@@ -94,9 +90,6 @@ public class NiftyInputSystem implements InputSystem {
         if (!initialized) {
             return;
         }
-
-
-        glfwPollEvents();
 
         while (hasNextKeyboardEvent()) {
             inputEventConsumer.processKeyboardEvent(nextKeyboardEvent());
