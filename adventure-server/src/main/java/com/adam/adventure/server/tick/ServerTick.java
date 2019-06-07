@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Slf4j
 class ServerTick implements Runnable {
@@ -28,6 +29,7 @@ class ServerTick implements Runnable {
      */
     private final OutputPacketQueue outputPacketQueue;
 
+    private AtomicLong packetIndexCounter;
     @Inject
     public ServerTick(
             @ServerDatagramSocket final DatagramSocket datagramSocket,
@@ -38,6 +40,7 @@ class ServerTick implements Runnable {
         this.serverTickEventProcessorRegistry = serverTickEventProcessorRegistry;
         this.serverTickEvents = new LinkedBlockingQueue<>();
         this.outputPacketQueue = new OutputPacketQueue();
+        this.packetIndexCounter = new AtomicLong();
 
         eventBus.register(this);
     }
@@ -71,9 +74,10 @@ class ServerTick implements Runnable {
 
 
     private void writeOutputMessages() {
+        final long timestamp = System.currentTimeMillis();
         outputPacketQueue.drain().forEach(outputPacketSupplier -> {
             try {
-                final DatagramPacket datagramPacket = outputPacketSupplier.get();
+                final DatagramPacket datagramPacket = outputPacketSupplier.apply(packetIndexCounter.getAndIncrement(), timestamp);
                 datagramSocket.send(datagramPacket);
             } catch (final Throwable t) {
                 LOG.error("Error when writing output message", t);
@@ -82,6 +86,7 @@ class ServerTick implements Runnable {
     }
 
     @EventSubscribe
+    @SuppressWarnings("unused")
     public void onServerTickEvent(final ServerTickEvent serverTickEvent) {
         serverTickEvents.add(serverTickEvent);
     }

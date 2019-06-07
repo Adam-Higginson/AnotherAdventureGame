@@ -28,7 +28,7 @@ import java.util.UUID;
 import java.util.function.Supplier;
 
 public class NetworkManagerComponent extends EntityComponent {
-    private static final int SOCKET_TIMEOUT_MILLIS = 200;
+    private static final int SOCKET_TIMEOUT_MILLIS = 5000;
     private static final Logger LOG = LoggerFactory.getLogger(NetworkManagerComponent.class);
 
     @Inject
@@ -133,9 +133,10 @@ public class NetworkManagerComponent extends EntityComponent {
 
     private byte[] buildPacketBatchFromMessages(final List<PacketableMessage<?>> messagesToSend) {
         final FlatBufferBuilder builder = new FlatBufferBuilder();
+        long timestamp = System.currentTimeMillis();
         final int[] packetLocations = messagesToSend
                 .stream()
-                .mapToInt(message -> message.serialise(builder, packetConverter, packetTracker.getNextPacketId()))
+                .mapToInt(message -> message.serialise(builder, packetConverter, packetTracker.getNextPacketId(), timestamp))
                 .toArray();
 
         return buildPacketBatch(builder, packetLocations);
@@ -176,7 +177,8 @@ public class NetworkManagerComponent extends EntityComponent {
     private void sendLoginPacket(final String username) throws IOException {
         LOG.info("Logging into server with address: {}, port: {}, for username: {}", serverAddress, serverPort, username);
         final FlatBufferBuilder builder = new FlatBufferBuilder();
-        final int loginPacketLocation = packetConverter.buildLoginPacket(builder, username, packetTracker.getNextPacketId());
+        long timestamp = System.currentTimeMillis();
+        final int loginPacketLocation = packetConverter.buildLoginPacket(builder, username, packetTracker.getNextPacketId(), timestamp);
         final byte[] loginPacket = buildPacketBatch(builder, new int[]{loginPacketLocation});
 
         final DatagramPacket packet = new DatagramPacket(loginPacket, loginPacket.length, serverAddress, serverPort);
@@ -199,7 +201,8 @@ public class NetworkManagerComponent extends EntityComponent {
     private void sendClientReadyPacket() throws IOException {
         LOG.info("Sending client ready packet");
         final FlatBufferBuilder builder = new FlatBufferBuilder();
-        final int clientReadyPacketLocation = packetConverter.buildClientReadyPacket(builder, playerEntityInfo, packetTracker.getNextPacketId());
+        long timestamp = System.currentTimeMillis();
+        final int clientReadyPacketLocation = packetConverter.buildClientReadyPacket(builder, playerEntityInfo, packetTracker.getNextPacketId(), timestamp);
         final byte[] clientReadyPacket = buildPacketBatch(builder, new int[]{clientReadyPacketLocation});
         final DatagramPacket packet = new DatagramPacket(clientReadyPacket, clientReadyPacket.length, serverAddress, serverPort);
         datagramSocket.send(packet);

@@ -78,6 +78,7 @@ table EntityTransformPacket {
 table Packet {
     packet:PacketType;
     packetId:long;
+    packetTimestamp:long;
 }
 
 table PacketBatch {

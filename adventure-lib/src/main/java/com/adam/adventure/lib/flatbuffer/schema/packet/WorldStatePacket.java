@@ -11,7 +11,7 @@ import com.google.flatbuffers.*;
 public final class WorldStatePacket extends Table {
   public static WorldStatePacket getRootAsWorldStatePacket(ByteBuffer _bb) { return getRootAsWorldStatePacket(_bb, new WorldStatePacket()); }
   public static WorldStatePacket getRootAsWorldStatePacket(ByteBuffer _bb, WorldStatePacket obj) { _bb.order(ByteOrder.LITTLE_ENDIAN); return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb)); }
-  public void __init(int _i, ByteBuffer _bb) { bb_pos = _i; bb = _bb; }
+  public void __init(int _i, ByteBuffer _bb) { bb_pos = _i; bb = _bb; vtable_start = bb_pos - bb.getInt(bb_pos); vtable_size = bb.getShort(vtable_start); }
   public WorldStatePacket __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public SceneInfo activeScene() { return activeScene(new SceneInfo()); }

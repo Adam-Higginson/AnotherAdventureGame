@@ -12,6 +12,7 @@ import com.adam.adventure.entity.component.network.NetworkManagerComponent;
 import com.adam.adventure.entity.component.network.NetworkTransformComponent;
 import com.adam.adventure.event.EventBus;
 import com.adam.adventure.event.InitialisedEvent;
+import com.adam.adventure.loop.DebugLoopIterationImpl;
 import com.adam.adventure.loop.GameLoop;
 import com.adam.adventure.loop.LoopIteration;
 import com.adam.adventure.module.AdventureClientModule;
@@ -78,7 +79,7 @@ public class Main {
         eventBus.publishEvent(new NewSceneEvent("StartScene"));
 
         loop(window, injector.getInstance(LoopIteration.class));
-        //       loop(window, injector.getInstance(DebugLoopIterationImpl.class));
+        //      loop(window, injector.getInstance(DebugLoopIterationImpl.class));
 
 
         injector.getInstance(SceneManager.class).forceDestroy();
@@ -116,39 +117,57 @@ public class Main {
                 .addComponent(uiConsoleComponentFactory.buildDefaultUiConsoleComponent());
 
         final Texture playerTexture;
-        try (final InputStream playerTextureInputStream = this.getClass().getResourceAsStream("/assets/sprites/player/player-test.png")) {
+        try (final InputStream playerTextureInputStream = this.getClass().getResourceAsStream("/assets/sprites/player/link.png")) {
             playerTexture = textureFactory.loadTextureFromPng(playerTextureInputStream);
         }
 
 
-        final SpriteAnimation moveUpAnimation = new SpriteAnimation.Builder(50, true)
-                .addAnimationFrame(new Rectangle(0.0f, 0.0f, 96f, 96f))
-                .addAnimationFrame(new Rectangle(96f, 0.0f, 96f, 96f))
-                .addAnimationFrame(new Rectangle(192f, 0.0f, 96f, 96f))
+        final SpriteAnimation moveUpAnimation = new SpriteAnimation.Builder(100, true)
+                .addAnimationFrame(new Rectangle(0.0f, 150.0f, 30f, 30f))
+                .addAnimationFrame(new Rectangle(30f, 150.0f, 30f, 30f))
+                .addAnimationFrame(new Rectangle(60f, 150.0f, 30f, 30f))
+                .addAnimationFrame(new Rectangle(90f, 150.0f, 30f, 30f))
+                .addAnimationFrame(new Rectangle(120f, 150.0f, 30f, 30f))
+                .addAnimationFrame(new Rectangle(150f, 150.0f, 30f, 30f))
+                .addAnimationFrame(new Rectangle(180f, 150.0f, 30f, 30f))
+                .addAnimationFrame(new Rectangle(210f, 150.0f, 30f, 30f))
                 .build();
 
-        final SpriteAnimation moveEastAnimation = new SpriteAnimation.Builder(50, true)
-                .addAnimationFrame(new Rectangle(0.0f, 96f, 96f, 96f))
-                .addAnimationFrame(new Rectangle(96f, 96f, 96f, 96f))
-                .addAnimationFrame(new Rectangle(192f, 96f, 96f, 96f))
+        final SpriteAnimation moveEastAnimation = new SpriteAnimation.Builder(100, true)
+                .addAnimationFrame(new Rectangle(240f, 150.0f, 30f, 30f))
+                .addAnimationFrame(new Rectangle(270f, 150.0f, 30f, 30f))
+                .addAnimationFrame(new Rectangle(300f, 150.0f, 30f, 30f))
+                .addAnimationFrame(new Rectangle(330f, 150.0f, 30f, 30f))
+                .addAnimationFrame(new Rectangle(360f, 150.0f, 30f, 30f))
+                .addAnimationFrame(new Rectangle(390f, 150.0f, 30f, 30f))
                 .build();
 
-        final SpriteAnimation moveWestAnimation = new SpriteAnimation.Builder(50, true)
-                .addAnimationFrame(new Rectangle(0.0f, 192f, 96f, 96f))
-                .addAnimationFrame(new Rectangle(96f, 192f, 96f, 96f))
-                .addAnimationFrame(new Rectangle(192f, 192f, 96f, 96f))
+        final SpriteAnimation moveWestAnimation = new SpriteAnimation.Builder(100, true)
+                .addAnimationFrame(new Rectangle(240f, 240.0f, 30f, 30f))
+                .addAnimationFrame(new Rectangle(270f, 240.0f, 30f, 30f))
+                .addAnimationFrame(new Rectangle(300f, 240.0f, 30f, 30f))
+                .addAnimationFrame(new Rectangle(330f, 240.0f, 30f, 30f))
+                .addAnimationFrame(new Rectangle(360f, 240.0f, 30f, 30f))
+                .addAnimationFrame(new Rectangle(390f, 240.0f, 30f, 30f))
                 .build();
 
-        final SpriteAnimation moveDownAnimation = new SpriteAnimation.Builder(50, true)
-                .addAnimationFrame(new Rectangle(0.0f, 288f, 96f, 96f))
-                .addAnimationFrame(new Rectangle(96f, 288f, 96f, 96f))
-                .addAnimationFrame(new Rectangle(192f, 288f, 96f, 96f))
+
+        final SpriteAnimation moveDownAnimation = new SpriteAnimation.Builder(100, true)
+                .addAnimationFrame(new Rectangle(0.0f, 240.0f, 30f, 30f))
+                .addAnimationFrame(new Rectangle(30f, 240.0f, 30f, 30f))
+                .addAnimationFrame(new Rectangle(60f, 240.0f, 30f, 30f))
+                .addAnimationFrame(new Rectangle(90f, 240.0f, 30f, 30f))
+                .addAnimationFrame(new Rectangle(120f, 240.0f, 30f, 30f))
+                .addAnimationFrame(new Rectangle(150f, 240.0f, 30f, 30f))
+                .addAnimationFrame(new Rectangle(180f, 240.0f, 30f, 30f))
+                .addAnimationFrame(new Rectangle(210f, 240.0f, 30f, 30f))
                 .build();
+
 
 
         //Create components
         final KeyboardMovementComponent keyboardMovementComponent = new KeyboardMovementComponent(.2f);
-        final Sprite sprite = new Sprite(playerTexture, new Rectangle(0.0f, 0.0f, 96f, 96f), 64f, 64f);
+        final Sprite sprite = new Sprite(playerTexture, new Rectangle(0.0f, 0.0f, 30f, 30f), 90f, 90f);
         final AnimatedSpriteRendererComponent animatedSpriteRendererComponent = new AnimatedSpriteRendererComponent.Builder(sprite)
                 .onEventStopAnimation(MovementComponentEvent.MovementType.ENTITY_NO_MOVEMENT)
                 .onEventSetAnimation(MovementComponentEvent.MovementType.ENTITY_MOVE_NORTH, moveUpAnimation)
@@ -166,42 +185,21 @@ public class Main {
                 .addComponent(animatedSpriteRendererComponent)
                 .addComponent(cameraTargetComponent);
 
-
-        final Sprite otherPlayerSprite = new Sprite(playerTexture, new Rectangle(0.0f, 0.0f, 96f, 96f), 64f, 64f);
-        final SpriteAnimation moveUpAnimation1 = new SpriteAnimation.Builder(50, true)
-                .addAnimationFrame(new Rectangle(0.0f, 384.f, 96f, 96f))
-                .addAnimationFrame(new Rectangle(96f, 384.f, 96f, 96f))
-                .addAnimationFrame(new Rectangle(192f, 384.f, 96f, 96f))
-                .build();
-
-        final SpriteAnimation moveEastAnimation1 = new SpriteAnimation.Builder(50, true)
-                .addAnimationFrame(new Rectangle(0.0f, 480.f, 96f, 96f))
-                .addAnimationFrame(new Rectangle(96f, 480.f, 96f, 96f))
-                .addAnimationFrame(new Rectangle(192f, 480.f, 96f, 96f))
-                .build();
-
-        final SpriteAnimation moveWestAnimation1 = new SpriteAnimation.Builder(50, true)
-                .addAnimationFrame(new Rectangle(0.0f, 576.f, 96f, 96f))
-                .addAnimationFrame(new Rectangle(96f, 576.f, 96f, 96f))
-                .addAnimationFrame(new Rectangle(192f, 576.f, 96f, 96f))
-                .build();
-
-        final SpriteAnimation moveDownAnimation1 = new SpriteAnimation.Builder(50, true)
-                .addAnimationFrame(new Rectangle(0.0f, 672.f, 96f, 96f))
-                .addAnimationFrame(new Rectangle(96f, 672.f, 96f, 96f))
-                .addAnimationFrame(new Rectangle(192f, 672.f, 96f, 96f))
-                .build();
-
+        final Sprite sprite2 = new Sprite(playerTexture, new Rectangle(0.0f, 0.0f, 30f, 30f), 90f, 90f);
         final Entity networkEntity = entityFactory.create("Network manager")
                 .setShouldDestroyOnSceneChange(false)
                 .addComponent(new NetworkManagerComponent(() -> playerEntity, () -> entityFactory.create("Player2")
                         .addComponent(new NetworkTransformComponent(false))
-                        .addComponent(new AnimatedSpriteRendererComponent.Builder(otherPlayerSprite)
+                        .addComponent(new AnimatedSpriteRendererComponent.Builder(sprite2)
                                 .onEventStopAnimation(MovementComponentEvent.MovementType.ENTITY_NO_MOVEMENT)
-                                .onEventSetAnimation(MovementComponentEvent.MovementType.ENTITY_MOVE_NORTH, moveUpAnimation1)
-                                .onEventSetAnimation(MovementComponentEvent.MovementType.ENTITY_MOVE_EAST, moveEastAnimation1)
-                                .onEventSetAnimation(MovementComponentEvent.MovementType.ENTITY_MOVE_WEST, moveWestAnimation1)
-                                .onEventSetAnimation(MovementComponentEvent.MovementType.ENTITY_MOVE_SOUTH, moveDownAnimation1)
+                                .onEventSetAnimation(MovementComponentEvent.MovementType.ENTITY_MOVE_NORTH,
+                                        new SpriteAnimation.Builder(moveUpAnimation).build())
+                                .onEventSetAnimation(MovementComponentEvent.MovementType.ENTITY_MOVE_EAST,
+                                        new SpriteAnimation.Builder(moveEastAnimation).build())
+                                .onEventSetAnimation(MovementComponentEvent.MovementType.ENTITY_MOVE_WEST,
+                                        new SpriteAnimation.Builder(moveWestAnimation).build())
+                                .onEventSetAnimation(MovementComponentEvent.MovementType.ENTITY_MOVE_SOUTH,
+                                        new SpriteAnimation.Builder(moveDownAnimation).build())
                                 .build())));
 
 
