@@ -4,6 +4,7 @@ import com.adam.adventure.render.sprite.Sprite;
 import com.adam.adventure.render.util.Rectangle;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class SpriteAnimation {
@@ -81,8 +82,19 @@ public class SpriteAnimation {
             this.animationFrames = new ArrayList<>();
         }
 
+
+        public Builder(final SpriteAnimation other) {
+            this(other.millisPerFrame, other.isLooping);
+            addAnimationFrames(other.animationFrames);
+        }
+
         public Builder addAnimationFrame(final Rectangle frame) {
             animationFrames.add(frame);
+            return this;
+        }
+
+        public Builder addAnimationFrames(final Collection<Rectangle> frames) {
+            animationFrames.addAll(frames);
             return this;
         }
 

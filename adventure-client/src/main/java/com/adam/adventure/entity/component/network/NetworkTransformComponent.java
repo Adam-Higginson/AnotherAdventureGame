@@ -3,13 +3,13 @@ package com.adam.adventure.entity.component.network;
 import com.adam.adventure.domain.EntityInfo;
 import com.adam.adventure.domain.message.EntityTransformPacketableMessage;
 import com.adam.adventure.entity.component.event.MovementComponentEvent;
-import com.adam.adventure.lib.flatbuffer.schema.converter.PacketConverter;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.inject.Inject;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -19,19 +19,18 @@ import java.util.UUID;
 public class NetworkTransformComponent extends NetworkComponent {
     private static final Logger LOG = LoggerFactory.getLogger(NetworkTransformComponent.class);
 
-    @Inject
-    private PacketConverter packetConverter;
-
     private final boolean authoritative;
 
     private Matrix4f lastReceivedTransform;
-    private MovementComponentEvent.MovementType lastReceivedMovementType;
+    private MovementComponentEvent.MovementType lastReceivedMovementType = MovementComponentEvent.MovementType.ENTITY_NO_MOVEMENT;
+    private final LinkedList<EntityInfoBufferElement> entityInfoBuffer;
 
     /**
      * @param authoritative Whether this component is owned by the client
      */
     public NetworkTransformComponent(final boolean authoritative) {
         this.authoritative = authoritative;
+        this.entityInfoBuffer = new LinkedList<>();
     }
 
 
@@ -49,24 +48,54 @@ public class NetworkTransformComponent extends NetworkComponent {
     @Override
     protected void writeNetworkUpdates(final UUID entityId,
                                        final OutputMessageQueue outputMessageQueue) {
-        final EntityTransformPacketableMessage message
-                = new EntityTransformPacketableMessage(entityId, getTransformComponent().getTransform());
-        outputMessageQueue.add(message);
+        if (authoritative) {
+            final EntityTransformPacketableMessage message
+                    = new EntityTransformPacketableMessage(entityId, getTransformComponent().getTransform());
+            outputMessageQueue.add(message);
+        }
     }
 
     @Override
     protected void receiveNetworkUpdates(final EntityInfo entityInfo) {
         if (!authoritative) {
-            if (lastReceivedTransform == null || lastReceivedTransform.equals(entityInfo.getTransform())) {
-                //We've not moved so stop the movement event
-                lastReceivedMovementType = MovementComponentEvent.MovementType.ENTITY_NO_MOVEMENT;
-                lastReceivedTransform = entityInfo.getTransform();
-                return;
+
+            final long currentTimestamp = System.currentTimeMillis();
+            entityInfoBuffer.add(new EntityInfoBufferElement(currentTimestamp, entityInfo));
+
+            //TODO Need to actual get the render timestamp here
+            final long renderTimestamp = currentTimestamp - (1000 / 50);
+
+            //Drop older positions in buffer
+            while (entityInfoBuffer.size() >= 2 && entityInfoBuffer.get(1).timestamp <= renderTimestamp) {
+                entityInfoBuffer.removeFirst();
             }
 
-            final Vector3f lastPosition = lastReceivedTransform.getTranslation(new Vector3f());
-            final Vector3f newPosition = entityInfo.getTransform().getTranslation(new Vector3f());
-            final Vector3f difference = newPosition.sub(lastPosition);
+            interpolatePosition(renderTimestamp);
+        }
+    }
+
+
+    /**
+     * The way interpolation works is by actually viewing updates from the server as being in the past. We keep
+     * track of the previous 2 server updates and set the entity's position as being transformed somewhere between
+     * them, based on a lerp between the 2 points.
+     */
+    private void interpolatePosition(long renderTimestamp) {
+        if (entityInfoBuffer.size() >= 2
+                && entityInfoBuffer.getFirst().timestamp <= renderTimestamp
+                && renderTimestamp <= entityInfoBuffer.get(1).timestamp) {
+            final EntityInfo beforeEntityInfo = entityInfoBuffer.getFirst().entityInfo;
+            final long beforeTimestamp = entityInfoBuffer.getFirst().timestamp;
+            final EntityInfo afterEntityInfo = entityInfoBuffer.get(1).entityInfo;
+            final long afterTimestamp = entityInfoBuffer.get(1).timestamp;
+
+            final float interpolationFactor = (renderTimestamp - beforeTimestamp) / (afterTimestamp - beforeTimestamp);
+
+            lastReceivedTransform = beforeEntityInfo.getTransform().lerp(afterEntityInfo.getTransform(), interpolationFactor);
+
+            final Vector3f lastPosition = beforeEntityInfo.getTransform().getTranslation(new Vector3f());
+            final Vector3f targetPosition = afterEntityInfo.getTransform().getTranslation(new Vector3f());
+            final Vector3f difference = targetPosition.sub(lastPosition);
 
             if (!difference.equals(new Vector3f(0.f, 0.f, 0.f))) {
                 final Vector3f normalised = difference.normalize();
@@ -81,7 +110,17 @@ public class NetworkTransformComponent extends NetworkComponent {
                 }
             }
 
-            lastReceivedTransform = entityInfo.getTransform();
+
+        }
+    }
+
+    private static class EntityInfoBufferElement {
+        private final long timestamp;
+        private final EntityInfo entityInfo;
+
+        public EntityInfoBufferElement(long timestamp, EntityInfo entityInfo) {
+            this.timestamp = timestamp;
+            this.entityInfo = entityInfo;
         }
     }
 }

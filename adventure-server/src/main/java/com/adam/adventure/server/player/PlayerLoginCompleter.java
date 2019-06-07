@@ -47,7 +47,7 @@ public class PlayerLoginCompleter {
     }
 
     private void returnLoginSuccessfulPacket(final PlayerSession playerSession, final OutputPacketQueue outputPacketQueue) {
-        outputPacketQueue.addOutputPacketSupplier(() -> {
+        outputPacketQueue.addOutputPacketSupplier((packetIndex, timestamp) -> {
             LOG.info("Sending login successful packet to player: {}", playerSession.getUsername());
 
             final EntityInfo playerInfo = EntityInfo.newBuilder()

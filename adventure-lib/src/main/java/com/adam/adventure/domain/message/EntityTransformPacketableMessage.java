@@ -34,8 +34,11 @@ public class EntityTransformPacketableMessage implements PacketableMessage<Entit
     }
 
     @Override
-    public int serialise(final FlatBufferBuilder builder, final PacketConverter packetConverter, final long packetId) {
-        return packetConverter.buildEntityTransformPacket(builder, entityId, transform, packetId);
+    public int serialise(final FlatBufferBuilder builder,
+                         final PacketConverter packetConverter,
+                         final long packetId,
+                         final long timestamp) {
+        return packetConverter.buildEntityTransformPacket(builder, entityId, transform, packetId, timestamp);
     }
 
     @Override

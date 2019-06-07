@@ -63,25 +63,27 @@ public class PacketConverter {
 
     public int buildLoginPacket(final FlatBufferBuilder builder,
                                 final String username,
-                                final long packetId) {
+                                final long packetId,
+                                final long timestamp) {
         final int usernameId = builder.createString(username);
 
         LoginPacket.startLoginPacket(builder);
         LoginPacket.addPlayerUsername(builder, usernameId);
         final int loginPacketId = LoginPacket.endLoginPacket(builder);
 
-        return wrapIntoPacket(builder, loginPacketId, PacketType.LoginPacket, packetId);
+        return wrapIntoPacket(builder, loginPacketId, PacketType.LoginPacket, packetId, timestamp);
     }
 
     public int buildClientReadyPacket(final FlatBufferBuilder builder,
                                       final com.adam.adventure.domain.EntityInfo entityInfo,
-                                      final long packetId) {
+                                      final long packetId,
+                                      final long timestamp) {
         final int entityInfoId = buildEntityInfoId(builder, entityInfo);
 
         ClientReadyPacket.startClientReadyPacket(builder);
         ClientReadyPacket.addPlayerEntity(builder, entityInfoId);
         final int clientReadyPacketId = ClientReadyPacket.endClientReadyPacket(builder);
-        return wrapIntoPacket(builder, clientReadyPacketId, PacketType.ClientReadyPacket, packetId);
+        return wrapIntoPacket(builder, clientReadyPacketId, PacketType.ClientReadyPacket, packetId, timestamp);
     }
 
     public byte[] buildLoginSuccessfulPacket(final com.adam.adventure.domain.EntityInfo entityInfo) {
@@ -96,7 +98,7 @@ public class PacketConverter {
     }
 
 
-    public byte[] buildWorldStatePacket(final WorldState worldState) {
+    public byte[] buildWorldStatePacket(final WorldState worldState, final long packetIndex, final long timestamp) {
         final FlatBufferBuilder builder = new FlatBufferBuilder();
         final int sceneInfoId = buildSceneInfo(worldState, builder);
 
@@ -104,14 +106,15 @@ public class PacketConverter {
         WorldStatePacket.addActiveScene(builder, sceneInfoId);
         final int worldStatePacketId = WorldStatePacket.endWorldStatePacket(builder);
 
-        return wrapIntoPacket(builder, worldStatePacketId, PacketType.WorldStatePacket);
+        return wrapIntoPacketByteArray(builder, worldStatePacketId, PacketType.WorldStatePacket, packetIndex, timestamp);
     }
 
     public int buildEntityTransformPacket(
             final FlatBufferBuilder builder,
             final UUID entityId,
             final org.joml.Matrix4f transform,
-            final long packetId) {
+            final long packetId,
+            final long timestamp) {
         final int entityIdId = builder.createString(entityId.toString());
 
         EntityTransformPacket.startEntityTransformPacket(builder);
@@ -119,7 +122,7 @@ public class PacketConverter {
         EntityTransformPacket.addTransform(builder, buildPacketMatrix4fId(builder, transform));
         final int entityTransformPacketId = EntityTransformPacket.endEntityTransformPacket(builder);
 
-        return wrapIntoPacket(builder, entityTransformPacketId, PacketType.EntityTransformPacket, packetId);
+        return wrapIntoPacket(builder, entityTransformPacketId, PacketType.EntityTransformPacket, packetId, timestamp);
     }
 
     private int buildSceneInfo(final WorldState worldState, final FlatBufferBuilder builder) {
@@ -153,12 +156,28 @@ public class PacketConverter {
         return builder.sizedByteArray();
     }
 
-    private int wrapIntoPacket(final FlatBufferBuilder builder, final int id, final byte packetType, final long packetId) {
+    private int wrapIntoPacket(final FlatBufferBuilder builder,
+                               final int id,
+                               final byte packetType,
+                               final long packetIndex,
+                               final long timestamp) {
         Packet.startPacket(builder);
         Packet.addPacketType(builder, packetType);
         Packet.addPacket(builder, id);
-        Packet.addPacketId(builder, packetId);
+        Packet.addPacketId(builder, packetIndex);
+        Packet.addPacketTimestamp(builder, timestamp);
         return Packet.endPacket(builder);
+    }
+
+    private byte[] wrapIntoPacketByteArray(final FlatBufferBuilder builder,
+                                  final int id,
+                                  final byte packetType,
+                                  final long packetIndex,
+                                  final long timestamp) {
+        final int generatedPacketId = wrapIntoPacket(builder, id, packetType, packetIndex, timestamp);
+        builder.finish(generatedPacketId);
+
+        return builder.sizedByteArray();
     }
 
 

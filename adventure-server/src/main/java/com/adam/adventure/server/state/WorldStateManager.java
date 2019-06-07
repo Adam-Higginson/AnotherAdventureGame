@@ -44,6 +44,7 @@ public class WorldStateManager {
     }
 
     @EventSubscribe
+    @SuppressWarnings("unused")
     public void onNewServerTickEvent(final OnNewServerTickEvent onNewServerTickEvent) {
 
         final Set<UUID> currentPlayerIdsInWorldState = worldState.getSceneInfo()
@@ -73,12 +74,18 @@ public class WorldStateManager {
 
         final OutputPacketQueue outputPacketQueue = onNewServerTickEvent
                 .getOutputPacketQueue();
-        final byte[] worldStatePacket = packetConverter.buildWorldStatePacket(worldState);
-        activePlayerSessions.forEach(activePlayerSession -> {
-            outputPacketQueue.addOutputPacketSupplier(() -> new DatagramPacket(worldStatePacket,
+        activePlayerSessions.forEach(activePlayerSession -> returnWorldStatePacketToPlayer(activePlayerSession, outputPacketQueue));
+    }
+
+
+    private void returnWorldStatePacketToPlayer(final PlayerSession playerSession, final OutputPacketQueue outputPacketQueue) {
+        outputPacketQueue.addOutputPacketSupplier((packetIndex, timestamp) -> {
+            final byte[] worldStatePacket = packetConverter.buildWorldStatePacket(worldState, packetIndex, timestamp);
+            return new DatagramPacket(worldStatePacket,
                     worldStatePacket.length,
-                    activePlayerSession.getAddress(),
-                    activePlayerSession.getPort()));
+                    playerSession.getAddress(),
+                    playerSession.getPort());
+
         });
     }
 }
