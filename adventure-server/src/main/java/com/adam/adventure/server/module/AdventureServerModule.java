@@ -2,6 +2,7 @@ package com.adam.adventure.server.module;
 
 import com.adam.adventure.entity.EntityModule;
 import com.adam.adventure.event.EventBus;
+import com.adam.adventure.scene.SceneManager;
 import com.adam.adventure.server.player.PlayerLoginCompleter;
 import com.adam.adventure.server.player.PlayerSessionRegistry;
 import com.adam.adventure.server.receiver.ReceiverModule;
@@ -16,7 +17,7 @@ import java.net.SocketException;
 public class AdventureServerModule extends AbstractModule {
 
     private final int port;
-    private long tickrate;
+    private final long tickrate;
 
     public AdventureServerModule(final int port, final long tickrate) {
         this.port = port;
@@ -33,6 +34,7 @@ public class AdventureServerModule extends AbstractModule {
             bind(EventBus.class).toInstance(new EventBus());
             bind(PlayerSessionRegistry.class).in(Singleton.class);
             bind(PlayerLoginCompleter.class).in(Singleton.class);
+            bind(SceneManager.class).in(Singleton.class);
             bind(Long.class).annotatedWith(Names.named("tickrate")).toInstance(tickrate);
 
             install(new EntityModule());

@@ -17,17 +17,21 @@ public final class EntityInfo extends Table {
   public String id() { int o = __offset(4); return o != 0 ? __string(o + bb_pos) : null; }
   public ByteBuffer idAsByteBuffer() { return __vector_as_bytebuffer(4, 1); }
   public ByteBuffer idInByteBuffer(ByteBuffer _bb) { return __vector_in_bytebuffer(_bb, 4, 1); }
+  public String name() { int o = __offset(6); return o != 0 ? __string(o + bb_pos) : null; }
+  public ByteBuffer nameAsByteBuffer() { return __vector_as_bytebuffer(6, 1); }
+  public ByteBuffer nameInByteBuffer(ByteBuffer _bb) { return __vector_in_bytebuffer(_bb, 6, 1); }
   public Matrix4f transform() { return transform(new Matrix4f()); }
-  public Matrix4f transform(Matrix4f obj) { int o = __offset(6); return o != 0 ? obj.__assign(o + bb_pos, bb) : null; }
-  public byte type() { int o = __offset(8); return o != 0 ? bb.get(o + bb_pos) : 0; }
+  public Matrix4f transform(Matrix4f obj) { int o = __offset(8); return o != 0 ? obj.__assign(o + bb_pos, bb) : null; }
+  public byte type() { int o = __offset(10); return o != 0 ? bb.get(o + bb_pos) : 0; }
   public Map attributes() { return attributes(new Map()); }
-  public Map attributes(Map obj) { int o = __offset(10); return o != 0 ? obj.__assign(__indirect(o + bb_pos), bb) : null; }
+  public Map attributes(Map obj) { int o = __offset(12); return o != 0 ? obj.__assign(__indirect(o + bb_pos), bb) : null; }
 
-  public static void startEntityInfo(FlatBufferBuilder builder) { builder.startObject(4); }
+  public static void startEntityInfo(FlatBufferBuilder builder) { builder.startObject(5); }
   public static void addId(FlatBufferBuilder builder, int idOffset) { builder.addOffset(0, idOffset, 0); }
-  public static void addTransform(FlatBufferBuilder builder, int transformOffset) { builder.addStruct(1, transformOffset, 0); }
-  public static void addType(FlatBufferBuilder builder, byte type) { builder.addByte(2, type, 0); }
-  public static void addAttributes(FlatBufferBuilder builder, int attributesOffset) { builder.addOffset(3, attributesOffset, 0); }
+  public static void addName(FlatBufferBuilder builder, int nameOffset) { builder.addOffset(1, nameOffset, 0); }
+  public static void addTransform(FlatBufferBuilder builder, int transformOffset) { builder.addStruct(2, transformOffset, 0); }
+  public static void addType(FlatBufferBuilder builder, byte type) { builder.addByte(3, type, 0); }
+  public static void addAttributes(FlatBufferBuilder builder, int attributesOffset) { builder.addOffset(4, attributesOffset, 0); }
   public static int endEntityInfo(FlatBufferBuilder builder) {
     int o = builder.endObject();
     return o;

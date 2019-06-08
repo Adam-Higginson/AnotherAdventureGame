@@ -3,42 +3,43 @@ package com.adam.adventure.server.state;
 import com.adam.adventure.domain.EntityInfo;
 import com.adam.adventure.domain.SceneInfo;
 import com.adam.adventure.domain.WorldState;
+import com.adam.adventure.entity.Entity;
+import com.adam.adventure.entity.NewLoopIterationEvent;
 import com.adam.adventure.event.EventBus;
 import com.adam.adventure.event.EventSubscribe;
 import com.adam.adventure.lib.flatbuffer.schema.converter.PacketConverter;
+import com.adam.adventure.scene.NewSceneEvent;
+import com.adam.adventure.scene.Scene;
+import com.adam.adventure.scene.SceneManager;
+import com.adam.adventure.server.entity.component.NetworkIdComponent;
 import com.adam.adventure.server.player.PlayerSession;
 import com.adam.adventure.server.player.PlayerSessionRegistry;
 import com.adam.adventure.server.tick.OnNewServerTickEvent;
 import com.adam.adventure.server.tick.OutputPacketQueue;
-import com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
+import org.joml.Matrix4f;
 
 import javax.inject.Inject;
 import java.net.DatagramPacket;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
 public class WorldStateManager {
-    private final WorldState worldState;
+    private final EventBus eventBus;
     private final PlayerSessionRegistry playerSessionRegistry;
+    private final SceneManager sceneManager;
     private final PacketConverter packetConverter;
 
     @Inject
     public WorldStateManager(final EventBus eventBus,
                              final PlayerSessionRegistry playerSessionRegistry,
+                             final SceneManager sceneManager,
                              final PacketConverter packetConverter) {
+        this.eventBus = eventBus;
         this.playerSessionRegistry = playerSessionRegistry;
+        this.sceneManager = sceneManager;
         this.packetConverter = packetConverter;
-        this.worldState = WorldState.newBuilder()
-                .withSceneInfo(SceneInfo.newBuilder()
-                        .sceneName("Test Scene")
-                        .entities(new ArrayList<>())
-                        .build())
-                .build();
 
         eventBus.register(this);
     }
@@ -46,39 +47,72 @@ public class WorldStateManager {
     @EventSubscribe
     @SuppressWarnings("unused")
     public void onNewServerTickEvent(final OnNewServerTickEvent onNewServerTickEvent) {
+        //For now if no current scene, just set to a hardcoded test scene
+        if (sceneManager.getCurrentScene().isEmpty()) {
+            eventBus.publishEvent(new NewSceneEvent("Test Scene"));
+        }
+        //Give all entities a chance to update
+        eventBus.publishEvent(new NewLoopIterationEvent(onNewServerTickEvent.getDeltaTime()));
+        final List<PlayerSession> activePlayerSessions = playerSessionRegistry.getPlayerSessionsWithState(PlayerSession.State.ACTIVE);
 
-        final Set<UUID> currentPlayerIdsInWorldState = worldState.getSceneInfo()
-                .getEntities()
-                .stream()
-                .filter(entity -> entity.getType() == EntityInfo.EntityType.PLAYER)
-                .map(EntityInfo::getId)
-                .collect(Collectors.toSet());
-
-        final List<PlayerSession> activePlayerSessions = playerSessionRegistry
-                .getPlayerSessionsWithState(PlayerSession.State.ACTIVE);
-
-        activePlayerSessions
-                .stream()
-                .filter(activePlayer -> !currentPlayerIdsInWorldState.contains(activePlayer.getId()))
-                .forEach(activePlayerNotInWorld -> {
-                    final EntityInfo playerInfo = EntityInfo.newBuilder()
-                            .id(activePlayerNotInWorld.getId())
-                            .attributes(ImmutableMap.of("username", activePlayerNotInWorld.getUsername()))
-                            .transform(activePlayerNotInWorld.getPlayerEntity().getTransform())
-                            .type(EntityInfo.EntityType.PLAYER)
-                            .build();
-                    worldState.getSceneInfo().getEntities().add(playerInfo);
-
-                    //TODO If player has logged out/timed out you would remove them here
-                });
-
+        final WorldState worldState = buildWorldState(activePlayerSessions);
         final OutputPacketQueue outputPacketQueue = onNewServerTickEvent
                 .getOutputPacketQueue();
-        activePlayerSessions.forEach(activePlayerSession -> returnWorldStatePacketToPlayer(activePlayerSession, outputPacketQueue));
+        activePlayerSessions.forEach(activePlayerSession -> returnWorldStatePacketToPlayer(activePlayerSession, worldState, outputPacketQueue));
+    }
+
+    private WorldState buildWorldState(final List<PlayerSession> activePlayerSessions) {
+        final Scene currentScene = sceneManager
+                .getCurrentScene()
+                .orElseThrow(() -> new IllegalStateException("No current scene found!"));
+
+        final Map<UUID, String> playerEntityIdToUsername = activePlayerSessions
+                .stream()
+                .collect(Collectors.toMap(PlayerSession::getId, PlayerSession::getUsername));
+
+        final List<EntityInfo> entityInfoList = currentScene.getEntities()
+                .stream()
+                .map(entity -> buildEntityInfoFromEntity(entity, playerEntityIdToUsername))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toList());
+
+        return WorldState.newBuilder()
+                .withSceneInfo(SceneInfo.newBuilder()
+                        .sceneName(currentScene.getName())
+                        .entities(entityInfoList)
+                        .build())
+                .build();
     }
 
 
-    private void returnWorldStatePacketToPlayer(final PlayerSession playerSession, final OutputPacketQueue outputPacketQueue) {
+    private Optional<EntityInfo> buildEntityInfoFromEntity(final Entity entity, final Map<UUID, String> playerIdToUsername) {
+        if (entity.getComponent(NetworkIdComponent.class).isEmpty()) {
+            return Optional.empty();
+        }
+
+        final UUID entityId = entity.getComponent(NetworkIdComponent.class).get().getEntityId();
+        final Matrix4f transform = entity.getTransform();
+        final EntityInfo.EntityType entityType = playerIdToUsername.get(entityId) == null ?
+                EntityInfo.EntityType.STANDARD :
+                EntityInfo.EntityType.PLAYER;
+
+        final Map<String, String> attributes = new HashMap<>();
+        if (entityType == EntityInfo.EntityType.PLAYER) {
+            attributes.put("username", playerIdToUsername.get(entityId));
+        }
+
+        return Optional.of(EntityInfo.newBuilder()
+                .id(entityId)
+                .transform(transform)
+                .type(entityType)
+                .attributes(attributes)
+                .build());
+    }
+
+    private void returnWorldStatePacketToPlayer(final PlayerSession playerSession,
+                                                final WorldState worldState,
+                                                final OutputPacketQueue outputPacketQueue) {
         outputPacketQueue.addOutputPacketSupplier((packetIndex, timestamp) -> {
             final byte[] worldStatePacket = packetConverter.buildWorldStatePacket(worldState, packetIndex, timestamp);
             return new DatagramPacket(worldStatePacket,

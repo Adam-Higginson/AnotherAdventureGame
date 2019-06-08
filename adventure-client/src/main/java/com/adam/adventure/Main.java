@@ -10,9 +10,9 @@ import com.adam.adventure.entity.component.console.UiConsoleComponentFactory;
 import com.adam.adventure.entity.component.event.MovementComponentEvent;
 import com.adam.adventure.entity.component.network.NetworkManagerComponent;
 import com.adam.adventure.entity.component.network.NetworkTransformComponent;
+import com.adam.adventure.entity.repository.EntityRepository;
 import com.adam.adventure.event.EventBus;
 import com.adam.adventure.event.InitialisedEvent;
-import com.adam.adventure.loop.DebugLoopIterationImpl;
 import com.adam.adventure.loop.GameLoop;
 import com.adam.adventure.loop.LoopIteration;
 import com.adam.adventure.module.AdventureClientModule;
@@ -64,6 +64,7 @@ public class Main {
 
 
         addStartScene(injector.getInstance(EntityFactory.class),
+                injector.getInstance(EntityRepository.class),
                 injector.getInstance(TextureFactory.class),
                 injector.getInstance(UiConsoleComponentFactory.class),
                 injector.getInstance(SceneManager.class));
@@ -108,6 +109,7 @@ public class Main {
 
 
     private void addStartScene(final EntityFactory entityFactory,
+                               final EntityRepository entityRepository,
                                final TextureFactory textureFactory,
                                final UiConsoleComponentFactory uiConsoleComponentFactory,
                                final SceneManager sceneManager) throws IOException {
@@ -200,13 +202,13 @@ public class Main {
                                         new SpriteAnimation.Builder(moveWestAnimation).build())
                                 .onEventSetAnimation(MovementComponentEvent.MovementType.ENTITY_MOVE_SOUTH,
                                         new SpriteAnimation.Builder(moveDownAnimation).build())
-                                .build())));
+                                .build()), entityRepository));
 
 
         final Scene scene = sceneManager.getSceneFactory().createScene("StartScene")
                 .addEntity(commandConsole)
                 .addEntity(networkEntity);
-        sceneManager.addScene("StartScene", scene);
+        sceneManager.addScene(scene);
     }
 
     private Scene addTestScene(
@@ -220,7 +222,7 @@ public class Main {
         }
 
         final Scene scene = sceneManager.getSceneFactory().createScene("Test Scene");
-        sceneManager.addScene("Test Scene", scene);
+        sceneManager.addScene(scene);
 
         //Create random wood tile
         final Sprite woodSprite = new Sprite(tileTexture, new Rectangle(0.0f, 0.0f, 16f, 16f), 64f, 64f);

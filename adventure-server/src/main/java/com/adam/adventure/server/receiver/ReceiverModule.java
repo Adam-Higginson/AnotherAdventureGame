@@ -5,6 +5,7 @@ import com.adam.adventure.lib.flatbuffer.schema.packet.PacketType;
 import com.adam.adventure.server.receiver.processor.ClientReadyPacketProcessor;
 import com.adam.adventure.server.receiver.processor.EntityTransformPacketProcessor;
 import com.adam.adventure.server.receiver.processor.LoginPacketProcessor;
+import com.adam.adventure.server.receiver.processor.ServerCommandPacketProcessor;
 import com.google.inject.AbstractModule;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.MapBinder;
@@ -26,5 +27,6 @@ public class ReceiverModule extends AbstractModule {
         mapBinder.addBinding(PacketType.LoginPacket).to(LoginPacketProcessor.class);
         mapBinder.addBinding(PacketType.ClientReadyPacket).to(ClientReadyPacketProcessor.class);
         mapBinder.addBinding(PacketType.EntityTransformPacket).to(EntityTransformPacketProcessor.class);
+        mapBinder.addBinding(PacketType.ServerCommandPacket).to(ServerCommandPacketProcessor.class);
     }
 }

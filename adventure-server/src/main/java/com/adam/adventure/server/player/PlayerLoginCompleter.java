@@ -18,7 +18,7 @@ public class PlayerLoginCompleter {
 
     private final PlayerSessionRegistry playerSessionRegistry;
     private final PacketConverter packetConverter;
-    private long tickrate;
+    private final long tickrate;
 
     @Inject
     public PlayerLoginCompleter(final EventBus eventBus,
@@ -56,6 +56,7 @@ public class PlayerLoginCompleter {
 
             final EntityInfo playerInfo = EntityInfo.newBuilder()
                     .id(playerSession.getId())
+                    .name(playerSession.getUsername())
                     .attributes(ImmutableMap.of("username", playerSession.getUsername()))
                     .transform(playerSession.getPlayerEntity().getTransform())
                     .type(EntityInfo.EntityType.PLAYER)

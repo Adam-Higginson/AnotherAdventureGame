@@ -34,6 +34,7 @@ public class PacketConverter {
     public com.adam.adventure.domain.EntityInfo fromPacketEntityInfo(final EntityInfo packetEntityInfo) {
         return com.adam.adventure.domain.EntityInfo.newBuilder()
                 .id(UUID.fromString(packetEntityInfo.id()))
+                .name(packetEntityInfo.name())
                 .transform(fromPacketMatrix4f(packetEntityInfo.transform()))
                 .attributes(fromPacketMap(packetEntityInfo.attributes()))
                 .type(fromPacketEntityType(packetEntityInfo.type()))
@@ -86,7 +87,7 @@ public class PacketConverter {
         return wrapIntoPacket(builder, clientReadyPacketId, PacketType.ClientReadyPacket, packetId, timestamp);
     }
 
-    public byte[] buildLoginSuccessfulPacket(final com.adam.adventure.domain.EntityInfo entityInfo, long tickrate) {
+    public byte[] buildLoginSuccessfulPacket(final com.adam.adventure.domain.EntityInfo entityInfo, final long tickrate) {
         final FlatBufferBuilder builder = new FlatBufferBuilder();
         final int entityInfoId = buildEntityInfoId(builder, entityInfo);
 
@@ -108,6 +109,19 @@ public class PacketConverter {
         final int worldStatePacketId = WorldStatePacket.endWorldStatePacket(builder);
 
         return wrapIntoPacketByteArray(builder, worldStatePacketId, PacketType.WorldStatePacket, packetIndex, timestamp);
+    }
+
+    public int buildServerCommandPacket(final FlatBufferBuilder builder,
+                                           final String command,
+                                           final long packetIndex,
+                                           final long timestamp) {
+
+        final int commandId = builder.createString(command);
+        ServerCommandPacket.startServerCommandPacket(builder);
+        ServerCommandPacket.addCommand(builder, commandId);
+        final int serverCommandPacketId = ServerCommandPacket.endServerCommandPacket(builder);
+
+        return wrapIntoPacket(builder, serverCommandPacketId, PacketType.ServerCommandPacket, packetIndex, timestamp);
     }
 
     public int buildEntityTransformPacket(
@@ -185,9 +199,11 @@ public class PacketConverter {
     private int buildEntityInfoId(final FlatBufferBuilder builder, final com.adam.adventure.domain.EntityInfo entityInfo) {
         final int idStringId = builder.createString(entityInfo.getId().toString());
         final int attributesId = buildMapId(builder, entityInfo.getAttributes());
+        final int nameId = builder.createString(entityInfo.getName());
 
         EntityInfo.startEntityInfo(builder);
         EntityInfo.addId(builder, idStringId);
+        EntityInfo.addName(builder, nameId);
         EntityInfo.addTransform(builder, buildPacketMatrix4fId(builder, entityInfo.getTransform()));
         EntityInfo.addAttributes(builder, attributesId);
         EntityInfo.addType(builder, (byte) entityInfo.getType().ordinal());

@@ -9,16 +9,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class SceneManager {
 
 
-    private enum SceneManagerState {ACTIVE_SCENE, TRANSITION_TO_SCENE;}
+    private enum SceneManagerState {ACTIVE_SCENE, TRANSITION_TO_SCENE}
 
     private static final Logger LOG = LoggerFactory.getLogger(SceneManager.class);
 
@@ -40,8 +37,8 @@ public class SceneManager {
         eventBus.register(this);
     }
 
-    public SceneManager addScene(final String sceneName, final Scene scene) {
-        sceneNameToSceneSupplier.put(sceneName, scene);
+    public SceneManager addScene(final Scene scene) {
+        sceneNameToSceneSupplier.put(scene.getName(), scene);
         return this;
     }
 
@@ -58,8 +55,8 @@ public class SceneManager {
         return sceneFactory;
     }
 
-    public Scene getCurrentScene() {
-        return currentScene;
+    public Optional<Scene> getCurrentScene() {
+        return Optional.ofNullable(currentScene);
     }
 
     @EventSubscribe

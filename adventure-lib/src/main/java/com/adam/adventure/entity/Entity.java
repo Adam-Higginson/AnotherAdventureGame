@@ -42,6 +42,13 @@ public class Entity {
         return this;
     }
 
+    /**
+     * @return true if this entity contains the given component, false otherwise.
+     */
+    public boolean hasComponent(final Class<? extends EntityComponent> componentClass) {
+        return componentContainer.getComponent(componentClass).isPresent();
+    }
+
     public String getName() {
         return name;
     }
