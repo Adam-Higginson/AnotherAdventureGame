@@ -1,7 +1,7 @@
 package com.adam.adventure.update;
 
 import com.adam.adventure.event.EventBus;
-import com.adam.adventure.update.event.NewLoopIterationEvent;
+import com.adam.adventure.entity.NewLoopIterationEvent;
 
 import javax.inject.Inject;
 

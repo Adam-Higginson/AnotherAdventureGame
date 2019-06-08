@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import java.net.DatagramPacket;
 
 @Slf4j
@@ -17,13 +18,16 @@ public class PlayerLoginCompleter {
 
     private final PlayerSessionRegistry playerSessionRegistry;
     private final PacketConverter packetConverter;
+    private long tickrate;
 
     @Inject
     public PlayerLoginCompleter(final EventBus eventBus,
                                 final PlayerSessionRegistry playerSessionRegistry,
-                                final PacketConverter packetConverter) {
+                                final PacketConverter packetConverter,
+                                @Named("tickrate") final long tickrate) {
         this.playerSessionRegistry = playerSessionRegistry;
         this.packetConverter = packetConverter;
+        this.tickrate = tickrate;
         eventBus.register(this);
     }
 
@@ -56,7 +60,7 @@ public class PlayerLoginCompleter {
                     .transform(playerSession.getPlayerEntity().getTransform())
                     .type(EntityInfo.EntityType.PLAYER)
                     .build();
-            final byte[] loginSuccessfulPacket = packetConverter.buildLoginSuccessfulPacket(playerInfo);
+            final byte[] loginSuccessfulPacket = packetConverter.buildLoginSuccessfulPacket(playerInfo, tickrate);
             return new DatagramPacket(loginSuccessfulPacket, loginSuccessfulPacket.length, playerSession.getAddress(), playerSession.getPort());
         });
     }

@@ -9,5 +9,5 @@ public abstract class NetworkComponent extends EntityComponent {
 
     protected abstract void writeNetworkUpdates(final UUID entityId, final OutputMessageQueue outputMessageQueue);
 
-    protected abstract void receiveNetworkUpdates(final EntityInfo entityInfo);
+    protected abstract void receiveNetworkUpdates(final EntityInfo entityInfo, long serverTickrate);
 }

@@ -19,7 +19,7 @@ import java.net.DatagramSocket;
 public class AdventureServer implements Runnable {
 
     @CommandLine.Option(names = {"-t", "--tickrate"}, description = "The tickrate of the server", required = true)
-    private int tickrate;
+    private long tickrate;
 
     @CommandLine.Option(names = {"-p", "--port"}, description = "The port to bind the server to", required = true)
     private int port;
@@ -28,7 +28,7 @@ public class AdventureServer implements Runnable {
     public void run() {
         LOG.info("Starting adventure server on port: {} with tickrate: {}", port, tickrate);
 
-        final Injector injector = Guice.createInjector(new AdventureServerModule(port));
+        final Injector injector = Guice.createInjector(new AdventureServerModule(port, tickrate));
         //Creates instance and allows it to start listening for events.
         injector.getInstance(PlayerLoginCompleter.class);
         injector.getInstance(WorldStateManager.class);

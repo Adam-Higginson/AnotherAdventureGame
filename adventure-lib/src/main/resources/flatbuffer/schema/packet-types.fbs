@@ -62,6 +62,7 @@ table LoginPacket {
 //Returned by the server to state player information
 table LoginSuccessfulPacket {
     playerEntity:EntityInfo;
+    tickrate:long;
 }
 
 //Sent by the client to say it is now ready to start receiving regular updates from the server

@@ -86,12 +86,13 @@ public class PacketConverter {
         return wrapIntoPacket(builder, clientReadyPacketId, PacketType.ClientReadyPacket, packetId, timestamp);
     }
 
-    public byte[] buildLoginSuccessfulPacket(final com.adam.adventure.domain.EntityInfo entityInfo) {
+    public byte[] buildLoginSuccessfulPacket(final com.adam.adventure.domain.EntityInfo entityInfo, long tickrate) {
         final FlatBufferBuilder builder = new FlatBufferBuilder();
         final int entityInfoId = buildEntityInfoId(builder, entityInfo);
 
         LoginSuccessfulPacket.startLoginSuccessfulPacket(builder);
         LoginSuccessfulPacket.addPlayerEntity(builder, entityInfoId);
+        LoginSuccessfulPacket.addTickrate(builder, tickrate);
         final int loginSuccessfulPacketId = LoginSuccessfulPacket.endLoginSuccessfulPacket(builder);
 
         return wrapIntoPacket(builder, loginSuccessfulPacketId, PacketType.LoginSuccessfulPacket);

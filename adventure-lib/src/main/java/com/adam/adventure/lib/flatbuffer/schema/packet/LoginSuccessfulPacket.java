@@ -16,16 +16,20 @@ public final class LoginSuccessfulPacket extends Table {
 
   public EntityInfo playerEntity() { return playerEntity(new EntityInfo()); }
   public EntityInfo playerEntity(EntityInfo obj) { int o = __offset(4); return o != 0 ? obj.__assign(__indirect(o + bb_pos), bb) : null; }
+  public long tickrate() { int o = __offset(6); return o != 0 ? bb.getLong(o + bb_pos) : 0L; }
 
   public static int createLoginSuccessfulPacket(FlatBufferBuilder builder,
-      int playerEntityOffset) {
-    builder.startObject(1);
+      int playerEntityOffset,
+      long tickrate) {
+    builder.startObject(2);
+    LoginSuccessfulPacket.addTickrate(builder, tickrate);
     LoginSuccessfulPacket.addPlayerEntity(builder, playerEntityOffset);
     return LoginSuccessfulPacket.endLoginSuccessfulPacket(builder);
   }
 
-  public static void startLoginSuccessfulPacket(FlatBufferBuilder builder) { builder.startObject(1); }
+  public static void startLoginSuccessfulPacket(FlatBufferBuilder builder) { builder.startObject(2); }
   public static void addPlayerEntity(FlatBufferBuilder builder, int playerEntityOffset) { builder.addOffset(0, playerEntityOffset, 0); }
+  public static void addTickrate(FlatBufferBuilder builder, long tickrate) { builder.addLong(1, tickrate, 0L); }
   public static int endLoginSuccessfulPacket(FlatBufferBuilder builder) {
     int o = builder.endObject();
     return o;

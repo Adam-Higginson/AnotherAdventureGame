@@ -53,6 +53,7 @@ public class NetworkManagerComponent extends EntityComponent {
     private WorldState activeWorldState;
     private volatile WorldState latestWorldState;
     private Thread receiveThread;
+    private long serverTickrate;
 
 
     /**
@@ -192,7 +193,8 @@ public class NetworkManagerComponent extends EntityComponent {
 
         final LoginSuccessfulPacket loginSuccessfulPacket = packetConverter.getLoginSuccessfulPacket(buffer, incomingPacket.getOffset(), incomingPacket.getLength());
         playerEntityInfo = packetConverter.fromPacketEntityInfo(loginSuccessfulPacket.playerEntity());
-        LOG.info("Successfully received login successful packet");
+        serverTickrate = loginSuccessfulPacket.tickrate();
+        LOG.info("Successfully received login successful packet, server tickrate: {}", serverTickrate);
     }
 
     /**
@@ -225,7 +227,7 @@ public class NetworkManagerComponent extends EntityComponent {
                     if (existingIdentity == null) {
                         onNewEntityFromServer(entityInfo);
                     } else {
-                        existingIdentity.processNetworkUpdates(entityInfo);
+                        existingIdentity.processNetworkUpdates(entityInfo, serverTickrate);
                     }
                 });
     }
