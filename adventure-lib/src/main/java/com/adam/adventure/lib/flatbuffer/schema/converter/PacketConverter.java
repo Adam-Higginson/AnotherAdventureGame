@@ -35,6 +35,7 @@ public class PacketConverter {
         return com.adam.adventure.domain.EntityInfo.newBuilder()
                 .id(UUID.fromString(packetEntityInfo.id()))
                 .name(packetEntityInfo.name())
+                .animationName(packetEntityInfo.animationName())
                 .transform(fromPacketMatrix4f(packetEntityInfo.transform()))
                 .attributes(fromPacketMap(packetEntityInfo.attributes()))
                 .type(fromPacketEntityType(packetEntityInfo.type()))
@@ -200,10 +201,12 @@ public class PacketConverter {
         final int idStringId = builder.createString(entityInfo.getId().toString());
         final int attributesId = buildMapId(builder, entityInfo.getAttributes());
         final int nameId = builder.createString(entityInfo.getName());
+        final int animationNameId = builder.createString(entityInfo.getAnimationName());
 
         EntityInfo.startEntityInfo(builder);
         EntityInfo.addId(builder, idStringId);
         EntityInfo.addName(builder, nameId);
+        EntityInfo.addAnimationName(builder, animationNameId);
         EntityInfo.addTransform(builder, buildPacketMatrix4fId(builder, entityInfo.getTransform()));
         EntityInfo.addAttributes(builder, attributesId);
         EntityInfo.addType(builder, (byte) entityInfo.getType().ordinal());

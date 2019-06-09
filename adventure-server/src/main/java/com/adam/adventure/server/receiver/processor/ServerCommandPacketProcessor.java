@@ -1,29 +1,27 @@
 package com.adam.adventure.server.receiver.processor;
 
-import com.adam.adventure.entity.Entity;
-import com.adam.adventure.entity.EntityFactory;
+import com.adam.adventure.entity.repository.EntityRepository;
 import com.adam.adventure.lib.flatbuffer.schema.packet.Packet;
 import com.adam.adventure.lib.flatbuffer.schema.packet.ServerCommandPacket;
 import com.adam.adventure.scene.Scene;
 import com.adam.adventure.scene.SceneManager;
-import com.adam.adventure.server.entity.component.NetworkIdComponent;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;
 import java.net.DatagramPacket;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.function.BiConsumer;
 
 @Slf4j
 public class ServerCommandPacketProcessor implements BiConsumer<DatagramPacket, Packet> {
 
-    private final EntityFactory entityFactory;
+    private final EntityRepository entityRepository;
     private final SceneManager sceneManager;
 
     @Inject
-    public ServerCommandPacketProcessor(final EntityFactory entityFactory, final SceneManager sceneManager) {
-        this.entityFactory = entityFactory;
+    public ServerCommandPacketProcessor(final EntityRepository entityRepository,
+                                        final SceneManager sceneManager) {
+        this.entityRepository = entityRepository;
         this.sceneManager = sceneManager;
     }
 
@@ -59,11 +57,11 @@ public class ServerCommandPacketProcessor implements BiConsumer<DatagramPacket, 
         }
 
         final String entityName = command[1];
-        LOG.info("Spawning: {}", entityName);
-
-        // Need some kind of entity dictionary here
-        final Entity entity = entityFactory.create(entityName)
-                .addComponent(new NetworkIdComponent(UUID.randomUUID()));
-        currentScene.get().addEntity(entity);
+        entityRepository.buildEntityForName(entityName)
+                .ifPresentOrElse(entity -> {
+                            LOG.info("Spawning: {}", entityName);
+                            currentScene.get().addEntity(entity);
+                        },
+                        () -> LOG.warn("Entity: {} could not be loaded!", entityName));
     }
 }

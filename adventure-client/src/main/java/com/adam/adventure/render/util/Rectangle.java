@@ -1,5 +1,8 @@
 package com.adam.adventure.render.util;
 
+import lombok.ToString;
+
+@ToString
 public class Rectangle {
     private final float x;
     private final float y;

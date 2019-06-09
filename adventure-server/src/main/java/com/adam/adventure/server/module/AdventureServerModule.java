@@ -1,8 +1,10 @@
 package com.adam.adventure.server.module;
 
 import com.adam.adventure.entity.EntityModule;
+import com.adam.adventure.entity.repository.EntityRepository;
 import com.adam.adventure.event.EventBus;
 import com.adam.adventure.scene.SceneManager;
+import com.adam.adventure.server.entity.repository.ServerEntityRepository;
 import com.adam.adventure.server.player.PlayerLoginCompleter;
 import com.adam.adventure.server.player.PlayerSessionRegistry;
 import com.adam.adventure.server.receiver.ReceiverModule;
@@ -36,6 +38,7 @@ public class AdventureServerModule extends AbstractModule {
             bind(PlayerLoginCompleter.class).in(Singleton.class);
             bind(SceneManager.class).in(Singleton.class);
             bind(Long.class).annotatedWith(Names.named("tickrate")).toInstance(tickrate);
+            bind(EntityRepository.class).to(ServerEntityRepository.class).in(Singleton.class);
 
             install(new EntityModule());
             install(new ReceiverModule());

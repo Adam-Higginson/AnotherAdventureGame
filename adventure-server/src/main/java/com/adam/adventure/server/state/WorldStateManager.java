@@ -3,6 +3,7 @@ package com.adam.adventure.server.state;
 import com.adam.adventure.domain.EntityInfo;
 import com.adam.adventure.domain.SceneInfo;
 import com.adam.adventure.domain.WorldState;
+import com.adam.adventure.entity.AnimationName;
 import com.adam.adventure.entity.Entity;
 import com.adam.adventure.entity.NewLoopIterationEvent;
 import com.adam.adventure.event.EventBus;
@@ -11,6 +12,7 @@ import com.adam.adventure.lib.flatbuffer.schema.converter.PacketConverter;
 import com.adam.adventure.scene.NewSceneEvent;
 import com.adam.adventure.scene.Scene;
 import com.adam.adventure.scene.SceneManager;
+import com.adam.adventure.server.entity.component.NetworkAnimationComponent;
 import com.adam.adventure.server.entity.component.NetworkIdComponent;
 import com.adam.adventure.server.player.PlayerSession;
 import com.adam.adventure.server.player.PlayerSessionRegistry;
@@ -102,8 +104,14 @@ public class WorldStateManager {
             attributes.put("username", playerIdToUsername.get(entityId));
         }
 
+        final String animationName = entity.getComponent(NetworkAnimationComponent.class)
+                .map(NetworkAnimationComponent::getAnimationName)
+                .orElse(AnimationName.NO_MOVEMENT);
+
         return Optional.of(EntityInfo.newBuilder()
                 .id(entityId)
+                .name(entity.getName())
+                .animationName(animationName)
                 .transform(transform)
                 .type(entityType)
                 .attributes(attributes)
