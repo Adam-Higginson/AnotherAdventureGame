@@ -1,6 +1,8 @@
 package com.adam.adventure.module;
 
 import com.adam.adventure.entity.EntityModule;
+import com.adam.adventure.entity.repository.ClientEntityRepository;
+import com.adam.adventure.entity.repository.EntityRepository;
 import com.adam.adventure.event.EventBus;
 import com.adam.adventure.input.InputManager;
 import com.adam.adventure.loop.LoopIteration;
@@ -8,6 +10,7 @@ import com.adam.adventure.loop.LoopIterationImpl;
 import com.adam.adventure.render.RenderQueue;
 import com.adam.adventure.render.Renderer;
 import com.adam.adventure.render.camera.Camera;
+import com.adam.adventure.render.texture.TextureCache;
 import com.adam.adventure.render.texture.TextureFactory;
 import com.adam.adventure.render.ui.UiManager;
 import com.adam.adventure.scene.SceneManager;
@@ -35,6 +38,8 @@ public class AdventureClientModule extends AbstractModule {
         bind(RenderQueue.class).in(Singleton.class);
         bind(UiManager.class).in(Singleton.class);
         bind(SceneManager.class).in(Singleton.class);
+        bind(TextureCache.class).in(Singleton.class);
+        bind(EntityRepository.class).to(ClientEntityRepository.class).in(Singleton.class);
 
         install(new EntityModule());
 

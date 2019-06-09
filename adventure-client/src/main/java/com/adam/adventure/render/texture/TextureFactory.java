@@ -12,6 +12,13 @@ import static org.lwjgl.opengl.GL11.*;
 
 public class TextureFactory {
 
+    public Texture loadTextureFromFileNameInResources(final String fileName) throws IOException {
+        try (final InputStream skeletonTextureInputStream = this.getClass().getResourceAsStream(fileName)) {
+            return loadTextureFromPng(skeletonTextureInputStream);
+        }
+    }
+
+
     public Texture loadTextureFromPng(final InputStream inputStream) throws IOException {
         final PNGDecoder pngDecoder = new PNGDecoder(inputStream);
         final ByteBuffer byteBuffer = createByteBufferFromPng(pngDecoder);

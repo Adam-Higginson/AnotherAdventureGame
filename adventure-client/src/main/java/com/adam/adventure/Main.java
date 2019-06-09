@@ -10,7 +10,6 @@ import com.adam.adventure.entity.component.console.UiConsoleComponentFactory;
 import com.adam.adventure.entity.component.event.MovementComponentEvent;
 import com.adam.adventure.entity.component.network.NetworkManagerComponent;
 import com.adam.adventure.entity.component.network.NetworkTransformComponent;
-import com.adam.adventure.entity.repository.EntityRepository;
 import com.adam.adventure.event.EventBus;
 import com.adam.adventure.event.InitialisedEvent;
 import com.adam.adventure.loop.GameLoop;
@@ -20,8 +19,9 @@ import com.adam.adventure.render.shader.ProgramFactory;
 import com.adam.adventure.render.shader.Shader;
 import com.adam.adventure.render.shader.ShaderCompiler;
 import com.adam.adventure.render.sprite.Sprite;
-import com.adam.adventure.render.texture.SpriteAnimation;
+import com.adam.adventure.render.sprite.SpriteAnimation;
 import com.adam.adventure.render.texture.Texture;
+import com.adam.adventure.render.texture.TextureCache;
 import com.adam.adventure.render.texture.TextureFactory;
 import com.adam.adventure.render.util.Rectangle;
 import com.adam.adventure.scene.NewSceneEvent;
@@ -54,6 +54,8 @@ public class Main {
         configureOpenGlContext();
 
         final Injector injector = Guice.createInjector(new AdventureClientModule());
+        //Initialise texture cache to allow it to start listening to events
+        injector.getInstance(TextureCache.class);
 
         //Show window
         final Window window = injector.getInstance(Window.class);
@@ -64,7 +66,6 @@ public class Main {
 
 
         addStartScene(injector.getInstance(EntityFactory.class),
-                injector.getInstance(EntityRepository.class),
                 injector.getInstance(TextureFactory.class),
                 injector.getInstance(UiConsoleComponentFactory.class),
                 injector.getInstance(SceneManager.class));
@@ -74,7 +75,7 @@ public class Main {
                 injector.getInstance(SceneManager.class));
 
 
-        //Notify everything that game is ready
+        //Notify everything that game is readyo`
         final EventBus eventBus = injector.getInstance(EventBus.class);
         eventBus.publishEvent(new InitialisedEvent());
         eventBus.publishEvent(new NewSceneEvent("StartScene"));
@@ -109,7 +110,6 @@ public class Main {
 
 
     private void addStartScene(final EntityFactory entityFactory,
-                               final EntityRepository entityRepository,
                                final TextureFactory textureFactory,
                                final UiConsoleComponentFactory uiConsoleComponentFactory,
                                final SceneManager sceneManager) throws IOException {
@@ -202,7 +202,7 @@ public class Main {
                                         new SpriteAnimation.Builder(moveWestAnimation).build())
                                 .onEventSetAnimation(MovementComponentEvent.MovementType.ENTITY_MOVE_SOUTH,
                                         new SpriteAnimation.Builder(moveDownAnimation).build())
-                                .build()), entityRepository));
+                                .build())));
 
 
         final Scene scene = sceneManager.getSceneFactory().createScene("StartScene")

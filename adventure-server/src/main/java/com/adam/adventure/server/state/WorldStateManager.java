@@ -104,6 +104,7 @@ public class WorldStateManager {
 
         return Optional.of(EntityInfo.newBuilder()
                 .id(entityId)
+                .name(entity.getName())
                 .transform(transform)
                 .type(entityType)
                 .attributes(attributes)

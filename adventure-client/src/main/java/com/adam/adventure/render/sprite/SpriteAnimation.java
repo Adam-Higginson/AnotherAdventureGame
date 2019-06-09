@@ -1,6 +1,5 @@
-package com.adam.adventure.render.texture;
+package com.adam.adventure.render.sprite;
 
-import com.adam.adventure.render.sprite.Sprite;
 import com.adam.adventure.render.util.Rectangle;
 
 import java.util.ArrayList;

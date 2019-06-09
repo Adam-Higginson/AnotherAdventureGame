@@ -42,10 +42,11 @@ public class NetworkManagerComponent extends EntityComponent {
     private PacketConverter packetConverter;
     @Inject
     private PacketTracker packetTracker;
+    @Inject
+    private EntityRepository entityRepository;
 
     private final Supplier<Entity> playerEntitySupplier;
     private final Supplier<Entity> otherPlayerEntitySupplier;
-    private final EntityRepository entityRepository;
     private final Map<UUID, NetworkIdentityComponent> idToNetworkIdentities;
     private final OutputMessageQueue outputMessageQueue;
 
@@ -64,11 +65,9 @@ public class NetworkManagerComponent extends EntityComponent {
      * @param playerEntitySupplier What entity to spawn when successfully logged into server.
      */
     public NetworkManagerComponent(final Supplier<Entity> playerEntitySupplier,
-                                   final Supplier<Entity> otherPlayerEntitySupplier,
-                                   final EntityRepository entityRepository) {
+                                   final Supplier<Entity> otherPlayerEntitySupplier) {
         this.playerEntitySupplier = playerEntitySupplier;
         this.otherPlayerEntitySupplier = otherPlayerEntitySupplier;
-        this.entityRepository = entityRepository;
         this.idToNetworkIdentities = new HashMap<>();
         this.outputMessageQueue = new OutputMessageQueue();
     }
@@ -284,19 +283,22 @@ public class NetworkManagerComponent extends EntityComponent {
     }
 
     private Entity buildNewEntity(final EntityInfo entityInfo) {
-        final Entity entity = entityRepository.buildEntityFromName(entityInfo.getName());
+        final Entity entity = entityRepository.buildEntityForName(entityInfo.getName())
+                .orElseThrow(() -> new IllegalStateException("Could not create entity: " + entityInfo.getName()
+                        + "! Perhaps the server and client versions differ?"));
         final NetworkIdentityComponent networkIdentityComponent = new NetworkIdentityComponent(entityInfo.getId(), outputMessageQueue);
         idToNetworkIdentities.put(entityInfo.getId(), networkIdentityComponent);
 
-        entity.addComponent(networkIdentityComponent);
-        return entity;
+        return entity
+                .addComponent(new NetworkTransformComponent(false))
+                .addComponent(networkIdentityComponent);
     }
 
 
     private class ReceiveRunnable implements Runnable {
         @Override
         public void run() {
-            final byte[] buffer = new byte[1024];
+            final byte[] buffer = new byte[2048];
             while (shouldReceivePackets) {
                 try {
                     final DatagramPacket datagramPacket = new DatagramPacket(buffer, buffer.length);

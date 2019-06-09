@@ -56,7 +56,7 @@ public class PlayerLoginCompleter {
 
             final EntityInfo playerInfo = EntityInfo.newBuilder()
                     .id(playerSession.getId())
-                    .name(playerSession.getUsername())
+                    .name(playerSession.getPlayerEntity().getName())
                     .attributes(ImmutableMap.of("username", playerSession.getUsername()))
                     .transform(playerSession.getPlayerEntity().getTransform())
                     .type(EntityInfo.EntityType.PLAYER)

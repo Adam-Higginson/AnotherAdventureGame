@@ -6,7 +6,7 @@ import com.adam.adventure.entity.component.event.MovementComponentEvent;
 import com.adam.adventure.render.RenderQueue;
 import com.adam.adventure.render.renderable.SpriteRenderable;
 import com.adam.adventure.render.sprite.Sprite;
-import com.adam.adventure.render.texture.SpriteAnimation;
+import com.adam.adventure.render.sprite.SpriteAnimation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,6 +23,7 @@ public class AnimatedSpriteRendererComponent extends EntityComponent {
     private RenderQueue rendererQueue;
 
     private final Sprite sprite;
+    private final SpriteAnimation defaultSpriteAnimation;
     private final Map<MovementComponentEvent.MovementType, SpriteAnimation> eventToSpriteAnimation;
     private final Set<MovementComponentEvent.MovementType> stopAnimationEvents;
     private MovementComponentEvent.MovementType activeMovementType;
@@ -30,14 +31,17 @@ public class AnimatedSpriteRendererComponent extends EntityComponent {
 
     public AnimatedSpriteRendererComponent(final Builder builder) {
         this(builder.sprite,
+                builder.defaultSpriteAnimation,
                 builder.eventToSpriteAnimation,
                 builder.stopAnimationEvents);
     }
 
     public AnimatedSpriteRendererComponent(final Sprite sprite,
+                                           final SpriteAnimation defaultSpriteAnimation,
                                            final Map<MovementComponentEvent.MovementType, SpriteAnimation> eventToSpriteAnimation,
                                            final Set<MovementComponentEvent.MovementType> stopAnimationEvents) {
         this.sprite = sprite;
+        this.defaultSpriteAnimation = defaultSpriteAnimation;
         this.eventToSpriteAnimation = eventToSpriteAnimation;
         this.stopAnimationEvents = stopAnimationEvents;
     }
@@ -68,7 +72,8 @@ public class AnimatedSpriteRendererComponent extends EntityComponent {
                 activeSpriteAnimation.setLooping(false);
             } else {
                 LOG.debug("Current component event = {} new one = {}", activeMovementType, movementComponentEvent.getMovementType());
-                final SpriteAnimation newSpriteAnimation = eventToSpriteAnimation.get(movementComponentEvent.getMovementType());
+                final SpriteAnimation newSpriteAnimation = eventToSpriteAnimation
+                        .getOrDefault(movementComponentEvent.getMovementType(), defaultSpriteAnimation);
                 if (newSpriteAnimation != null) {
                     if (activeSpriteAnimation != null) {
                         activeSpriteAnimation.setPaused(true);
@@ -87,6 +92,7 @@ public class AnimatedSpriteRendererComponent extends EntityComponent {
 
     public static class Builder {
         private final Sprite sprite;
+        private SpriteAnimation defaultSpriteAnimation;
         private final Map<MovementComponentEvent.MovementType, SpriteAnimation> eventToSpriteAnimation;
         private final Set<MovementComponentEvent.MovementType> stopAnimationEvents;
 
@@ -94,6 +100,11 @@ public class AnimatedSpriteRendererComponent extends EntityComponent {
             this.sprite = sprite;
             this.eventToSpriteAnimation = new EnumMap<>(MovementComponentEvent.MovementType.class);
             this.stopAnimationEvents = EnumSet.noneOf(MovementComponentEvent.MovementType.class);
+        }
+
+        public Builder setDefaultSpriteAnimation(final SpriteAnimation defaultSpriteAnimation) {
+            this.defaultSpriteAnimation = defaultSpriteAnimation;
+            return this;
         }
 
         public Builder onEventSetAnimation(final MovementComponentEvent.MovementType event, final SpriteAnimation spriteAnimation) {
