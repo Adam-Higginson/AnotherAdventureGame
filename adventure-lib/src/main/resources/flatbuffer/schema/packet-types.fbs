@@ -39,6 +39,7 @@ enum EntityType:byte { STANDARD, PLAYER }
 table EntityInfo {
     id:string;
     name:string;
+    animationName:string;
     transform:Matrix4f;
     type:EntityType;
     attributes:Map;

@@ -1,6 +1,7 @@
 package com.adam.adventure.server.player;
 
 import com.adam.adventure.domain.EntityInfo;
+import com.adam.adventure.entity.AnimationName;
 import com.adam.adventure.event.EventBus;
 import com.adam.adventure.event.EventSubscribe;
 import com.adam.adventure.lib.flatbuffer.schema.converter.PacketConverter;
@@ -56,6 +57,7 @@ public class PlayerLoginCompleter {
 
             final EntityInfo playerInfo = EntityInfo.newBuilder()
                     .id(playerSession.getId())
+                    .animationName(AnimationName.NO_MOVEMENT)
                     .name(playerSession.getPlayerEntity().getName())
                     .attributes(ImmutableMap.of("username", playerSession.getUsername()))
                     .transform(playerSession.getPlayerEntity().getTransform())

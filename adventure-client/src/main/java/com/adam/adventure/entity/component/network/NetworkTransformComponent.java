@@ -2,9 +2,9 @@ package com.adam.adventure.entity.component.network;
 
 import com.adam.adventure.domain.EntityInfo;
 import com.adam.adventure.domain.message.EntityTransformPacketableMessage;
+import com.adam.adventure.entity.AnimationName;
 import com.adam.adventure.entity.component.event.MovementComponentEvent;
 import org.joml.Matrix4f;
-import org.joml.Vector3f;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,30 +55,54 @@ public class NetworkTransformComponent extends NetworkComponent {
     }
 
     @Override
-    protected void receiveNetworkUpdates(final EntityInfo entityInfo, long serverTickrate) {
+    protected void receiveNetworkUpdates(final EntityInfo entityInfo, final long serverTickrate) {
         if (!authoritative) {
-
-            final long currentTimestamp = System.currentTimeMillis();
-            entityInfoBuffer.add(new EntityInfoBufferElement(currentTimestamp, entityInfo));
-
-            final long renderTimestamp = currentTimestamp - (1000 / serverTickrate);
-
-            //Drop older positions in buffer
-            while (entityInfoBuffer.size() >= 2 && entityInfoBuffer.get(1).timestamp <= renderTimestamp) {
-                entityInfoBuffer.removeFirst();
-            }
-
-            interpolatePosition(renderTimestamp);
+            calculatePosition(entityInfo, serverTickrate);
+            setAnimation(entityInfo);
         }
     }
 
+    private void calculatePosition(final EntityInfo entityInfo, final long serverTickrate) {
+        final long currentTimestamp = System.currentTimeMillis();
+        entityInfoBuffer.add(new EntityInfoBufferElement(currentTimestamp, entityInfo));
+
+        final long renderTimestamp = currentTimestamp - (1000 / serverTickrate);
+        //Drop older positions in buffer
+        while (entityInfoBuffer.size() >= 2 && entityInfoBuffer.get(1).timestamp <= renderTimestamp) {
+            entityInfoBuffer.removeFirst();
+        }
+
+        interpolatePosition(renderTimestamp);
+    }
+
+    private void setAnimation(final EntityInfo entityInfo) {
+
+        switch (entityInfo.getAnimationName()) {
+            case AnimationName.MOVE_NORTH:
+                lastReceivedMovementType = MovementComponentEvent.MovementType.ENTITY_MOVE_NORTH;
+                break;
+            case AnimationName.MOVE_EAST:
+                lastReceivedMovementType = MovementComponentEvent.MovementType.ENTITY_MOVE_EAST;
+                break;
+            case AnimationName.MOVE_SOUTH:
+                lastReceivedMovementType = MovementComponentEvent.MovementType.ENTITY_MOVE_SOUTH;
+                break;
+            case AnimationName.MOVE_WEST:
+                lastReceivedMovementType = MovementComponentEvent.MovementType.ENTITY_MOVE_WEST;
+                break;
+            case AnimationName.NO_MOVEMENT:
+            default:
+                lastReceivedMovementType = MovementComponentEvent.MovementType.ENTITY_NO_MOVEMENT;
+                break;
+        }
+    }
 
     /**
      * The way interpolation works is by actually viewing updates from the server as being in the past. We keep
      * track of the previous 2 server updates and set the entity's position as being transformed somewhere between
      * them, based on a lerp between the 2 points.
      */
-    private void interpolatePosition(long renderTimestamp) {
+    private void interpolatePosition(final long renderTimestamp) {
         if (entityInfoBuffer.size() >= 2
                 && entityInfoBuffer.getFirst().timestamp <= renderTimestamp
                 && renderTimestamp <= entityInfoBuffer.get(1).timestamp) {
@@ -88,34 +112,7 @@ public class NetworkTransformComponent extends NetworkComponent {
             final long afterTimestamp = entityInfoBuffer.get(1).timestamp;
 
             final float interpolationFactor = (renderTimestamp - beforeTimestamp) / (afterTimestamp - beforeTimestamp);
-
-            Matrix4f oldTransform = lastReceivedTransform;
             lastReceivedTransform = beforeEntityInfo.getTransform().lerp(afterEntityInfo.getTransform(), interpolationFactor);
-            determineAnimation(beforeEntityInfo, afterEntityInfo, oldTransform);
-        }
-    }
-
-    private void determineAnimation(EntityInfo beforeEntityInfo, EntityInfo afterEntityInfo, Matrix4f oldTransform) {
-        if (oldTransform.equals(lastReceivedTransform)) {
-            lastReceivedMovementType = MovementComponentEvent.MovementType.ENTITY_NO_MOVEMENT;
-        } else {
-
-            final Vector3f lastPosition = beforeEntityInfo.getTransform().getTranslation(new Vector3f());
-            final Vector3f targetPosition = afterEntityInfo.getTransform().getTranslation(new Vector3f());
-            final Vector3f difference = targetPosition.sub(lastPosition);
-
-            if (!difference.equals(new Vector3f(0.f, 0.f, 0.f))) {
-                final Vector3f normalised = difference.normalize();
-                if (normalised.y == 1.f) {
-                    lastReceivedMovementType = MovementComponentEvent.MovementType.ENTITY_MOVE_NORTH;
-                } else if (normalised.y == -1.f) {
-                    lastReceivedMovementType = MovementComponentEvent.MovementType.ENTITY_MOVE_SOUTH;
-                } else if (normalised.x == 1.f) {
-                    lastReceivedMovementType = MovementComponentEvent.MovementType.ENTITY_MOVE_EAST;
-                } else if (normalised.x == -1.f) {
-                    lastReceivedMovementType = MovementComponentEvent.MovementType.ENTITY_MOVE_WEST;
-                }
-            }
         }
     }
 
@@ -123,7 +120,7 @@ public class NetworkTransformComponent extends NetworkComponent {
         private final long timestamp;
         private final EntityInfo entityInfo;
 
-        public EntityInfoBufferElement(long timestamp, EntityInfo entityInfo) {
+        public EntityInfoBufferElement(final long timestamp, final EntityInfo entityInfo) {
             this.timestamp = timestamp;
             this.entityInfo = entityInfo;
         }
