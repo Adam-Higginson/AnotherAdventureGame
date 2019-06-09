@@ -30,6 +30,9 @@ class ServerTick implements Runnable {
     private final OutputPacketQueue outputPacketQueue;
 
     private AtomicLong packetIndexCounter;
+    private long lastTime;
+
+
     @Inject
     public ServerTick(
             @ServerDatagramSocket final DatagramSocket datagramSocket,
@@ -41,6 +44,7 @@ class ServerTick implements Runnable {
         this.serverTickEvents = new LinkedBlockingQueue<>();
         this.outputPacketQueue = new OutputPacketQueue();
         this.packetIndexCounter = new AtomicLong();
+        this.lastTime = System.currentTimeMillis();
 
         eventBus.register(this);
     }
@@ -53,6 +57,7 @@ class ServerTick implements Runnable {
         handleNewEvents();
         publishServerTickEvent();
         writeOutputMessages();
+        lastTime = System.currentTimeMillis();
     }
 
     private void handleNewEvents() {
@@ -69,7 +74,8 @@ class ServerTick implements Runnable {
     }
 
     private void publishServerTickEvent() {
-        eventBus.publishEvent(new OnNewServerTickEvent(outputPacketQueue));
+        long deltaTime = System.currentTimeMillis() - lastTime;
+        eventBus.publishEvent(new OnNewServerTickEvent(outputPacketQueue, deltaTime));
     }
 
 

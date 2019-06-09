@@ -1,4 +1,4 @@
-package com.adam.adventure.update.event;
+package com.adam.adventure.entity;
 
 import com.adam.adventure.event.Event;
 

@@ -36,8 +36,8 @@ class NetworkIdentityComponent extends EntityComponent {
     }
 
     //Called by network manager when a new entity info is received
-    void processNetworkUpdates(final EntityInfo entityInfo) {
-        networkComponents.forEach(networkComponent -> networkComponent.receiveNetworkUpdates(entityInfo));
+    void processNetworkUpdates(final EntityInfo entityInfo, long serverTickrate) {
+        networkComponents.forEach(networkComponent -> networkComponent.receiveNetworkUpdates(entityInfo, serverTickrate));
     }
 
     @Override

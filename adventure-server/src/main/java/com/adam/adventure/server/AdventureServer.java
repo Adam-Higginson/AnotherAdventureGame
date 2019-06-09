@@ -1,5 +1,8 @@
 package com.adam.adventure.server;
 
+import com.adam.adventure.scene.Scene;
+import com.adam.adventure.scene.SceneFactory;
+import com.adam.adventure.scene.SceneManager;
 import com.adam.adventure.server.module.AdventureServerModule;
 import com.adam.adventure.server.module.ServerDatagramSocket;
 import com.adam.adventure.server.player.PlayerLoginCompleter;
@@ -19,7 +22,7 @@ import java.net.DatagramSocket;
 public class AdventureServer implements Runnable {
 
     @CommandLine.Option(names = {"-t", "--tickrate"}, description = "The tickrate of the server", required = true)
-    private int tickrate;
+    private long tickrate;
 
     @CommandLine.Option(names = {"-p", "--port"}, description = "The port to bind the server to", required = true)
     private int port;
@@ -28,10 +31,13 @@ public class AdventureServer implements Runnable {
     public void run() {
         LOG.info("Starting adventure server on port: {} with tickrate: {}", port, tickrate);
 
-        final Injector injector = Guice.createInjector(new AdventureServerModule(port));
+        final Injector injector = Guice.createInjector(new AdventureServerModule(port, tickrate));
         //Creates instance and allows it to start listening for events.
         injector.getInstance(PlayerLoginCompleter.class);
         injector.getInstance(WorldStateManager.class);
+        final SceneFactory sceneFactory = injector.getInstance(SceneFactory.class);
+        final Scene testScene = sceneFactory.createScene("Test Scene");
+        injector.getInstance(SceneManager.class).addScene(testScene);
 
         final ServerTickScheduler serverTickScheduler = injector.getInstance(ServerTickSchedulerFactory.class)
                 .create(tickrate);

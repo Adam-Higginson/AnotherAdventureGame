@@ -16,16 +16,13 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class ServerTickScheduler {
 
-    private final EventBus eventBus;
     private ServerTick serverTick;
     private final long millisPerTick;
     private final ScheduledExecutorService scheduledExecutorService;
 
     @Inject
-    public ServerTickScheduler(final EventBus eventBus,
-                               final ServerTick serverTick,
-                               @Assisted final int tickrate) {
-        this.eventBus = eventBus;
+    public ServerTickScheduler(final ServerTick serverTick,
+                               @Assisted final long tickrate) {
         this.serverTick = serverTick;
         this.millisPerTick = 1000 / tickrate;
         this.scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();

@@ -3,8 +3,11 @@ package com.adam.adventure.entity.component.network;
 import com.adam.adventure.domain.EntityInfo;
 import com.adam.adventure.domain.WorldState;
 import com.adam.adventure.domain.message.PacketableMessage;
+import com.adam.adventure.domain.message.ServerCommandPacketableMessage;
 import com.adam.adventure.entity.Entity;
 import com.adam.adventure.entity.EntityComponent;
+import com.adam.adventure.entity.component.network.event.ServerCommandEvent;
+import com.adam.adventure.entity.repository.EntityRepository;
 import com.adam.adventure.event.*;
 import com.adam.adventure.lib.flatbuffer.schema.converter.PacketConverter;
 import com.adam.adventure.lib.flatbuffer.schema.packet.*;
@@ -42,6 +45,7 @@ public class NetworkManagerComponent extends EntityComponent {
 
     private final Supplier<Entity> playerEntitySupplier;
     private final Supplier<Entity> otherPlayerEntitySupplier;
+    private final EntityRepository entityRepository;
     private final Map<UUID, NetworkIdentityComponent> idToNetworkIdentities;
     private final OutputMessageQueue outputMessageQueue;
 
@@ -53,15 +57,18 @@ public class NetworkManagerComponent extends EntityComponent {
     private WorldState activeWorldState;
     private volatile WorldState latestWorldState;
     private Thread receiveThread;
+    private long serverTickrate;
 
 
     /**
      * @param playerEntitySupplier What entity to spawn when successfully logged into server.
      */
     public NetworkManagerComponent(final Supplier<Entity> playerEntitySupplier,
-                                   final Supplier<Entity> otherPlayerEntitySupplier) {
+                                   final Supplier<Entity> otherPlayerEntitySupplier,
+                                   final EntityRepository entityRepository) {
         this.playerEntitySupplier = playerEntitySupplier;
         this.otherPlayerEntitySupplier = otherPlayerEntitySupplier;
+        this.entityRepository = entityRepository;
         this.idToNetworkIdentities = new HashMap<>();
         this.outputMessageQueue = new OutputMessageQueue();
     }
@@ -133,7 +140,7 @@ public class NetworkManagerComponent extends EntityComponent {
 
     private byte[] buildPacketBatchFromMessages(final List<PacketableMessage<?>> messagesToSend) {
         final FlatBufferBuilder builder = new FlatBufferBuilder();
-        long timestamp = System.currentTimeMillis();
+        final long timestamp = System.currentTimeMillis();
         final int[] packetLocations = messagesToSend
                 .stream()
                 .mapToInt(message -> message.serialise(builder, packetConverter, packetTracker.getNextPacketId(), timestamp))
@@ -165,6 +172,12 @@ public class NetworkManagerComponent extends EntityComponent {
         }
     }
 
+    @EventSubscribe
+    @SuppressWarnings("unused")
+    public void onServerCommandEvent(final ServerCommandEvent serverCommandEvent) {
+        outputMessageQueue.add(new ServerCommandPacketableMessage(serverCommandEvent.getServerCommand()));
+    }
+
 
     private void login(final String username) throws IOException {
         sendLoginPacket(username);
@@ -177,7 +190,7 @@ public class NetworkManagerComponent extends EntityComponent {
     private void sendLoginPacket(final String username) throws IOException {
         LOG.info("Logging into server with address: {}, port: {}, for username: {}", serverAddress, serverPort, username);
         final FlatBufferBuilder builder = new FlatBufferBuilder();
-        long timestamp = System.currentTimeMillis();
+        final long timestamp = System.currentTimeMillis();
         final int loginPacketLocation = packetConverter.buildLoginPacket(builder, username, packetTracker.getNextPacketId(), timestamp);
         final byte[] loginPacket = buildPacketBatch(builder, new int[]{loginPacketLocation});
 
@@ -186,13 +199,14 @@ public class NetworkManagerComponent extends EntityComponent {
     }
 
     private void awaitLoginSuccessfulPacket() throws IOException {
-        final byte[] buffer = new byte[256];
+        final byte[] buffer = new byte[1024];
         final DatagramPacket incomingPacket = new DatagramPacket(buffer, buffer.length);
         datagramSocket.receive(incomingPacket);
 
         final LoginSuccessfulPacket loginSuccessfulPacket = packetConverter.getLoginSuccessfulPacket(buffer, incomingPacket.getOffset(), incomingPacket.getLength());
         playerEntityInfo = packetConverter.fromPacketEntityInfo(loginSuccessfulPacket.playerEntity());
-        LOG.info("Successfully received login successful packet");
+        serverTickrate = loginSuccessfulPacket.tickrate();
+        LOG.info("Successfully received login successful packet, server tickrate: {}", serverTickrate);
     }
 
     /**
@@ -201,7 +215,7 @@ public class NetworkManagerComponent extends EntityComponent {
     private void sendClientReadyPacket() throws IOException {
         LOG.info("Sending client ready packet");
         final FlatBufferBuilder builder = new FlatBufferBuilder();
-        long timestamp = System.currentTimeMillis();
+        final long timestamp = System.currentTimeMillis();
         final int clientReadyPacketLocation = packetConverter.buildClientReadyPacket(builder, playerEntityInfo, packetTracker.getNextPacketId(), timestamp);
         final byte[] clientReadyPacket = buildPacketBatch(builder, new int[]{clientReadyPacketLocation});
         final DatagramPacket packet = new DatagramPacket(clientReadyPacket, clientReadyPacket.length, serverAddress, serverPort);
@@ -219,13 +233,12 @@ public class NetworkManagerComponent extends EntityComponent {
         //For now assume all entities in world state have been updated
         activeWorldState.getSceneInfo()
                 .getEntities()
-                .stream()
                 .forEach(entityInfo -> {
                     final NetworkIdentityComponent existingIdentity = idToNetworkIdentities.get(entityInfo.getId());
                     if (existingIdentity == null) {
                         onNewEntityFromServer(entityInfo);
                     } else {
-                        existingIdentity.processNetworkUpdates(entityInfo);
+                        existingIdentity.processNetworkUpdates(entityInfo, serverTickrate);
                     }
                 });
     }
@@ -235,7 +248,7 @@ public class NetworkManagerComponent extends EntityComponent {
         if (entityInfo.getType() == EntityInfo.EntityType.PLAYER) {
             addNewPlayer(entityInfo);
         } else {
-            //TODO here is where you would spawn other things...
+            addNewEntity(entityInfo);
         }
     }
 
@@ -244,7 +257,7 @@ public class NetworkManagerComponent extends EntityComponent {
         eventBus.publishEvent(new WriteUiConsoleInfoEvent(playerEntityInfo.getAttributes().get("username") + " has joined."));
 
         final Entity player = buildNewPlayerEntity(playerEntityInfo);
-        sceneManager.getCurrentScene().addEntity(player);
+        sceneManager.getCurrentScene().ifPresent(scene -> scene.addEntity(player));
     }
 
     private Entity buildNewPlayerEntity(final EntityInfo newPlayerEntityInfo) {
@@ -262,6 +275,21 @@ public class NetworkManagerComponent extends EntityComponent {
         idToNetworkIdentities.put(newPlayerEntityInfo.getId(), networkIdentityComponent);
         player.addComponent(networkIdentityComponent);
         return player;
+    }
+
+    private void addNewEntity(final EntityInfo entityInfo) {
+        eventBus.publishEvent(new WriteUiConsoleInfoEvent("Entity: " + entityInfo.getName() + " spawned."));
+        final Entity entity = buildNewEntity(entityInfo);
+        sceneManager.getCurrentScene().ifPresent(scene -> scene.addEntity(entity));
+    }
+
+    private Entity buildNewEntity(final EntityInfo entityInfo) {
+        final Entity entity = entityRepository.buildEntityFromName(entityInfo.getName());
+        final NetworkIdentityComponent networkIdentityComponent = new NetworkIdentityComponent(entityInfo.getId(), outputMessageQueue);
+        idToNetworkIdentities.put(entityInfo.getId(), networkIdentityComponent);
+
+        entity.addComponent(networkIdentityComponent);
+        return entity;
     }
 
 

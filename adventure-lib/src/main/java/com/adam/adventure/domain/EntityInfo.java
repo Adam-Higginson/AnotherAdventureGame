@@ -9,12 +9,14 @@ public class EntityInfo {
     public enum EntityType {STANDARD, PLAYER}
 
     private final UUID id;
+    private final String name;
     private Matrix4f transform;
     private final Map<String, String> attributes;
     private final EntityType type;
 
     private EntityInfo(final Builder builder) {
         id = builder.id;
+        name = builder.name;
         transform = builder.transform;
         attributes = builder.attributes;
         type = builder.type;
@@ -27,6 +29,7 @@ public class EntityInfo {
     public static Builder newBuilder(final EntityInfo copy) {
         final Builder builder = new Builder();
         builder.id = copy.getId();
+        builder.name = copy.getName();
         builder.transform = copy.getTransform();
         builder.attributes = copy.getAttributes();
         builder.type = copy.getType();
@@ -35,6 +38,10 @@ public class EntityInfo {
 
     public UUID getId() {
         return id;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public Matrix4f getTransform() {
@@ -53,10 +60,12 @@ public class EntityInfo {
         return type;
     }
 
+
     @Override
     public String toString() {
         return "EntityInfo{" +
                 "id=" + id +
+                ", name='" + name + '\'' +
                 ", transform=" + transform +
                 ", attributes=" + attributes +
                 ", type=" + type +
@@ -65,6 +74,7 @@ public class EntityInfo {
 
     public static final class Builder {
         private UUID id;
+        private String name;
         private Matrix4f transform;
         private Map<String, String> attributes;
         private EntityType type;
@@ -74,6 +84,11 @@ public class EntityInfo {
 
         public Builder id(final UUID id) {
             this.id = id;
+            return this;
+        }
+
+        public Builder name(final String name) {
+            this.name = name;
             return this;
         }
 

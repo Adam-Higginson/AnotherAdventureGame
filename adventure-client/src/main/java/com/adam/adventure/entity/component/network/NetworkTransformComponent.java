@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.LinkedList;
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -56,14 +55,13 @@ public class NetworkTransformComponent extends NetworkComponent {
     }
 
     @Override
-    protected void receiveNetworkUpdates(final EntityInfo entityInfo) {
+    protected void receiveNetworkUpdates(final EntityInfo entityInfo, long serverTickrate) {
         if (!authoritative) {
 
             final long currentTimestamp = System.currentTimeMillis();
             entityInfoBuffer.add(new EntityInfoBufferElement(currentTimestamp, entityInfo));
 
-            //TODO Need to actual get the render timestamp here
-            final long renderTimestamp = currentTimestamp - (1000 / 50);
+            final long renderTimestamp = currentTimestamp - (1000 / serverTickrate);
 
             //Drop older positions in buffer
             while (entityInfoBuffer.size() >= 2 && entityInfoBuffer.get(1).timestamp <= renderTimestamp) {
@@ -91,7 +89,16 @@ public class NetworkTransformComponent extends NetworkComponent {
 
             final float interpolationFactor = (renderTimestamp - beforeTimestamp) / (afterTimestamp - beforeTimestamp);
 
+            Matrix4f oldTransform = lastReceivedTransform;
             lastReceivedTransform = beforeEntityInfo.getTransform().lerp(afterEntityInfo.getTransform(), interpolationFactor);
+            determineAnimation(beforeEntityInfo, afterEntityInfo, oldTransform);
+        }
+    }
+
+    private void determineAnimation(EntityInfo beforeEntityInfo, EntityInfo afterEntityInfo, Matrix4f oldTransform) {
+        if (oldTransform.equals(lastReceivedTransform)) {
+            lastReceivedMovementType = MovementComponentEvent.MovementType.ENTITY_NO_MOVEMENT;
+        } else {
 
             final Vector3f lastPosition = beforeEntityInfo.getTransform().getTranslation(new Vector3f());
             final Vector3f targetPosition = afterEntityInfo.getTransform().getTranslation(new Vector3f());
@@ -109,8 +116,6 @@ public class NetworkTransformComponent extends NetworkComponent {
                     lastReceivedMovementType = MovementComponentEvent.MovementType.ENTITY_MOVE_WEST;
                 }
             }
-
-
         }
     }
 
