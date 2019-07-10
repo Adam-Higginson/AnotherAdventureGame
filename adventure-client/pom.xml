@@ -394,6 +394,10 @@
             <version>1.18.4</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.mapeditor</groupId>
+            <artifactId>libtiled</artifactId>
+        </dependency>
     </dependencies>
 
     <profiles>
