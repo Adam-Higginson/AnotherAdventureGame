@@ -29,13 +29,6 @@ public class TileRenderable extends RenderableEntity<Entity> {
 
     @Override
     public void initialise(final Renderer renderer) {
-//        final Vertex[] vertices = new Vertex[]{
-//                Vertex.of(0.5f, 0.5f), // Top Right
-//                Vertex.of(0.5f, -0.5f), // Bottom Right
-//                Vertex.of(-0.5f, -0.5f),  // Bottom Left
-//                Vertex.of(-0.5f, 0.5f)   // Top Left
-//        };
-
         final Vertex[] vertices = new Vertex[]{
                 Vertex.of(50f, 50f, 16f, 16f), // Top Right
                 Vertex.of(50f, -50f, 16f, 0f), // Bottom Right

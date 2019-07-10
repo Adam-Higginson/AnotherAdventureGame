@@ -10,6 +10,8 @@ import com.adam.adventure.entity.component.console.UiConsoleComponentFactory;
 import com.adam.adventure.entity.component.event.MovementComponentEvent;
 import com.adam.adventure.entity.component.network.NetworkManagerComponent;
 import com.adam.adventure.entity.component.network.NetworkTransformComponent;
+import com.adam.adventure.entity.component.tilemap.TilemapComponent;
+import com.adam.adventure.entity.component.tilemap.TilemapRendererComponent;
 import com.adam.adventure.event.EventBus;
 import com.adam.adventure.event.InitialisedEvent;
 import com.adam.adventure.loop.GameLoop;
@@ -64,7 +66,6 @@ public class Main {
 
         compileShaders(injector.getInstance(ShaderCompiler.class), injector.getInstance(ProgramFactory.class));
 
-
         addStartScene(injector.getInstance(EntityFactory.class),
                 injector.getInstance(TextureFactory.class),
                 injector.getInstance(UiConsoleComponentFactory.class),
@@ -106,6 +107,17 @@ public class Main {
 
         //TODO put set up of programs in a ProgramRegistrar class which reads from config and extract program names to constants
         programFactory.registerProgramFromShaders(vertexShader, fragmentShader, "Test Program");
+        compileTilemapShaders(shaderCompiler, programFactory);
+    }
+
+    private void compileTilemapShaders(final ShaderCompiler shaderCompiler, final ProgramFactory programFactory) throws IOException {
+        final String vertexShaderSource = readShaderSource("assets/shaders/tilemap-vert.glsl");
+        final Shader vertexShader = shaderCompiler.compileVertexShader(vertexShaderSource);
+
+        final String fragmentShaderSource = readShaderSource("assets/shaders/tilemap-frag.glsl");
+        final Shader fragmentShader = shaderCompiler.compileFragmentShader(fragmentShaderSource);
+
+        programFactory.registerProgramFromShaders(vertexShader, fragmentShader, "TilemapProgram");
     }
 
 
@@ -231,6 +243,14 @@ public class Main {
         final Entity tileEntity = entityFactory.create("Wood")
                 .addComponent(spriteRendererComponent);
         scene.addEntity(tileEntity);
+
+
+        final Entity tilemapEntity = entityFactory.create("Tilemap")
+                .addComponent(new TilemapComponent("assets/tilemaps/test-world.tmx"))
+                .addComponent(new TilemapRendererComponent());
+
+        scene.addEntity(tilemapEntity);
+
         return scene;
     }
 

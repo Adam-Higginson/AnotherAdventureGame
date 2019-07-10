@@ -35,12 +35,12 @@ public class TextureCache {
         //For now just cache the same textures
         textureNameToTexture.clear();
 
-        cacheTexture("/assets/sprites/enemies/skeleton.png");
+        cacheTextureFromResourceTexture("/assets/sprites/enemies/skeleton.png");
     }
 
-    private void cacheTexture(final String textureName) throws IOException {
-        textureNameToTexture.put(textureName,
-                textureFactory.loadTextureFromFileNameInResources(textureName));
-        LOG.info("Successfully cached texture: {}", textureName);
+    private void cacheTextureFromResourceTexture(final String resourceFileName) throws IOException {
+        textureNameToTexture.put(resourceFileName,
+                textureFactory.loadImageTextureFromFileNameInResources(resourceFileName));
+        LOG.info("Successfully cached texture: {}", resourceFileName);
     }
 }

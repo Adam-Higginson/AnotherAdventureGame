@@ -4,6 +4,7 @@ import com.adam.adventure.event.EventBus;
 import com.adam.adventure.event.RequestConnectionToServerEvent;
 
 import javax.inject.Inject;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class UiConsoleComponentFactory {
 
@@ -24,6 +25,9 @@ public class UiConsoleComponentFactory {
                     } else {
                         eventBus.publishEvent(new RequestConnectionToServerEvent(args[1], args[2], Integer.parseInt(args[3])));
                     }
-                }).addConsoleCommand("server", serverConsoleCommand);
+                }).addConsoleCommand("server", serverConsoleCommand)
+                .addConsoleCommand("c", (console, args) -> {
+                    eventBus.publishEvent(new RequestConnectionToServerEvent("TEST-" + ThreadLocalRandom.current().nextInt(), "localhost", 50));
+                });
     }
 }
