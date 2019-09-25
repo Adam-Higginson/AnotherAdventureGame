@@ -4,7 +4,7 @@ import static org.lwjgl.opengl.GL20.glUniform1i;
 
 public class Uniform1i extends Uniform {
 
-    Uniform1i(final int uniformLocation) {
+    public Uniform1i(final int uniformLocation) {
         super(uniformLocation);
     }
 

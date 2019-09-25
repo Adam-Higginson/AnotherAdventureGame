@@ -24,11 +24,13 @@ public class Texture {
         return height;
     }
 
-    public void bindTexture() {
+
+    public void bind(final int activeTexture) {
+        glActiveTexture(GL_TEXTURE0 + activeTexture);
         glBindTexture(GL_TEXTURE_2D, textureId);
     }
 
-    public void bindTexture(final int activeTexture) {
-        glActiveTexture(GL_TEXTURE0 + activeTexture);
+    public void unbind() {
+        glBindTexture(GL_TEXTURE_2D, 0);
     }
 }

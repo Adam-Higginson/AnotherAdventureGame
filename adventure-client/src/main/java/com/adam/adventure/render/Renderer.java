@@ -89,7 +89,7 @@ public class Renderer {
         renderQueue.forEach(renderable -> {
             try {
                 renderable.after(this);
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 LOG.error("Exception when executing after on renderable: {}", renderable.getClass(), e);
             }
         });
@@ -136,5 +136,9 @@ public class Renderer {
 
     public VertexArray buildNewVertexArray(final Buffer vertexBuffer, final Buffer elementArrayBuffer) {
         return vertexArrayFactory.newVertexArray(vertexBuffer, elementArrayBuffer);
+    }
+
+    public VertexArrayFactory getVertexArrayFactory() {
+        return vertexArrayFactory;
     }
 }

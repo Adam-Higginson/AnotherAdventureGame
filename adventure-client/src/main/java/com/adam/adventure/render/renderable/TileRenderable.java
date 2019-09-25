@@ -58,9 +58,13 @@ public class TileRenderable extends RenderableEntity<Entity> {
 
         renderer.applyProjectionMatrix(program);
 
-        texture.bindTexture();
+        texture.bind(0);
         vertexArray.enableVertexArray();
         vertexArray.draw();
+
+        program.disableProgram();
+        vertexArray.unbind();
+        vertexArray.unbind();
     }
 
     private void applyUniforms(final Program program) {
@@ -77,7 +81,6 @@ public class TileRenderable extends RenderableEntity<Entity> {
 
     @Override
     public void after(final Renderer renderer) {
-        vertexArray.unbind();
         getEntity().getTransform().identity();
     }
 }

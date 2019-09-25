@@ -1,6 +1,7 @@
 package com.adam.adventure.render.texture;
 
 import de.matthiasmann.twl.utils.PNGDecoder;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
@@ -37,6 +38,7 @@ public class TextureFactory {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, pngDecoder.getWidth(), pngDecoder.getHeight(), 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, byteBuffer);
+        //Unbind texture
         glBindTexture(GL_TEXTURE_2D, 0);
 
         return new Texture(textureId, pngDecoder.getWidth(), pngDecoder.getHeight());
@@ -44,7 +46,12 @@ public class TextureFactory {
 
 
     public Texture loadDataTexture(final byte[] data, final int width, final int height) {
-        final ByteBuffer byteBuffer = ByteBuffer.wrap(data);
+        final ByteBuffer buffer = BufferUtils.createByteBuffer(width * height);
+        for (final byte byteVal : data) {
+            buffer.put(byteVal);
+        }
+
+        buffer.flip();
 
         final int textureId = glGenTextures();
         glBindTexture(GL_TEXTURE_2D, textureId);
@@ -52,7 +59,8 @@ public class TextureFactory {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, byteBuffer);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL11.GL_UNSIGNED_BYTE, buffer);
+        //Unbind texture
         glBindTexture(GL_TEXTURE_2D, 0);
 
         return new Texture(textureId, width, height);

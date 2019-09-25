@@ -26,6 +26,10 @@ public class Program {
         glUseProgram(programId);
     }
 
+    public void disableProgram() {
+        glUseProgram(0);
+    }
+
     @SuppressWarnings("unchecked")
     public <T extends Uniform> T getUniform(final String uniformName, final Class<T> returnType) {
         //Lazy load

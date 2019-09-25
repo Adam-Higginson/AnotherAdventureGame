@@ -22,6 +22,10 @@ public class VertexArray {
         glDrawElements(GL_TRIANGLES, numberOfElements, GL_UNSIGNED_INT, 0);
     }
 
+    public void drawArrays() {
+        glDrawArrays(GL_TRIANGLES, 0, numberOfElements);
+    }
+
     public void unbind() {
         glBindVertexArray(NULL_VERTEX_ARRAY);
     }

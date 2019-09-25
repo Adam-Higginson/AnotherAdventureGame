@@ -26,4 +26,16 @@ public class VertexArrayFactory {
 
         return new VertexArray(vertexArrayId, elementArrayBuffer.getNumberOfElements());
     }
+
+    /**
+     * Returns a vertex array which contains no {@link Vertex} data, but instead simply draws vertices with no data.
+     * This is useful in the case where you want to generate vertices in the shader.
+     *
+     * @param numberOfElements How many elements to draw.
+     * @return The empty vertex array.
+     */
+    public VertexArray newEmptyVertexArray(final int numberOfElements) {
+        final int vertexArrayId = glGenVertexArrays();
+        return new VertexArray(vertexArrayId, numberOfElements);
+    }
 }
