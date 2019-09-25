@@ -10,7 +10,7 @@ uniform mat4 projection;
 uniform int tilemapWidth;
 uniform int tilemapHeight;
 
-uniform sampler2D tilemapData;
+uniform isampler2D tilemapData;
 
 out vec2 T;
 
@@ -44,15 +44,17 @@ void main() {
     int tileIndex = (gl_VertexID - vertexIndex) / 6;
     int tileX = tileIndex % tilemapWidth;
     int tileY = (tileIndex - tileX) / tilemapWidth;
-    int ti = int(texture(tilemapData, vec2((float(tileX) + 0.5) / tilemapWidth, (float(tileY) + 0.5) / tilemapHeight)).r * 256.0);
+    int ti = texture(tilemapData, vec2((float(tileX) + 0.5) / tilemapWidth, (float(tileY) + 0.5) / tilemapHeight)).r;
 
-    vec3 vertexOffset = vec3(float(tileX) * 32.0, float(tileY) * 32.0, 0.0);
+    vec3 vertexOffset = vec3(float(tileX) * 32.0, float(tileY) * -32.0, 0.0);
     vec4 vertexPosition = vec4((vertices[vertexIndex] + vertexOffset), 1.0);
     gl_Position = mvp * vertexPosition;
 
     //Figuring out texture coordinate
-    int s = ti % 21;
-    int t = (ti - s) / 21;
+    int s = (ti % 21) - 1;
+    int t = ((ti - s) / 21) + 1;
 
-    T = texcoord[vertexIndex] + vec2((float(s * 32) + 0.5) / tilesetWidth, (float(t * 32) + 0.5) / tilesetHeight);
+    float texX = (float(s * 32)) / tilesetWidth;
+    float texY = 1.0 - ((float(t * 32)) / tilesetHeight);
+    T = texcoord[vertexIndex] + vec2(texX, texY);
 }

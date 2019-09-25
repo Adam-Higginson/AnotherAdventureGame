@@ -9,8 +9,11 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL30.GL_R32I;
+import static org.lwjgl.opengl.GL30.GL_RED_INTEGER;
 
 public class TextureFactory {
 
@@ -45,10 +48,10 @@ public class TextureFactory {
     }
 
 
-    public Texture loadDataTexture(final byte[] data, final int width, final int height) {
-        final ByteBuffer buffer = BufferUtils.createByteBuffer(width * height);
-        for (final byte byteVal : data) {
-            buffer.put(byteVal);
+    public Texture loadDataTexture(final int[] data, final int width, final int height) {
+        final IntBuffer buffer = BufferUtils.createIntBuffer(width * height);
+        for (final int value : data) {
+            buffer.put(value);
         }
 
         buffer.flip();
@@ -59,7 +62,7 @@ public class TextureFactory {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL11.GL_UNSIGNED_BYTE, buffer);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_R32I, width, height, 0, GL_RED_INTEGER, GL11.GL_INT, buffer);
         //Unbind texture
         glBindTexture(GL_TEXTURE_2D, 0);
 
