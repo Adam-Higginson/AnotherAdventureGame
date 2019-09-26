@@ -2,6 +2,7 @@ package com.adam.adventure.server.player;
 
 import com.adam.adventure.entity.Entity;
 import com.adam.adventure.entity.EntityFactory;
+import com.adam.adventure.entity.component.tilemap.TilemapObserverComponent;
 import com.adam.adventure.server.entity.component.NetworkAnimationComponent;
 import com.adam.adventure.server.entity.component.NetworkIdComponent;
 import lombok.extern.slf4j.Slf4j;
@@ -43,6 +44,7 @@ public class PlayerSessionRegistry {
         playerEntity.setTransform(buildRandomPositionMatrix());
         playerEntity.addComponent(new NetworkIdComponent(playerId));
         playerEntity.addComponent(new NetworkAnimationComponent());
+        playerEntity.addComponent(new TilemapObserverComponent());
 
         final PlayerSession playerSession = PlayerSession.builder()
                 .playerEntity(playerEntity)

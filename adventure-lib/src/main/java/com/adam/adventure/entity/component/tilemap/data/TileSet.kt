@@ -1,4 +1,4 @@
-package com.adam.adventure.tilemap
+package com.adam.adventure.entity.component.tilemap.data
 
 data class TileSet (
         val columns : Int,
@@ -12,5 +12,18 @@ data class TileSet (
         val tiledVersion : String,
         val tileHeight : Float,
         val tileWidth : Float,
-        val type : String
+        val type : String,
+        val tiles : List<Tile>
+)
+
+data class Tile (
+        val id : Int,
+        val type : String,
+        val properties : List<TileProperty>
+)
+
+data class TileProperty (
+        val name : String,
+        val type : String,
+        val value : Any
 )

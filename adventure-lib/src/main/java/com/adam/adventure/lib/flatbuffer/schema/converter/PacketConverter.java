@@ -48,6 +48,8 @@ public class PacketConverter {
                 return com.adam.adventure.domain.EntityInfo.EntityType.STANDARD;
             case EntityType.PLAYER:
                 return com.adam.adventure.domain.EntityInfo.EntityType.PLAYER;
+            case EntityType.TILEMAP:
+                return com.adam.adventure.domain.EntityInfo.EntityType.TILEMAP;
         }
 
         return null;

@@ -36,6 +36,15 @@ public abstract class EntityComponent {
         // By default nothing happens
     }
 
+    /**
+     * Called before any updates are processed.
+     *
+     * @param deltaTime Delta time between frames
+     */
+    protected void beforeUpdate(final float deltaTime) {
+        //By default nothing happens
+    }
+
     protected void update(final float deltaTime) {
         // By default nothing happens
     }

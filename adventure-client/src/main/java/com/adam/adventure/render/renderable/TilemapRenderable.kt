@@ -18,6 +18,7 @@ import org.joml.Matrix4f
  * @param tilemapHeight - The number of tiles for the height of the tileMap
  * @param tilesetColumns - How many columns are in the tileset
  * @param tileSize - The size of the tiles, shader currently only supports square tiles
+ * @param firstgid - The first id of the tile
  */
 class TilemapRenderable(val transform : Matrix4f,
                         val tileSetTexture: Texture,
@@ -25,7 +26,8 @@ class TilemapRenderable(val transform : Matrix4f,
                         val tilemapWidth: Int,
                         val tilemapHeight: Int,
                         val tilesetColumns : Int,
-                        val tileSize : Float) : Renderable {
+                        val tileSize : Float,
+                        val firstgid : Int) : Renderable {
 
     var vertexArray: VertexArray? = null
 
@@ -62,10 +64,11 @@ class TilemapRenderable(val transform : Matrix4f,
 
         program.getUniform("tilemapWidth", Uniform1i::class.java).useUniform(tilemapWidth)
         program.getUniform("tilemapHeight", Uniform1i::class.java).useUniform(tilemapHeight)
-        program.getUniform("tilesetWidth", Uniform1i::class.java).useUniform(tileSetTexture.width);
-        program.getUniform("tilesetHeight", Uniform1i::class.java).useUniform(tileSetTexture.height);
-        program.getUniform("tileSetColumns", Uniform1i::class.java).useUniform(tilesetColumns);
-        program.getUniform("tileSize", Uniform1f::class.java).useUniform(tileSize);
-        program.getUniform("model", UniformMatrix4f::class.java).useUniform(transform);
+        program.getUniform("tilesetWidth", Uniform1i::class.java).useUniform(tileSetTexture.width)
+        program.getUniform("tilesetHeight", Uniform1i::class.java).useUniform(tileSetTexture.height)
+        program.getUniform("tileSetColumns", Uniform1i::class.java).useUniform(tilesetColumns)
+        program.getUniform("tileSize", Uniform1f::class.java).useUniform(tileSize)
+        program.getUniform("model", UniformMatrix4f::class.java).useUniform(transform)
+        program.getUniform("firstgid", Uniform1i::class.java).useUniform(firstgid)
     }
 }

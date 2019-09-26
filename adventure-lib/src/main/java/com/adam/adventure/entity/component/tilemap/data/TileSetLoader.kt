@@ -1,4 +1,4 @@
-package com.adam.adventure.tilemap
+package com.adam.adventure.entity.component.tilemap.data
 
 import java.io.InputStream
 

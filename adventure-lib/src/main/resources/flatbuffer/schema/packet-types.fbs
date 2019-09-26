@@ -34,7 +34,7 @@ table MapEntry {
     value:string;
 }
 
-enum EntityType:byte { STANDARD, PLAYER }
+enum EntityType:byte { STANDARD, PLAYER, TILEMAP }
 
 table EntityInfo {
     id:string;

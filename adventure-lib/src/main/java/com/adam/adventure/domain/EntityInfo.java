@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.UUID;
 
 public class EntityInfo {
-    public enum EntityType {STANDARD, PLAYER}
+    public enum EntityType {STANDARD, PLAYER, TILEMAP}
 
     private final UUID id;
     private final String name;

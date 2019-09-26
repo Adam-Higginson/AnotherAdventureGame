@@ -1,4 +1,4 @@
-package com.adam.adventure.tilemap
+package com.adam.adventure.entity.component.tilemap.data
 
 data class TileMap (
         val height : Int,
@@ -31,3 +31,4 @@ data class TileMapTileSet (
         val firstgid : Int,
         val source : String
 )
+

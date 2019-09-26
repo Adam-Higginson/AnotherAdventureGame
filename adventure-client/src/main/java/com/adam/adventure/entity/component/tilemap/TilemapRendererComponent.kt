@@ -2,13 +2,14 @@ package com.adam.adventure.entity.component.tilemap
 
 import com.adam.adventure.entity.EntityComponent
 import com.adam.adventure.entity.component.event.ComponentEvent
+import com.adam.adventure.entity.component.tilemap.data.TileMap
+import com.adam.adventure.entity.component.tilemap.data.TileMapLayer
+import com.adam.adventure.entity.component.tilemap.data.TileSet
+import com.adam.adventure.entity.component.tilemap.event.TilemapLoadedEvent
 import com.adam.adventure.render.RenderQueue
 import com.adam.adventure.render.renderable.TilemapRenderable
 import com.adam.adventure.render.texture.Texture
 import com.adam.adventure.render.texture.TextureFactory
-import com.adam.adventure.tilemap.TileMap
-import com.adam.adventure.tilemap.TileMapLayer
-import com.adam.adventure.tilemap.TileSet
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
@@ -42,7 +43,8 @@ class TilemapRendererComponent : EntityComponent() {
                     tileMap.width,
                     tileMap.height,
                     tileSet.columns,
-                    tileSet.tileWidth)
+                    tileSet.tileWidth,
+                    tileMap.tileSets[0].firstgid)
             renderQueue!!.addRenderable(tilemapRenderable)
         }
     }

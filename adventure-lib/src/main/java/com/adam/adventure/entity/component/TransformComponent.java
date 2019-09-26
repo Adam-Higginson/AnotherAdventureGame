@@ -14,7 +14,9 @@ public class TransformComponent extends EntityComponent {
         return transform;
     }
 
-    public void setTransform(Matrix4f transform) {
+    public void setTransform(final Matrix4f transform) {
         this.transform = transform;
     }
+
+
 }
