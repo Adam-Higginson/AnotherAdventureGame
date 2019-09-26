@@ -4,38 +4,45 @@ uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 
-//uniform int tilesetWidth;
-//uniform int tilesetHeight;
+//The tileset size in pixels
+uniform int tilesetWidth;
+uniform int tilesetHeight;
 
+//The tilemap size in number of tiles (not pixels!)
 uniform int tilemapWidth;
 uniform int tilemapHeight;
 
+//The number of columns in the tileset
+uniform int tileSetColumns;
+
+//How big a tile is, currently only supports uniform tiles
+uniform float tileSize;
+
+//The data from the tilemap stored in an integer texture
 uniform isampler2D tilemapData;
 
+//Outputs texture coordinates to look into tileset texture
 out vec2 T;
 
 void main() {
     mat4 mvp = projection * view * model;
 
-    float tilesetWidth = 672.0;
-    float tilesetHeight = 701.0;
-
-    const vec3 vertices[] = vec3[](
-        vec3(0.0, 32.0, 0.0),
+    vec3 vertices[] = vec3[](
+        vec3(0.0, tileSize, 0.0),
         vec3(0.0, 0.0, 0.0),
-        vec3(32.0, 0.0, 0.0),
-        vec3(32.0, 0.0, 0.0),
-        vec3(32.0, 32.0, 0.0),
-        vec3(0.0, 32.0, 0.0)
+        vec3(tileSize, 0.0, 0.0),
+        vec3(tileSize, 0.0, 0.0),
+        vec3(tileSize, tileSize, 0.0),
+        vec3(0.0, tileSize, 0.0)
     );
 
     vec2 texcoord[] = vec2[](
-        vec2(0.0, 32.0 / tilesetHeight),
+        vec2(0.0, tileSize / tilesetHeight),
         vec2(0.0, 0.0),
-        vec2(32.0 / tilesetWidth, 0.0),
-        vec2(32.0 / tilesetWidth, 0.0),
-        vec2(32.0 / tilesetWidth, 32.0 / tilesetHeight),
-        vec2(0.0, 32.0 / tilesetHeight)
+        vec2(tileSize / tilesetWidth, 0.0),
+        vec2(tileSize / tilesetWidth, 0.0),
+        vec2(tileSize / tilesetWidth, tileSize / tilesetHeight),
+        vec2(0.0, tileSize / tilesetHeight)
     );
 
 
@@ -46,15 +53,16 @@ void main() {
     int tileY = (tileIndex - tileX) / tilemapWidth;
     int ti = texture(tilemapData, vec2((float(tileX) + 0.5) / tilemapWidth, (float(tileY) + 0.5) / tilemapHeight)).r;
 
-    vec3 vertexOffset = vec3(float(tileX) * 32.0, float(tileY) * -32.0, 0.0);
+    //We negate the y position as we want to render top to bottom
+    vec3 vertexOffset = vec3(float(tileX) * tileSize, float(tileY) * -tileSize, 0.0);
     vec4 vertexPosition = vec4((vertices[vertexIndex] + vertexOffset), 1.0);
     gl_Position = mvp * vertexPosition;
 
     //Figuring out texture coordinate
-    int s = (ti % 21) - 1;
-    int t = ((ti - s) / 21) + 1;
+    int s = (ti % tileSetColumns) - 1;
+    int t = ((ti - s) / tileSetColumns) + 1;
 
-    float texX = (float(s * 32)) / tilesetWidth;
-    float texY = 1.0 - ((float(t * 32)) / tilesetHeight);
+    float texX = (float(s * tileSize)) / tilesetWidth;
+    float texY = 1.0 - ((float(t * tileSize)) / tilesetHeight);
     T = texcoord[vertexIndex] + vec2(texX, texY);
 }

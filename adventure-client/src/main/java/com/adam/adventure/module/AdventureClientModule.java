@@ -14,6 +14,10 @@ import com.adam.adventure.render.texture.TextureCache;
 import com.adam.adventure.render.texture.TextureFactory;
 import com.adam.adventure.render.ui.UiManager;
 import com.adam.adventure.scene.SceneManager;
+import com.adam.adventure.tilemap.JsonTileMapLoader;
+import com.adam.adventure.tilemap.JsonTileSetLoader;
+import com.adam.adventure.tilemap.TileMapLoader;
+import com.adam.adventure.tilemap.TileSetLoader;
 import com.adam.adventure.update.PublishEventUpdateStrategy;
 import com.adam.adventure.update.UpdateStrategy;
 import com.adam.adventure.window.Window;
@@ -40,6 +44,8 @@ public class AdventureClientModule extends AbstractModule {
         bind(SceneManager.class).in(Singleton.class);
         bind(TextureCache.class).in(Singleton.class);
         bind(EntityRepository.class).to(ClientEntityRepository.class).in(Singleton.class);
+        bind(TileMapLoader.class).to(JsonTileMapLoader.class).in(Singleton.class);
+        bind(TileSetLoader.class).to(JsonTileSetLoader.class).in(Singleton.class);
 
         install(new EntityModule());
 

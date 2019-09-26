@@ -246,7 +246,7 @@ public class Main {
 
 
         final Entity tilemapEntity = entityFactory.create("Tilemap")
-                .addComponent(new TilemapComponent("assets/tilemaps/test-world.tmx"))
+                .addComponent(new TilemapComponent("assets/tilemaps/test-world.json"))
                 .addComponent(new TilemapRendererComponent());
 
         scene.addEntity(tilemapEntity);
