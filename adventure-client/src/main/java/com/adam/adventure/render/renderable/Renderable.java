@@ -5,11 +5,19 @@ import com.adam.adventure.render.Renderer;
 public interface Renderable {
     int getZIndex();
 
-    void initialise(final Renderer renderer);
+    default void initialise(final Renderer renderer) {
+        // Do nothing
+    }
 
-    void prepare(final Renderer renderer);
+    default void prepare(final Renderer renderer) {
+        // Do nothing
+    }
 
-    void render(final Renderer renderer);
+    default void render(final Renderer renderer) {
+        // Do nothing
+    }
 
-    void after(final Renderer renderer);
+    default void after(final Renderer renderer) {
+        // Do nothing
+    }
 }

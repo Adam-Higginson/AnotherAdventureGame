@@ -71,9 +71,13 @@ public class SpriteRenderable implements Renderable {
         applyUniforms(program);
         renderer.applyProjectionMatrix(program);
 
-        sprite.getTexture().bindTexture();
+        sprite.getTexture().bind(0);
         vertexArray.enableVertexArray();
         vertexArray.draw();
+
+        vertexArray.unbind();
+        sprite.getTexture().unbind();
+        program.disableProgram();
     }
 
     private void applyUniforms(final Program program) {
@@ -89,10 +93,5 @@ public class SpriteRenderable implements Renderable {
         final Uniform2f textureOffset = program.getUniform("textureOffset", Uniform2f.class);
         textureOffset.useUniform(sprite.getTextureOffset().getX(),
                 sprite.getTextureOffset().getY());
-    }
-
-    @Override
-    public void after(final Renderer renderer) {
-        vertexArray.unbind();
     }
 }

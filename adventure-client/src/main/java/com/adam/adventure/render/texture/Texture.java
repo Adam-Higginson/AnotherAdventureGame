@@ -2,6 +2,8 @@ package com.adam.adventure.render.texture;
 
 import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
 import static org.lwjgl.opengl.GL11.glBindTexture;
+import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
+import static org.lwjgl.opengl.GL13.glActiveTexture;
 
 public class Texture {
     private final int textureId;
@@ -22,7 +24,13 @@ public class Texture {
         return height;
     }
 
-    public void bindTexture() {
+
+    public void bind(final int activeTexture) {
+        glActiveTexture(GL_TEXTURE0 + activeTexture);
         glBindTexture(GL_TEXTURE_2D, textureId);
+    }
+
+    public void unbind() {
+        glBindTexture(GL_TEXTURE_2D, 0);
     }
 }
