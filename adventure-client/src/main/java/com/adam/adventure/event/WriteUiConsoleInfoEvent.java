@@ -17,6 +17,10 @@ public class WriteUiConsoleInfoEvent extends ConsoleEvent {
         this.message = LocalDateTime.now().format(DATE_TIME_FORMATTER) + " [INFO] " + message;
     }
 
+    public static ConsoleEvent consoleInfoEvent(final String message) {
+        return new WriteUiConsoleInfoEvent(message);
+    }
+
 
     @Override
     public void handle(final UiConsoleComponent console) {

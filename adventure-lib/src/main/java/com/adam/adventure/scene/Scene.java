@@ -1,14 +1,12 @@
 package com.adam.adventure.scene;
 
 import com.adam.adventure.entity.Entity;
+import com.adam.adventure.entity.EntityComponent;
 import com.adam.adventure.event.EventBus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 
 public class Scene {
     private static final Logger LOG = LoggerFactory.getLogger(Scene.class);
@@ -48,7 +46,7 @@ public class Scene {
         entities.forEach(Entity::activate);
     }
 
-    void destroy() {
+    public void destroy() {
         LOG.info("Destroying scene: {}", name);
         entities.forEach(Entity::destroy);
         active = false;
@@ -61,6 +59,17 @@ public class Scene {
     public void update(final float elapsedTime) {
         addNewEntitiesToScene();
         entities.forEach(entity -> entity.update(elapsedTime));
+    }
+
+    /**
+     * Returns the first entity found which has the given component
+     * @param componentClass The component class which should be found.
+     * @return The found entity, or empty if no such entity could be found.
+     */
+    public Optional<Entity> getEntityWithComponent(final Class<? extends EntityComponent> componentClass) {
+        return entities.stream()
+                .filter(entity -> entity.hasComponent(componentClass))
+                .findFirst();
     }
 
     private void addNewEntitiesToScene() {

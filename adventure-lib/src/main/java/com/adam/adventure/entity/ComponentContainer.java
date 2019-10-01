@@ -43,6 +43,7 @@ public class ComponentContainer {
     }
 
     public void update(final float deltaTime) {
+        getAllComponents().forEach(component -> component.beforeUpdate(deltaTime));
         getAllComponents().forEach(component -> component.update(deltaTime));
         getAllComponents().forEach(component -> component.afterUpdate(deltaTime));
     }

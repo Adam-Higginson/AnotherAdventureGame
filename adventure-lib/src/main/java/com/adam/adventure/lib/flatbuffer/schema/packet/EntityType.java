@@ -6,8 +6,9 @@ public final class EntityType {
   private EntityType() { }
   public static final byte STANDARD = 0;
   public static final byte PLAYER = 1;
+  public static final byte TILEMAP = 2;
 
-  public static final String[] names = { "STANDARD", "PLAYER", };
+  public static final String[] names = { "STANDARD", "PLAYER", "TILEMAP", };
 
   public static String name(int e) { return names[e]; }
 }

@@ -4,6 +4,8 @@ uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 
+uniform int firstgid;
+
 //The tileset size in pixels
 uniform int tilesetWidth;
 uniform int tilesetHeight;
@@ -59,8 +61,8 @@ void main() {
     gl_Position = mvp * vertexPosition;
 
     //Figuring out texture coordinate
-    int s = (ti % tileSetColumns) - 1;
-    int t = ((ti - s) / tileSetColumns) + 1;
+    int s = (ti % tileSetColumns) - firstgid;
+    int t = ((ti - s) / tileSetColumns) + firstgid;
 
     float texX = (float(s * tileSize)) / tilesetWidth;
     float texY = 1.0 - ((float(t * tileSize)) / tilesetHeight);

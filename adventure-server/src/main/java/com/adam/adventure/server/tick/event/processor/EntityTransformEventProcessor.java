@@ -1,5 +1,6 @@
 package com.adam.adventure.server.tick.event.processor;
 
+import com.adam.adventure.server.entity.component.NetworkIdComponent;
 import com.adam.adventure.server.player.PlayerSession;
 import com.adam.adventure.server.player.PlayerSessionRegistry;
 import com.adam.adventure.server.tick.event.EntityTransformEvent;
@@ -28,6 +29,9 @@ public class EntityTransformEventProcessor implements Consumer<EntityTransformEv
     }
 
     private void updateTransformAndLastModifiedTime(final PlayerSession playerSession, final EntityTransformEvent entityTransformEvent) {
-        playerSession.getPlayerEntity().getTransform().set(entityTransformEvent.getTransform());
+        playerSession.getPlayerEntity()
+                .getComponent(NetworkIdComponent.class)
+                .ifPresentOrElse(component -> component.queueTransformUpdate(entityTransformEvent.getTransform()),
+                        () -> LOG.error("Could not find network id component for player with id: {}", entityTransformEvent.getEntityId()));
     }
 }

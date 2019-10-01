@@ -1,5 +1,6 @@
 package com.adam.adventure.server.receiver.processor;
 
+import com.adam.adventure.entity.component.tilemap.TilemapComponent;
 import com.adam.adventure.entity.repository.EntityRepository;
 import com.adam.adventure.lib.flatbuffer.schema.packet.Packet;
 import com.adam.adventure.lib.flatbuffer.schema.packet.ServerCommandPacket;
@@ -40,14 +41,18 @@ public class ServerCommandPacketProcessor implements BiConsumer<DatagramPacket, 
             LOG.warn("Received command: {} but this was less than minimum split of 2 parts", command);
         }
 
+        LOG.info("Server processing command: {}", serverCommandPacket.command());
+
         switch (commandParts[0].toLowerCase()) {
             case "spawn":
                 handleSpawnEvent(commandParts);
                 break;
+            case "tiledump":
+                dumpTileMapInfo();
+                break;
         }
-
-        LOG.info("Server processing command: {}", serverCommandPacket.command());
     }
+
 
     private void handleSpawnEvent(final String[] command) {
         final Optional<Scene> currentScene = sceneManager.getCurrentScene();
@@ -63,5 +68,27 @@ public class ServerCommandPacketProcessor implements BiConsumer<DatagramPacket, 
                             currentScene.get().addEntity(entity);
                         },
                         () -> LOG.warn("Entity: {} could not be loaded!", entityName));
+    }
+
+    private void dumpTileMapInfo() {
+        final Optional<Scene> currentScene = sceneManager.getCurrentScene();
+        if (currentScene.isEmpty()) {
+            LOG.warn("Attempted to dump tilemap info, but no active scene!");
+            return;
+        }
+
+        final Optional<TilemapComponent> tilemapComponent = currentScene.get()
+                .getEntities()
+                .stream()
+                .map(entity -> entity.getComponent(TilemapComponent.class))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .findFirst();
+        if (tilemapComponent.isEmpty()) {
+            LOG.warn("Attempted to dump tilemap info, but no active tilemap!");
+            return;
+        }
+
+        tilemapComponent.get().dumpTileMapInfo();
     }
 }

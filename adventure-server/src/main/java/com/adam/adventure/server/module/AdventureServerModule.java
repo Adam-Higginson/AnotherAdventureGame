@@ -1,6 +1,10 @@
 package com.adam.adventure.server.module;
 
 import com.adam.adventure.entity.EntityModule;
+import com.adam.adventure.entity.component.tilemap.data.JsonTileMapLoader;
+import com.adam.adventure.entity.component.tilemap.data.JsonTileSetLoader;
+import com.adam.adventure.entity.component.tilemap.data.TileMapLoader;
+import com.adam.adventure.entity.component.tilemap.data.TileSetLoader;
 import com.adam.adventure.entity.repository.EntityRepository;
 import com.adam.adventure.event.EventBus;
 import com.adam.adventure.scene.SceneManager;
@@ -39,6 +43,9 @@ public class AdventureServerModule extends AbstractModule {
             bind(SceneManager.class).in(Singleton.class);
             bind(Long.class).annotatedWith(Names.named("tickrate")).toInstance(tickrate);
             bind(EntityRepository.class).to(ServerEntityRepository.class).in(Singleton.class);
+            bind(TileMapLoader.class).to(JsonTileMapLoader.class).in(Singleton.class);
+            bind(TileSetLoader.class).to(JsonTileSetLoader.class).in(Singleton.class);
+
 
             install(new EntityModule());
             install(new ReceiverModule());

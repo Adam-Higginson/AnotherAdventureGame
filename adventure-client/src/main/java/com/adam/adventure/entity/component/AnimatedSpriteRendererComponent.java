@@ -4,6 +4,7 @@ import com.adam.adventure.entity.EntityComponent;
 import com.adam.adventure.entity.component.event.ComponentEvent;
 import com.adam.adventure.entity.component.event.MovementComponentEvent;
 import com.adam.adventure.render.RenderQueue;
+import com.adam.adventure.render.renderable.Renderable;
 import com.adam.adventure.render.renderable.SpriteRenderable;
 import com.adam.adventure.render.sprite.Sprite;
 import com.adam.adventure.render.sprite.SpriteAnimation;
@@ -29,6 +30,8 @@ public class AnimatedSpriteRendererComponent extends EntityComponent {
     private MovementComponentEvent.MovementType activeMovementType;
     private SpriteAnimation activeSpriteAnimation;
 
+    private Renderable spriteRenderable;
+
     public AnimatedSpriteRendererComponent(final Builder builder) {
         this(builder.sprite,
                 builder.defaultSpriteAnimation,
@@ -49,8 +52,7 @@ public class AnimatedSpriteRendererComponent extends EntityComponent {
 
     @Override
     public void activate() {
-        final SpriteRenderable spriteRenderable = new SpriteRenderable(getEntity(), this.sprite, 1);
-        rendererQueue.addRenderable(spriteRenderable);
+        spriteRenderable = new SpriteRenderable(getEntity(), this.sprite, 1);
     }
 
     @Override
@@ -58,6 +60,14 @@ public class AnimatedSpriteRendererComponent extends EntityComponent {
         if (activeSpriteAnimation != null) {
             activeSpriteAnimation.update(deltaTime, sprite);
         }
+
+        rendererQueue.addRenderable(spriteRenderable);
+    }
+
+
+    @Override
+    protected void destroy() {
+        spriteRenderable.destroy();
     }
 
     @Override

@@ -38,14 +38,15 @@ public class SceneManager {
     }
 
     public SceneManager addScene(final Scene scene) {
-        sceneNameToSceneSupplier.put(scene.getName(), scene);
+        sceneNameToSceneSupplier.put(scene.getName().toLowerCase(), scene);
         return this;
     }
 
     /**
-     * Forces the destruction of the current scene and all associated entities
+     * Forces the destruction of the current scene and all associated entities even if the entity is flagged
+     * as not being destroyed on scene change
      */
-    public void forceDestroy() {
+    public void forceDestroyCurrentScene() {
         if (currentScene != null) {
             currentScene.forceDestroy();
         }
@@ -62,10 +63,9 @@ public class SceneManager {
     @EventSubscribe
     @SuppressWarnings("unused")
     public void newSceneEvent(final NewSceneEvent newSceneEvent) {
-        final Scene newScene = sceneNameToSceneSupplier.get(newSceneEvent.getSceneName());
+        final Scene newScene = sceneNameToSceneSupplier.get(newSceneEvent.getSceneName().toLowerCase());
         if (newScene == null) {
-            LOG.error("Could not find scene with name: {}", newSceneEvent.getSceneName());
-            return;
+            throw new NoSceneFoundException("Scene with name: " + newSceneEvent.getSceneName().toLowerCase() + " could not be found");
         }
 
         LOG.info("Activating scene: {}", newScene.getName());

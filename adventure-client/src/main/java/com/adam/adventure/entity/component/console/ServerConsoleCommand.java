@@ -18,7 +18,7 @@ public class ServerConsoleCommand implements ConsoleCommand {
 
     @Override
     public void execute(final UiConsoleComponent console, final String... args) {
-        if (args.length < 3) {
+        if (args.length < 2) {
             console.writeError("Usage: server <command> <args>");
             return;
         }

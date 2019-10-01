@@ -67,6 +67,11 @@ public class TileRenderable extends RenderableEntity<Entity> {
         vertexArray.unbind();
     }
 
+    @Override
+    public void destroy() {
+        texture.destroy();
+    }
+
     private void applyUniforms(final Program program) {
         final UniformMatrix4f modelUniform = program.getUniform("model", UniformMatrix4f.class);
         final Matrix4f transformMatrix = getEntity().getTransform();

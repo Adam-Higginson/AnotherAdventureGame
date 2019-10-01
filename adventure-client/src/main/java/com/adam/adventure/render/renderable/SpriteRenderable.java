@@ -80,6 +80,11 @@ public class SpriteRenderable implements Renderable {
         program.disableProgram();
     }
 
+    @Override
+    public void destroy() {
+        sprite.getTexture().destroy();
+    }
+
     private void applyUniforms(final Program program) {
         final UniformMatrix4f modelUniform = program.getUniform("model", UniformMatrix4f.class);
         final Matrix4f transformMatrix = entity.getTransform();

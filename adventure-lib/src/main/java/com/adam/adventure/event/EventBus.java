@@ -3,6 +3,7 @@ package com.adam.adventure.event;
 import com.google.common.base.Objects;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,21 +31,38 @@ public class EventBus {
                 .collect(Collectors.toSet());
 
         for (final Method subscribedMethod : susbscribedMethods) {
-            final int parameterCount = subscribedMethod.getParameterCount();
-            if (parameterCount != 1) {
-                throw new IllegalArgumentException("Method: " + subscribedMethod.getName() +
-                        " annotated with @EventSubscribe should have only one parameter");
-            }
-
-            final Class<?> parameterType = subscribedMethod.getParameterTypes()[0];
-            if (!Event.class.isAssignableFrom(parameterType)) {
-                throw new IllegalArgumentException("Method " + subscribedMethod
-                        + " annotated with @EventSubscribe does not have a method taking an event as an argument");
-            }
-
+            final Class<?> parameterType = getParameterType(subscribedMethod);
             final InstanceAndMethod instanceAndMethod = new InstanceAndMethod(subscriber, subscribedMethod);
             eventTypeToSubscribers.put((Class<? extends Event>) parameterType, instanceAndMethod);
         }
+    }
+
+    public void unsubscribe(final Object unsubscriber) {
+        final Set<Method> susbscribedMethods = Arrays.stream(unsubscriber.getClass().getMethods())
+                .filter(method -> method.isAnnotationPresent(EventSubscribe.class))
+                .collect(Collectors.toSet());
+
+        for (final Method subscribedMethod : susbscribedMethods) {
+            final Class<?> parameterType = getParameterType(subscribedMethod);
+            final InstanceAndMethod instanceAndMethod = new InstanceAndMethod(unsubscriber, subscribedMethod);
+            eventTypeToSubscribers.remove(parameterType, instanceAndMethod);
+        }
+    }
+
+    @NotNull
+    private Class<?> getParameterType(final Method subscribedMethod) {
+        final int parameterCount = subscribedMethod.getParameterCount();
+        if (parameterCount != 1) {
+            throw new IllegalArgumentException("Method: " + subscribedMethod.getName() +
+                    " annotated with @EventSubscribe should have only one parameter");
+        }
+
+        final Class<?> parameterType = subscribedMethod.getParameterTypes()[0];
+        if (!Event.class.isAssignableFrom(parameterType)) {
+            throw new IllegalArgumentException("Method " + subscribedMethod
+                    + " annotated with @EventSubscribe does not have a method taking an event as an argument");
+        }
+        return parameterType;
     }
 
     public void publishEvent(final Event event) {

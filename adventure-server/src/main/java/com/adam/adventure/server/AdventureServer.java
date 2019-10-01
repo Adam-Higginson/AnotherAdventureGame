@@ -1,12 +1,12 @@
 package com.adam.adventure.server;
 
 import com.adam.adventure.scene.Scene;
-import com.adam.adventure.scene.SceneFactory;
 import com.adam.adventure.scene.SceneManager;
 import com.adam.adventure.server.module.AdventureServerModule;
 import com.adam.adventure.server.module.ServerDatagramSocket;
 import com.adam.adventure.server.player.PlayerLoginCompleter;
 import com.adam.adventure.server.receiver.ServerReceiver;
+import com.adam.adventure.server.scene.SceneRepository;
 import com.adam.adventure.server.state.WorldStateManager;
 import com.adam.adventure.server.tick.ServerTickScheduler;
 import com.adam.adventure.server.tick.ServerTickSchedulerFactory;
@@ -35,8 +35,10 @@ public class AdventureServer implements Runnable {
         //Creates instance and allows it to start listening for events.
         injector.getInstance(PlayerLoginCompleter.class);
         injector.getInstance(WorldStateManager.class);
-        final SceneFactory sceneFactory = injector.getInstance(SceneFactory.class);
-        final Scene testScene = sceneFactory.createScene("Test Scene");
+
+
+        final SceneRepository sceneRepository = injector.getInstance(SceneRepository.class);
+        final Scene testScene = sceneRepository.buildTestScene();
         injector.getInstance(SceneManager.class).addScene(testScene);
 
         final ServerTickScheduler serverTickScheduler = injector.getInstance(ServerTickSchedulerFactory.class)
