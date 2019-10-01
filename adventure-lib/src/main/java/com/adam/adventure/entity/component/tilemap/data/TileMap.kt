@@ -9,8 +9,8 @@ data class TileMap (
         val orientation : String,
         val renderOrder : String,
         val tiledVersion : String,
-        val tileHeight : Int,
-        val tileWidth : Int,
+        val tileHeight : Float,
+        val tileWidth : Float,
         val tileSets : List<TileMapTileSet>,
         val width : Int
 )

@@ -20,4 +20,11 @@ public interface Renderable {
     default void after(final Renderer renderer) {
         // Do nothing
     }
+
+    /**
+     * Called when the renderable is requested to be destroyed
+     */
+    default void destroy() {
+        // Do nothing
+    }
 }

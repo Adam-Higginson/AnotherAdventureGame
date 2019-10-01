@@ -12,7 +12,7 @@ class SceneRepository @Inject constructor(val sceneFactory : SceneFactory,
     fun buildTestScene() : Scene {
         val scene = sceneFactory.createScene("Test Scene")
         val tilemap = entityFactory.create("tilemap")
-                .addComponent(TilemapComponent("assets/tilemaps/test-world.json"))
+                .addComponent(TilemapComponent("tilemaps/test-world.json"))
         scene.addEntity(tilemap)
 
         return scene

@@ -11,6 +11,10 @@ public class WriteUiConsoleErrorEvent extends ConsoleEvent {
     }
 
 
+    public static ConsoleEvent consoleErrorEvent(final String message) {
+        return new WriteUiConsoleErrorEvent(message);
+    }
+
     @Override
     public void handle(final UiConsoleComponent console) {
         console.writeError(message);

@@ -1,12 +1,14 @@
 package com.adam.adventure.entity.component.console;
 
 import com.adam.adventure.entity.EntityComponent;
+import com.adam.adventure.entity.component.UiManagerComponent;
 import com.adam.adventure.event.EventBus;
 import com.adam.adventure.event.EventSubscribe;
 import com.adam.adventure.event.LockInputEvent;
 import com.adam.adventure.input.InputManager;
 import com.adam.adventure.input.KeyPressListener;
-import com.adam.adventure.render.ui.UiManager;
+import com.adam.adventure.scene.Scene;
+import com.adam.adventure.scene.SceneManager;
 import de.lessvoid.nifty.builder.EffectBuilder;
 import de.lessvoid.nifty.builder.LayerBuilder;
 import de.lessvoid.nifty.builder.PanelBuilder;
@@ -17,14 +19,19 @@ import de.lessvoid.nifty.effects.EffectEventId;
 import de.lessvoid.nifty.elements.Element;
 import de.lessvoid.nifty.screen.Screen;
 import de.lessvoid.nifty.tools.Color;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_F1;
 
 public class UiConsoleComponent extends EntityComponent implements KeyPressListener {
+    private static final Logger LOG = LoggerFactory.getLogger(UiConsoleComponent.class);
+
     private static final int CONSOLE_TOGGLE_KEY = GLFW_KEY_F1;
     private static final String CONSOLE_LAYER = "consoleLayer";
     private static final String CONSOLE_PANEL = "consoleParent";
@@ -33,9 +40,9 @@ public class UiConsoleComponent extends EntityComponent implements KeyPressListe
     @Inject
     private InputManager inputManager;
     @Inject
-    private UiManager uiManager;
-    @Inject
     private EventBus eventBus;
+    @Inject
+    private SceneManager sceneManager;
 
     private final Map<String, ConsoleCommand> addedConsoleCommands;
     private ConsoleCommands consoleCommands;
@@ -55,31 +62,44 @@ public class UiConsoleComponent extends EntityComponent implements KeyPressListe
     protected void activate() {
         eventBus.register(this);
 
-        final Screen baseScreen = uiManager.getBaseScreen();
-        final Element baseLayer = baseScreen.findElementById(UiManager.BASE_LAYER_ID);
+        final Optional<UiManagerComponent> uiManagerComponent = getUiManagerComponent();
+        if (uiManagerComponent.isPresent()) {
+            final Screen baseScreen = uiManagerComponent.get().getBaseScreen();
+            final Element baseLayer = baseScreen.findElementById(UiManagerComponent.BASE_LAYER_ID);
 
-        addConsoleLayer(baseLayer);
-        addKeyPressListener(baseScreen);
-        registerConsoleCommands(baseScreen);
-        active = true;
+            addConsoleLayer(baseLayer);
+            addKeyPressListener(baseScreen);
+            registerConsoleCommands(baseScreen, uiManagerComponent.get());
+            active = true;
+        } else {
+            LOG.error("No active UIManagerComponent in scene so console could not be activated!");
+        }
     }
 
     @Override
     protected void destroy() {
-        //TODO Deregister from event bus
-
-        closeConsole();
+        eventBus.unsubscribe(this);
         inputManager.removeKeyPressListener(this);
 
-        uiManager.getBaseScreen().findElementById(UiManager.BASE_LAYER_ID).getChildren().forEach(child -> {
-            if (CONSOLE_LAYER.equals(child.getId())) {
-                child.markForRemoval();
-            }
-        });
+        final Optional<UiManagerComponent> uiManagerComponent = getUiManagerComponent();
+        if (uiManagerComponent.isPresent()) {
 
-        uiManager.getBaseScreen().processAddAndRemoveLayerElements();
+            closeConsole(uiManagerComponent.get());
+            uiManagerComponent.get()
+                    .getBaseScreen()
+                    .findElementById(UiManagerComponent.BASE_LAYER_ID)
+                    .getChildren()
+                    .forEach(child -> {
+                if (CONSOLE_LAYER.equals(child.getId())) {
+                    child.markForRemoval();
+                }
+            });
 
-        active = false;
+            uiManagerComponent.get().getBaseScreen().processAddAndRemoveLayerElements();
+            active = false;
+        } else {
+            LOG.error("Could not destroy UI Console as no UIManagerComponent was found in current scene!");
+        }
     }
 
     public UiConsoleComponent addConsoleCommand(final String commandText, final ConsoleCommand consoleCommand) {
@@ -121,20 +141,37 @@ public class UiConsoleComponent extends EntityComponent implements KeyPressListe
     }
 
 
+    private Optional<UiManagerComponent> getUiManagerComponent() {
+        if (sceneManager.getCurrentScene().isEmpty()) {
+            return Optional.empty();
+        }
+
+        final Scene scene = sceneManager.getCurrentScene().get();
+        return scene.getEntityWithComponent(UiManagerComponent.class)
+                .map(entity -> entity.getComponent(UiManagerComponent.class))
+                .orElse(Optional.empty());
+    }
+
     private void toggleConsole() {
+        final Optional<UiManagerComponent> uiManagerComponent = getUiManagerComponent();
+        if (uiManagerComponent.isEmpty()) {
+            LOG.error("Attempting to toggle console but no UIManagerComponent present in scene!");
+            return;
+        }
+
         if (consoleVisible) {
-            closeConsole();
+            closeConsole(uiManagerComponent.get());
             eventBus.publishEvent(new LockInputEvent(this, true));
         } else {
-            openConsole();
+            openConsole(uiManagerComponent.get());
             eventBus.publishEvent(new LockInputEvent(this, false));
         }
     }
 
-    private void openConsole() {
+    private void openConsole(final UiManagerComponent uiManagerComponent) {
         consoleLayer.showWithoutEffects();
         consoleLayer.startEffect(EffectEventId.onStartScreen, () -> {
-            final Screen baseScreen = uiManager.getBaseScreen();
+            final Screen baseScreen = uiManagerComponent.getBaseScreen();
             oldFocusElement = baseScreen.getFocusHandler().getKeyboardFocusElement();
 
             // add the consoleElement to the focushandler, when it's not yet added already
@@ -187,15 +224,15 @@ public class UiConsoleComponent extends EntityComponent implements KeyPressListe
         }.build(baseLayer);
     }
 
-    private void registerConsoleCommands(final Screen baseScreen) {
+    private void registerConsoleCommands(final Screen baseScreen, final UiManagerComponent uiManagerComponent) {
         console = baseScreen.findNiftyControl("console", Console.class);
-        consoleCommands = new ConsoleCommands(uiManager.getNifty(), console);
+        consoleCommands = new ConsoleCommands(uiManagerComponent.getNifty(), console);
         addedConsoleCommands.forEach((text, command) -> consoleCommands.registerCommand(text, args -> command.execute(this, args)));
         consoleCommands.enableCommandCompletion(true);
     }
 
 
-    private void closeConsole() {
+    private void closeConsole(final UiManagerComponent uiManagerComponent) {
         consoleLayer.startEffect(EffectEventId.onEndScreen, () -> {
             consoleLayer.hideWithoutEffect();
             consoleVisible = false;
@@ -204,7 +241,7 @@ public class UiConsoleComponent extends EntityComponent implements KeyPressListe
                 oldFocusElement.setFocus();
             }
 
-            final Screen baseScreen = uiManager.getBaseScreen();
+            final Screen baseScreen = uiManagerComponent.getBaseScreen();
             baseScreen.getFocusHandler().remove(consoleElementFocus);
         });
     }

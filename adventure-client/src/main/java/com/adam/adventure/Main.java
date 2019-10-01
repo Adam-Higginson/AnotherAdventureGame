@@ -2,10 +2,7 @@ package com.adam.adventure;
 
 import com.adam.adventure.entity.Entity;
 import com.adam.adventure.entity.EntityFactory;
-import com.adam.adventure.entity.component.AnimatedSpriteRendererComponent;
-import com.adam.adventure.entity.component.CameraTargetComponent;
-import com.adam.adventure.entity.component.KeyboardMovementComponent;
-import com.adam.adventure.entity.component.SpriteRendererComponent;
+import com.adam.adventure.entity.component.*;
 import com.adam.adventure.entity.component.console.UiConsoleComponentFactory;
 import com.adam.adventure.entity.component.event.MovementComponentEvent;
 import com.adam.adventure.entity.component.network.NetworkManagerComponent;
@@ -66,6 +63,11 @@ public class Main {
 
         compileShaders(injector.getInstance(ShaderCompiler.class), injector.getInstance(ProgramFactory.class));
 
+        addTitleScreenScene(injector.getInstance(SceneManager.class),
+                injector.getInstance(EntityFactory.class),
+                injector.getInstance(UiConsoleComponentFactory.class));
+
+
         addStartScene(injector.getInstance(EntityFactory.class),
                 injector.getInstance(TextureFactory.class),
                 injector.getInstance(UiConsoleComponentFactory.class),
@@ -76,16 +78,16 @@ public class Main {
                 injector.getInstance(SceneManager.class));
 
 
-        //Notify everything that game is readyo`
+        //Notify everything that game is ready
         final EventBus eventBus = injector.getInstance(EventBus.class);
         eventBus.publishEvent(new InitialisedEvent());
-        eventBus.publishEvent(new NewSceneEvent("StartScene"));
+        eventBus.publishEvent(new NewSceneEvent("TitleScene"));
 
         loop(window, injector.getInstance(LoopIteration.class));
         //      loop(window, injector.getInstance(DebugLoopIterationImpl.class));
 
 
-        injector.getInstance(SceneManager.class).forceDestroy();
+        injector.getInstance(SceneManager.class).forceDestroyCurrentScene();
         window.close();
         glfwTerminate();
         glfwSetErrorCallback(null).free();
@@ -121,15 +123,29 @@ public class Main {
     }
 
 
-    private void addStartScene(final EntityFactory entityFactory,
-                               final TextureFactory textureFactory,
-                               final UiConsoleComponentFactory uiConsoleComponentFactory,
-                               final SceneManager sceneManager) throws IOException {
+    private void addTitleScreenScene(final SceneManager sceneManager,
+                                     final EntityFactory entityFactory,
+                                     final UiConsoleComponentFactory uiConsoleComponentFactory) {
+        final Entity uiManager = entityFactory.create("UI Manager")
+                .setShouldDestroyOnSceneChange(false)
+                .addComponent(new UiManagerComponent());
 
         final Entity commandConsole = entityFactory.create("Command Console")
                 .setShouldDestroyOnSceneChange(false)
                 .addComponent(uiConsoleComponentFactory.buildDefaultUiConsoleComponent());
 
+        final Scene scene = sceneManager.getSceneFactory()
+                .createScene("TitleScene")
+                .addEntity(uiManager)
+                .addEntity(commandConsole);
+        sceneManager.addScene(scene);
+    }
+
+
+    private void addStartScene(final EntityFactory entityFactory,
+                               final TextureFactory textureFactory,
+                               final UiConsoleComponentFactory uiConsoleComponentFactory,
+                               final SceneManager sceneManager) throws IOException {
         final Texture playerTexture;
         try (final InputStream playerTextureInputStream = this.getClass().getResourceAsStream("/assets/sprites/player/link.png")) {
             playerTexture = textureFactory.loadTextureFromPng(playerTextureInputStream);
@@ -218,7 +234,6 @@ public class Main {
 
 
         final Scene scene = sceneManager.getSceneFactory().createScene("StartScene")
-                .addEntity(commandConsole)
                 .addEntity(networkEntity);
         sceneManager.addScene(scene);
     }
@@ -246,7 +261,7 @@ public class Main {
 
 
         final Entity tilemapEntity = entityFactory.create("Tilemap")
-                .addComponent(new TilemapComponent("assets/tilemaps/test-world.json"))
+                .addComponent(new TilemapComponent("tilemaps/test-world.json"))
                 .addComponent(new TilemapRendererComponent());
 
         scene.addEntity(tilemapEntity);

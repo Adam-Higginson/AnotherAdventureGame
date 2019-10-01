@@ -1,17 +1,14 @@
 package com.adam.adventure.entity;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.assistedinject.FactoryModuleBuilder;
+
+import javax.inject.Singleton;
 
 public class EntityModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        install(new FactoryModuleBuilder()
-                .implement(Entity.class, Entity.class)
-                .build(EntityFactory.class));
-
-
+        bind(EntityFactory.class).in(Singleton.class);
     }
 
 }

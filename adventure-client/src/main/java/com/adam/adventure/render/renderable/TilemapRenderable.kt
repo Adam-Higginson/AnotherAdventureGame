@@ -54,6 +54,10 @@ class TilemapRenderable(val transform : Matrix4f,
         dataTexture.unbind()
     }
 
+    override fun destroy() {
+        tileSetTexture.destroy();
+        dataTexture.destroy();
+    }
 
     private fun setUniforms(program: Program) {
         dataTexture.bind(0)

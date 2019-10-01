@@ -9,14 +9,16 @@ import java.util.Optional;
 
 public class Entity {
     private final String name;
+    private final int id;
     private final Injector injector;
     private final ComponentContainer componentContainer;
-    private boolean shouldDestroyOnSceneChange;
+    private boolean shouldDestroyOnSceneChange = true;
     private boolean active;
 
     @Inject
-    Entity(@Assisted final String name, final Injector injector) {
+    Entity(@Assisted final String name, @Assisted final int id, final Injector injector) {
         this.name = name;
+        this.id = id;
         this.injector = injector;
         this.componentContainer = new ComponentContainer(this);
     }
@@ -92,10 +94,16 @@ public class Entity {
         return shouldDestroyOnSceneChange;
     }
 
+
     @Override
     public String toString() {
         return "Entity{" +
                 "name='" + name + '\'' +
+                ", id=" + id +
                 '}';
+    }
+
+    public int getId() {
+        return id;
     }
 }

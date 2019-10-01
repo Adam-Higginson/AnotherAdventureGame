@@ -7,6 +7,7 @@ import com.adam.adventure.entity.component.tilemap.data.TileMapLayer
 import com.adam.adventure.entity.component.tilemap.data.TileSet
 import com.adam.adventure.entity.component.tilemap.event.TilemapLoadedEvent
 import com.adam.adventure.render.RenderQueue
+import com.adam.adventure.render.renderable.Renderable
 import com.adam.adventure.render.renderable.TilemapRenderable
 import com.adam.adventure.render.texture.Texture
 import com.adam.adventure.render.texture.TextureFactory
@@ -23,11 +24,21 @@ class TilemapRendererComponent : EntityComponent() {
     @Inject
     private var renderQueue: RenderQueue? = null
 
+    private var tileMapRenderable : Renderable? = null
+
 
     override fun onComponentEvent(componentEvent: ComponentEvent?) {
         if (componentEvent is TilemapLoadedEvent) {
             loadTilemapToGpu(componentEvent.tileMap, componentEvent.tileSet)
         }
+    }
+
+    override fun update(deltaTime: Float) {
+        tileMapRenderable?.let { r -> renderQueue!!.addRenderable(r) }
+    }
+
+    override fun destroy() {
+        tileMapRenderable?.destroy()
     }
 
     private fun loadTilemapToGpu(tileMap: TileMap, tileSet : TileSet) {
@@ -37,7 +48,7 @@ class TilemapRendererComponent : EntityComponent() {
         } else {
             val tileSetTexture = loadTilesetTexture(tileSet);
             val dataTexture = loadTileDataAsTexture(tileMap.layers[0])
-            val tilemapRenderable = TilemapRenderable(entity.transform,
+            tileMapRenderable = TilemapRenderable(entity.transform,
                     tileSetTexture,
                     dataTexture,
                     tileMap.width,
@@ -45,13 +56,12 @@ class TilemapRendererComponent : EntityComponent() {
                     tileSet.columns,
                     tileSet.tileWidth,
                     tileMap.tileSets[0].firstgid)
-            renderQueue!!.addRenderable(tilemapRenderable)
         }
     }
 
     private fun loadTilesetTexture(tileSet: TileSet): Texture {
         //TODO For now hardcode directory, would be better to dynamically figure out
-        val tilesetImageFile = "/assets/tilemaps/" + tileSet.image
+        val tilesetImageFile = "/tilemaps/" + tileSet.image
         log.info("Loading tileset image from: {}", tilesetImageFile);
         val tilesetTexture = textureFactory!!.loadImageTextureFromFileNameInResources(tilesetImageFile)
         log.info("Successfully loaded tileset texture.")

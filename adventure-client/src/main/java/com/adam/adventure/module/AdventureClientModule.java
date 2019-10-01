@@ -16,7 +16,6 @@ import com.adam.adventure.render.Renderer;
 import com.adam.adventure.render.camera.Camera;
 import com.adam.adventure.render.texture.TextureCache;
 import com.adam.adventure.render.texture.TextureFactory;
-import com.adam.adventure.render.ui.UiManager;
 import com.adam.adventure.scene.SceneManager;
 import com.adam.adventure.update.PublishEventUpdateStrategy;
 import com.adam.adventure.update.UpdateStrategy;
@@ -40,7 +39,6 @@ public class AdventureClientModule extends AbstractModule {
         bind(TextureFactory.class).in(Singleton.class);
         bind(Renderer.class).in(Singleton.class);
         bind(RenderQueue.class).in(Singleton.class);
-        bind(UiManager.class).in(Singleton.class);
         bind(SceneManager.class).in(Singleton.class);
         bind(TextureCache.class).in(Singleton.class);
         bind(EntityRepository.class).to(ClientEntityRepository.class).in(Singleton.class);

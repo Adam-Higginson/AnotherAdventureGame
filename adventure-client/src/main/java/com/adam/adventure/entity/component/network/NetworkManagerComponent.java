@@ -19,16 +19,16 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.SocketException;
+import java.net.*;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
+
+import static com.adam.adventure.event.WriteUiConsoleErrorEvent.consoleErrorEvent;
 
 public class NetworkManagerComponent extends EntityComponent {
     private static final int SOCKET_TIMEOUT_MILLIS = 5000;
@@ -49,6 +49,8 @@ public class NetworkManagerComponent extends EntityComponent {
     private final Supplier<Entity> otherPlayerEntitySupplier;
     private final Map<UUID, NetworkIdentityComponent> idToNetworkIdentities;
     private final OutputMessageQueue outputMessageQueue;
+    private final AtomicBoolean isErrorInConnection = new AtomicBoolean();
+
 
     private DatagramSocket datagramSocket;
     private InetAddress serverAddress;
@@ -86,6 +88,30 @@ public class NetworkManagerComponent extends EntityComponent {
     }
 
     @Override
+    protected void beforeUpdate(final float deltaTime) {
+        if (isErrorInConnection.get()) {
+            eventBus.publishEvent(consoleErrorEvent("Server timed out"));
+            eventBus.publishEvent(new NewSceneEvent("TitleScene"));
+        }
+    }
+
+    @Override
+    protected void afterUpdate(final float deltaTime) {
+        if (activeWorldState == null && latestWorldState != null) {
+            //For now only publish initial scene transition
+            eventBus.publishEvent(new NewSceneEvent(latestWorldState.getSceneInfo().getSceneName()));
+        }
+
+        activeWorldState = latestWorldState;
+        if (activeWorldState != null) {
+            processUpdatedEntities();
+        }
+
+        drainOutputMessageQueue();
+    }
+
+
+    @Override
     protected void destroy() {
         LOG.info("Destroying network manager...");
         shouldReceivePackets = false;
@@ -106,21 +132,6 @@ public class NetworkManagerComponent extends EntityComponent {
         LOG.info("Network manager stopped");
     }
 
-
-    @Override
-    protected void afterUpdate(final float deltaTime) {
-        if (activeWorldState == null && latestWorldState != null) {
-            //For now only publish initial scene transition
-            eventBus.publishEvent(new NewSceneEvent(latestWorldState.getSceneInfo().getSceneName()));
-        }
-
-        activeWorldState = latestWorldState;
-        if (activeWorldState != null) {
-            processUpdatedEntities();
-        }
-
-        drainOutputMessageQueue();
-    }
 
     private void drainOutputMessageQueue() {
         final List<PacketableMessage<?>> messagesToSend = outputMessageQueue.drain();
@@ -296,6 +307,8 @@ public class NetworkManagerComponent extends EntityComponent {
 
 
     private class ReceiveRunnable implements Runnable {
+
+
         @Override
         public void run() {
             final byte[] buffer = new byte[2048];
@@ -315,7 +328,12 @@ public class NetworkManagerComponent extends EntityComponent {
                             break;
                     }
 
-                } catch (final Exception e) {
+                } catch (final SocketTimeoutException e) {
+                    LOG.error("Timeout when waiting for packets", e);
+                    shouldReceivePackets = false;
+                    isErrorInConnection.set(true);
+                }
+                catch (final Exception e) {
                     LOG.error("Exception thrown when receiving packet", e);
                 }
             }
