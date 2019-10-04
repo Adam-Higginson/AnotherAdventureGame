@@ -1,4 +1,4 @@
-package com.adam.adventure.entity.component;
+package com.adam.adventure.entity.component.ui;
 
 import com.adam.adventure.entity.EntityComponent;
 import com.adam.adventure.input.InputManager;
@@ -35,6 +35,7 @@ public class UiManagerComponent extends EntityComponent {
 
     public static final String BASE_SCREEN_ID = "base";
     public static final String BASE_LAYER_ID = "baseLayer";
+
     private Nifty nifty;
     private Screen baseScreen;
 
@@ -53,17 +54,22 @@ public class UiManagerComponent extends EntityComponent {
     @Override
     protected void activate() {
         final RenderDevice renderDevice = new BatchRenderDevice(buildBatchRenderBackend(window));
-        this.nifty = new Nifty(renderDevice,
+        nifty = new Nifty(renderDevice,
                 new NullSoundDevice(),
                 inputManager.getLwjglInputSystem(),
                 new Lwjgl3TimeProvider());
-        this.baseScreen = buildScreen(nifty);
-        this.niftyRenderable = new NiftyUiRenderable(nifty);
+        baseScreen = buildScreen(nifty);
+    }
+
+    @Override
+    protected void afterActivate() {
+        niftyRenderable = new NiftyUiRenderable(nifty);
+        renderQueue.initialiseRenderable(niftyRenderable);
     }
 
     @Override
     protected void update(final float deltaTime) {
-        renderQueue.addRenderable(niftyRenderable);
+        renderQueue.addRenderableToBeRendered(niftyRenderable);
     }
 
     @Override

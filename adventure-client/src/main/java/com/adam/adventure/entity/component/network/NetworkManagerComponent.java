@@ -88,8 +88,12 @@ public class NetworkManagerComponent extends EntityComponent {
     }
 
     @Override
-    protected void beforeUpdate(final float deltaTime) {
+    protected void beforeUpdate(float deltaTime) {
         if (isErrorInConnection.get()) {
+            if (datagramSocket != null) {
+                datagramSocket.close();
+            }
+
             eventBus.publishEvent(consoleErrorEvent("Server timed out"));
             eventBus.publishEvent(new NewSceneEvent("TitleScene"));
         }
@@ -332,8 +336,7 @@ public class NetworkManagerComponent extends EntityComponent {
                     LOG.error("Timeout when waiting for packets", e);
                     shouldReceivePackets = false;
                     isErrorInConnection.set(true);
-                }
-                catch (final Exception e) {
+                } catch (final Exception e) {
                     LOG.error("Exception thrown when receiving packet", e);
                 }
             }

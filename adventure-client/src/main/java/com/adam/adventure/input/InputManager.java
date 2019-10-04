@@ -1,6 +1,6 @@
 package com.adam.adventure.input;
 
-import com.adam.adventure.entity.component.console.UiConsoleComponent;
+import com.adam.adventure.entity.component.ui.console.UiConsoleComponent;
 import com.adam.adventure.window.Window;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWKeyCallbackI;

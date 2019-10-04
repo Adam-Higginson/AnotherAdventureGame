@@ -20,14 +20,14 @@ import org.joml.Matrix4f
  * @param tileSize - The size of the tiles, shader currently only supports square tiles
  * @param firstgid - The first id of the tile
  */
-class TilemapRenderable(val transform : Matrix4f,
-                        val tileSetTexture: Texture,
-                        val dataTexture: Texture,
-                        val tilemapWidth: Int,
-                        val tilemapHeight: Int,
-                        val tilesetColumns : Int,
-                        val tileSize : Float,
-                        val firstgid : Int) : Renderable {
+class TilemapRenderable(private val transform : Matrix4f,
+                        private val tileSetTexture: Texture,
+                        private val dataTexture: Texture,
+                        private val tilemapWidth: Int,
+                        private val tilemapHeight: Int,
+                        private val tilesetColumns : Int,
+                        private val tileSize : Float,
+                        private val firstgid : Int) : Renderable {
 
     var vertexArray: VertexArray? = null
 
@@ -55,8 +55,9 @@ class TilemapRenderable(val transform : Matrix4f,
     }
 
     override fun destroy() {
-        tileSetTexture.destroy();
-        dataTexture.destroy();
+        vertexArray!!.delete()
+        tileSetTexture.destroy()
+        dataTexture.destroy()
     }
 
     private fun setUniforms(program: Program) {

@@ -1,13 +1,15 @@
 package com.adam.adventure.entity;
 
 import com.google.inject.Injector;
-import com.google.inject.assistedinject.Assisted;
 import org.joml.Matrix4f;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import javax.inject.Inject;
 import java.util.Optional;
 
 public class Entity {
+    private static final Logger LOG = LoggerFactory.getLogger(Entity.class);
+
     private final String name;
     private final int id;
     private final Injector injector;
@@ -15,8 +17,7 @@ public class Entity {
     private boolean shouldDestroyOnSceneChange = true;
     private boolean active;
 
-    @Inject
-    Entity(@Assisted final String name, @Assisted final int id, final Injector injector) {
+    protected Entity(final String name, final int id, final Injector injector) {
         this.name = name;
         this.id = id;
         this.injector = injector;
@@ -65,7 +66,19 @@ public class Entity {
     public void activate() {
         if (!active) {
             active = true;
+            LOG.debug("Activating entity (name={}, id={})", name, id);
             componentContainer.activate();
+            LOG.debug("Activated entity (name={}, id={})", name, id);
+        }
+    }
+
+
+    /**
+     * Called after the activate method has been called
+     */
+    public void afterActivate() {
+        if (active) {
+            componentContainer.afterActivate();
         }
     }
 
@@ -74,14 +87,28 @@ public class Entity {
      */
     public void destroy() {
         if (shouldDestroyOnSceneChange) {
+            LOG.debug("Destroying entity (name={}, id={})", name, id);
             componentContainer.destroy();
             active = false;
+            LOG.debug("Destroyed entity (name={}, id={})", name, id);
+        }
+    }
+
+    public void beforeUpdate(final float deltaTime) {
+        if (active) {
+            componentContainer.beforeUpdate(deltaTime);
         }
     }
 
     public void update(final float deltaTime) {
         if (active) {
             componentContainer.update(deltaTime);
+        }
+    }
+
+    public void afterUpdate(final float deltaTime) {
+        if (active) {
+            componentContainer.afterUpdate(deltaTime);
         }
     }
 

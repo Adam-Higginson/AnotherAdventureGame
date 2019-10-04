@@ -32,7 +32,7 @@ public class AnimatedSpriteRendererComponent extends EntityComponent {
 
     private Renderable spriteRenderable;
 
-    public AnimatedSpriteRendererComponent(final Builder builder) {
+    private AnimatedSpriteRendererComponent(final Builder builder) {
         this(builder.sprite,
                 builder.defaultSpriteAnimation,
                 builder.eventToSpriteAnimation,
@@ -53,6 +53,7 @@ public class AnimatedSpriteRendererComponent extends EntityComponent {
     @Override
     public void activate() {
         spriteRenderable = new SpriteRenderable(getEntity(), this.sprite, 1);
+        rendererQueue.initialiseRenderable(spriteRenderable);
     }
 
     @Override
@@ -61,7 +62,7 @@ public class AnimatedSpriteRendererComponent extends EntityComponent {
             activeSpriteAnimation.update(deltaTime, sprite);
         }
 
-        rendererQueue.addRenderable(spriteRenderable);
+       rendererQueue.addRenderableToBeRendered(spriteRenderable);
     }
 
 

@@ -2,13 +2,17 @@ package com.adam.adventure;
 
 import com.adam.adventure.entity.Entity;
 import com.adam.adventure.entity.EntityFactory;
-import com.adam.adventure.entity.component.*;
-import com.adam.adventure.entity.component.console.UiConsoleComponentFactory;
+import com.adam.adventure.entity.component.AnimatedSpriteRendererComponent;
+import com.adam.adventure.entity.component.CameraTargetComponent;
+import com.adam.adventure.entity.component.KeyboardMovementComponent;
+import com.adam.adventure.entity.component.SpriteRendererComponent;
 import com.adam.adventure.entity.component.event.MovementComponentEvent;
 import com.adam.adventure.entity.component.network.NetworkManagerComponent;
 import com.adam.adventure.entity.component.network.NetworkTransformComponent;
 import com.adam.adventure.entity.component.tilemap.TilemapComponent;
 import com.adam.adventure.entity.component.tilemap.TilemapRendererComponent;
+import com.adam.adventure.entity.component.ui.UiManagerComponent;
+import com.adam.adventure.entity.component.ui.console.UiConsoleComponentFactory;
 import com.adam.adventure.event.EventBus;
 import com.adam.adventure.event.InitialisedEvent;
 import com.adam.adventure.loop.GameLoop;
@@ -70,7 +74,6 @@ public class Main {
 
         addStartScene(injector.getInstance(EntityFactory.class),
                 injector.getInstance(TextureFactory.class),
-                injector.getInstance(UiConsoleComponentFactory.class),
                 injector.getInstance(SceneManager.class));
 
         addTestScene(injector.getInstance(EntityFactory.class),
@@ -87,7 +90,7 @@ public class Main {
         //      loop(window, injector.getInstance(DebugLoopIterationImpl.class));
 
 
-        injector.getInstance(SceneManager.class).forceDestroyCurrentScene();
+        injector.getInstance(SceneManager.class).shutdown();
         window.close();
         glfwTerminate();
         glfwSetErrorCallback(null).free();
@@ -144,7 +147,6 @@ public class Main {
 
     private void addStartScene(final EntityFactory entityFactory,
                                final TextureFactory textureFactory,
-                               final UiConsoleComponentFactory uiConsoleComponentFactory,
                                final SceneManager sceneManager) throws IOException {
         final Texture playerTexture;
         try (final InputStream playerTextureInputStream = this.getClass().getResourceAsStream("/assets/sprites/player/link.png")) {

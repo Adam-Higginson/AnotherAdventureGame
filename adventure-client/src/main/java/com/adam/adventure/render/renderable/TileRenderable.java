@@ -16,6 +16,8 @@ public class TileRenderable extends RenderableEntity<Entity> {
 
     private VertexArray vertexArray;
     private final Texture texture;
+    private StaticVertexBuffer vertexBuffer;
+    private ElementArrayBuffer elementArrayBuffer;
 
     public TileRenderable(final Entity entity, final Texture texture) {
         super(entity);
@@ -41,13 +43,9 @@ public class TileRenderable extends RenderableEntity<Entity> {
                 1, 2, 3    // Second Triangle
         };
 
-        final StaticVertexBuffer vertexBuffer = renderer.buildNewStaticVertexBuffer(vertices);
-        final ElementArrayBuffer elementArrayBuffer = renderer.buildNewElementArrayBuffer(indices);
+        vertexBuffer = renderer.buildNewStaticVertexBuffer(vertices);
+        elementArrayBuffer = renderer.buildNewElementArrayBuffer(indices);
         vertexArray = renderer.buildNewVertexArray(vertexBuffer, elementArrayBuffer);
-    }
-
-    @Override
-    public void prepare(final Renderer renderer) {
     }
 
     @Override
@@ -69,6 +67,9 @@ public class TileRenderable extends RenderableEntity<Entity> {
 
     @Override
     public void destroy() {
+        vertexBuffer.delete();
+        elementArrayBuffer.delete();
+        vertexArray.delete();
         texture.destroy();
     }
 
@@ -82,10 +83,5 @@ public class TileRenderable extends RenderableEntity<Entity> {
 
         final Uniform2f textureOffset = program.getUniform("textureOffset", Uniform2f.class);
         textureOffset.useUniform(0, 0);
-    }
-
-    @Override
-    public void after(final Renderer renderer) {
-        getEntity().getTransform().identity();
     }
 }

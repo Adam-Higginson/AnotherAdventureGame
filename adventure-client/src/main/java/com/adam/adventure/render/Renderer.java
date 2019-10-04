@@ -49,9 +49,7 @@ public class Renderer {
         //Don't need to reinitialise these if nothing has changed in the camera and window. Dirty flags?
         viewMatrix = camera.getLookAt();
         projectionMatrix = new Matrix4f().ortho(0.0f, window.getWidth(), 0.0f, window.getHeight(), -1f, 1f);
-        prepare();
         renderAllRenderables();
-        after();
         window.swapBuffers();
     }
 
@@ -59,21 +57,13 @@ public class Renderer {
         renderQueue.forEachItemAwaitingInit(renderable -> {
             try {
                 renderable.initialise(this);
+                LOG.debug("Initialised renderable: {}", renderable.getClass().getSimpleName());
             } catch (final Exception e) {
                 LOG.error("Exception when initialising renderable: {}", renderable.getClass(), e);
             }
         });
     }
 
-    private void prepare() {
-        renderQueue.forEach(renderable -> {
-            try {
-                renderable.prepare(this);
-            } catch (final Exception e) {
-                LOG.error("Exception when preparing renderable: {}", renderable.getClass(), e);
-            }
-        });
-    }
 
     private void renderAllRenderables() {
         renderQueue.forEach(renderable -> {
@@ -81,16 +71,6 @@ public class Renderer {
                 renderable.render(this);
             } catch (final Exception e) {
                 LOG.error("Exception when rendering renderable: {}", renderable.getClass(), e);
-            }
-        });
-    }
-
-    private void after() {
-        renderQueue.forEach(renderable -> {
-            try {
-                renderable.after(this);
-            } catch (final Exception e) {
-                LOG.error("Exception when executing after on renderable: {}", renderable.getClass(), e);
             }
         });
     }

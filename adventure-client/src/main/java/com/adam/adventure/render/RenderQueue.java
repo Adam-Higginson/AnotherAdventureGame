@@ -1,24 +1,30 @@
 package com.adam.adventure.render;
 
-import com.adam.adventure.module.Timed;
 import com.adam.adventure.render.renderable.Renderable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.function.Consumer;
 
 public class RenderQueue {
-    private final PriorityQueue<Renderable> renderablesAwaitingInit;
-    private final PriorityQueue<Renderable> renderablesToBeRendered;
+    private final Queue<Renderable> renderablesAwaitingInit;
+    private final List<Renderable> renderablesToBeRendered;
 
     public RenderQueue() {
-        this.renderablesAwaitingInit = new PriorityQueue<>(Comparator.comparing(Renderable::getZIndex));
-        this.renderablesToBeRendered = new PriorityQueue<>(Comparator.comparing(Renderable::getZIndex));
+        this.renderablesAwaitingInit = new LinkedList<>();
+        this.renderablesToBeRendered = new LinkedList<>();
     }
 
-    public RenderQueue addRenderable(final Renderable renderable) {
+    /**
+     * Informs the renderer that the renderable is to be initialised. The renderable should still be added to the queue
+     * when needing to be rendered.
+     */
+    public RenderQueue initialiseRenderable(final Renderable renderable) {
         this.renderablesAwaitingInit.add(renderable);
+        return this;
+    }
+
+    public RenderQueue addRenderableToBeRendered(final Renderable renderable) {
+        this.renderablesToBeRendered.add(renderable);
         return this;
     }
 
@@ -26,20 +32,16 @@ public class RenderQueue {
         Renderable currentRenderable = renderablesAwaitingInit.poll();
         while (currentRenderable != null) {
             renderableConsumer.accept(currentRenderable);
-            renderablesToBeRendered.offer(currentRenderable);
             currentRenderable = renderablesAwaitingInit.poll();
         }
     }
 
     void forEach(final Consumer<? super Renderable> renderableConsumer) {
-        final List<Renderable> drainedEntities = new ArrayList<>(renderablesToBeRendered.size());
-        Renderable currentRenderable = renderablesToBeRendered.poll();
-        while (currentRenderable != null) {
-            renderableConsumer.accept(currentRenderable);
-            drainedEntities.add(currentRenderable);
-            currentRenderable = renderablesToBeRendered.poll();
+        renderablesToBeRendered.sort(Comparator.comparing(Renderable::getZIndex));
+        final ListIterator<Renderable> renderableListIterator = renderablesToBeRendered.listIterator();
+        while (renderableListIterator.hasNext()) {
+            renderableConsumer.accept(renderableListIterator.next());
+            renderableListIterator.remove();
         }
-
-        renderablesToBeRendered.addAll(drainedEntities);
     }
 }

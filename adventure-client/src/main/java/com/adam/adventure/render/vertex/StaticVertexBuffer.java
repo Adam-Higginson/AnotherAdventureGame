@@ -26,4 +26,9 @@ public class StaticVertexBuffer implements Buffer {
     public int getNumberOfElements() {
         return numberOfVertices;
     }
+
+    @Override
+    public void delete() {
+        glDeleteBuffers(bufferId);
+    }
 }

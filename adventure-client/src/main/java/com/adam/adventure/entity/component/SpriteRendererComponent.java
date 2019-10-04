@@ -24,11 +24,12 @@ public class SpriteRendererComponent extends EntityComponent {
     @Override
     public void activate() {
         spriteRenderable = new SpriteRenderable(getEntity(), sprite, 0);
+        renderQueue.initialiseRenderable(spriteRenderable);
     }
 
     @Override
     protected void update(final float deltaTime) {
-        renderQueue.addRenderable(spriteRenderable);
+        renderQueue.addRenderableToBeRendered(spriteRenderable);
     }
 
     @Override
