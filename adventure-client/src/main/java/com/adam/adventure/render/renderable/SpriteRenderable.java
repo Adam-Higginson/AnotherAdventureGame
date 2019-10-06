@@ -18,6 +18,8 @@ public class SpriteRenderable implements Renderable {
     private final Entity entity;
     private final Sprite sprite;
     private final int zIndex;
+    private StaticVertexBuffer vertexBuffer;
+    private ElementArrayBuffer elementArrayBuffer;
 
     public SpriteRenderable(final Entity entity, final Sprite sprite, final int zIndex) {
         this.entity = entity;
@@ -55,13 +57,9 @@ public class SpriteRenderable implements Renderable {
                 1, 2, 3    // Second Triangle
         };
 
-        final StaticVertexBuffer vertexBuffer = renderer.buildNewStaticVertexBuffer(vertices);
-        final ElementArrayBuffer elementArrayBuffer = renderer.buildNewElementArrayBuffer(indices);
+        vertexBuffer = renderer.buildNewStaticVertexBuffer(vertices);
+        elementArrayBuffer = renderer.buildNewElementArrayBuffer(indices);
         vertexArray = renderer.buildNewVertexArray(vertexBuffer, elementArrayBuffer);
-    }
-
-    @Override
-    public void prepare(final Renderer renderer) {
     }
 
     @Override
@@ -82,6 +80,9 @@ public class SpriteRenderable implements Renderable {
 
     @Override
     public void destroy() {
+        vertexBuffer.delete();
+        elementArrayBuffer.delete();
+        vertexArray.delete();
         sprite.getTexture().destroy();
     }
 

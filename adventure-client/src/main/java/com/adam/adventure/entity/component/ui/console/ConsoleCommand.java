@@ -1,4 +1,4 @@
-package com.adam.adventure.entity.component.console;
+package com.adam.adventure.entity.component.ui.console;
 
 /**
  * Called when the a console command is executed

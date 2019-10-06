@@ -8,7 +8,7 @@ public class EntityModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        bind(EntityFactory.class).in(Singleton.class);
+        bind(EntityFactory.class).to(EntityFactoryImpl.class).in(Singleton.class);
     }
 
 }

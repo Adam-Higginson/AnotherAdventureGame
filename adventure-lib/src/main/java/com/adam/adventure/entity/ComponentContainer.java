@@ -42,9 +42,16 @@ public class ComponentContainer {
         return entityComponentTypeToInstance.values();
     }
 
-    public void update(final float deltaTime) {
+
+    void beforeUpdate(final float deltaTime) {
         getAllComponents().forEach(component -> component.beforeUpdate(deltaTime));
+    }
+
+    void update(final float deltaTime) {
         getAllComponents().forEach(component -> component.update(deltaTime));
+    }
+
+    void afterUpdate(final float deltaTime) {
         getAllComponents().forEach(component -> component.afterUpdate(deltaTime));
     }
 
@@ -58,6 +65,10 @@ public class ComponentContainer {
 
     void activate() {
         getAllComponents().forEach(EntityComponent::activate);
+    }
+
+    void afterActivate() {
+        getAllComponents().forEach(EntityComponent::afterActivate);
     }
 
     public void destroy() {

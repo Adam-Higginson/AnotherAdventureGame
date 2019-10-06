@@ -1,7 +1,7 @@
 package com.adam.adventure.event;
 
-import com.adam.adventure.entity.component.console.ConsoleEvent;
-import com.adam.adventure.entity.component.console.UiConsoleComponent;
+import com.adam.adventure.entity.component.ui.console.ConsoleEvent;
+import com.adam.adventure.entity.component.ui.console.UiConsoleComponent;
 
 public class WriteUiConsoleErrorEvent extends ConsoleEvent {
     private final String message;

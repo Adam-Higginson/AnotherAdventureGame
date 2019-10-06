@@ -1,7 +1,7 @@
-package com.adam.adventure.entity.component.console;
+package com.adam.adventure.entity.component.ui.console;
 
 import com.adam.adventure.entity.EntityComponent;
-import com.adam.adventure.entity.component.UiManagerComponent;
+import com.adam.adventure.entity.component.ui.UiManagerComponent;
 import com.adam.adventure.event.EventBus;
 import com.adam.adventure.event.EventSubscribe;
 import com.adam.adventure.event.LockInputEvent;
@@ -148,8 +148,7 @@ public class UiConsoleComponent extends EntityComponent implements KeyPressListe
 
         final Scene scene = sceneManager.getCurrentScene().get();
         return scene.getEntityWithComponent(UiManagerComponent.class)
-                .map(entity -> entity.getComponent(UiManagerComponent.class))
-                .orElse(Optional.empty());
+                .flatMap(entity -> entity.getComponent(UiManagerComponent.class));
     }
 
     private void toggleConsole() {

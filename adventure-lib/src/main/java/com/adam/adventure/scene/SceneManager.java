@@ -46,9 +46,9 @@ public class SceneManager {
      * Forces the destruction of the current scene and all associated entities even if the entity is flagged
      * as not being destroyed on scene change
      */
-    public void forceDestroyCurrentScene() {
+    public void shutdown() {
         if (currentScene != null) {
-            currentScene.forceDestroy();
+            currentScene.shutdown();
         }
     }
 
@@ -60,6 +60,14 @@ public class SceneManager {
         return Optional.ofNullable(currentScene);
     }
 
+    public Scene getCurrentSceneOrThrowException() {
+        if (currentScene == null) {
+            throw new IllegalStateException("No active current scene!");
+        }
+
+        return currentScene;
+    }
+
     @EventSubscribe
     @SuppressWarnings("unused")
     public void newSceneEvent(final NewSceneEvent newSceneEvent) {
@@ -68,7 +76,6 @@ public class SceneManager {
             throw new NoSceneFoundException("Scene with name: " + newSceneEvent.getSceneName().toLowerCase() + " could not be found");
         }
 
-        LOG.info("Activating scene: {}", newScene.getName());
         //We update to scene in next frame rather than the current to allow for other processes to clean up
         sceneManagerState = SceneManagerState.TRANSITION_TO_SCENE;
         if (currentScene != null) {
@@ -77,6 +84,7 @@ public class SceneManager {
                     .forEach(newScene::addEntity);
         }
 
+        LOG.info("Activating scene: {}", newScene.getName());
         currentScene = newScene;
     }
 

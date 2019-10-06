@@ -2,6 +2,7 @@ package com.adam.adventure.render.vertex;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;
+import static org.lwjgl.opengl.GL30.glDeleteVertexArrays;
 
 public class VertexArray {
     private static final int NULL_VERTEX_ARRAY = 0;
@@ -28,5 +29,9 @@ public class VertexArray {
 
     public void unbind() {
         glBindVertexArray(NULL_VERTEX_ARRAY);
+    }
+
+    public void delete() {
+        glDeleteVertexArrays(vertexArrayId);
     }
 }

@@ -37,6 +37,13 @@ public abstract class EntityComponent {
     }
 
     /**
+     * Called after the activate method has been called
+     */
+    protected void afterActivate() {
+        // By default nothing happens
+    }
+
+    /**
      * Called before any updates are processed.
      *
      * @param deltaTime Delta time between frames

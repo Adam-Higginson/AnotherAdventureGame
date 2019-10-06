@@ -1,4 +1,4 @@
-package com.adam.adventure.entity.component.console;
+package com.adam.adventure.entity.component.ui.console;
 
 import com.adam.adventure.entity.component.network.event.ServerCommandEvent;
 import com.adam.adventure.event.EventBus;

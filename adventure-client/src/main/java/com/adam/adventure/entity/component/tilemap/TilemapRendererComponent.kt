@@ -34,7 +34,7 @@ class TilemapRendererComponent : EntityComponent() {
     }
 
     override fun update(deltaTime: Float) {
-        tileMapRenderable?.let { r -> renderQueue!!.addRenderable(r) }
+        tileMapRenderable?.let { r -> renderQueue!!.addRenderableToBeRendered(r) }
     }
 
     override fun destroy() {
@@ -44,9 +44,9 @@ class TilemapRendererComponent : EntityComponent() {
     private fun loadTilemapToGpu(tileMap: TileMap, tileSet : TileSet) {
         //Basic implementation for now, doesn't handle multiple layers
         if (tileMap.tileSets.size != 1 || tileMap.layers.size != 1) {
-            throw IllegalStateException("Not yet implemented for multiple tilesets/tilelayers");
+            throw IllegalStateException("Not yet implemented for multiple tilesets/tilelayers")
         } else {
-            val tileSetTexture = loadTilesetTexture(tileSet);
+            val tileSetTexture = loadTilesetTexture(tileSet)
             val dataTexture = loadTileDataAsTexture(tileMap.layers[0])
             tileMapRenderable = TilemapRenderable(entity.transform,
                     tileSetTexture,
@@ -56,20 +56,21 @@ class TilemapRendererComponent : EntityComponent() {
                     tileSet.columns,
                     tileSet.tileWidth,
                     tileMap.tileSets[0].firstgid)
+            renderQueue!!.initialiseRenderable(tileMapRenderable)
         }
     }
 
     private fun loadTilesetTexture(tileSet: TileSet): Texture {
         //TODO For now hardcode directory, would be better to dynamically figure out
         val tilesetImageFile = "/tilemaps/" + tileSet.image
-        log.info("Loading tileset image from: {}", tilesetImageFile);
+        log.info("Loading tileset image from: {}", tilesetImageFile)
         val tilesetTexture = textureFactory!!.loadImageTextureFromFileNameInResources(tilesetImageFile)
         log.info("Successfully loaded tileset texture.")
 
-        return tilesetTexture;
+        return tilesetTexture
     }
 
     private fun loadTileDataAsTexture(tileMapLayer: TileMapLayer): Texture {
-        return textureFactory!!.loadDataTexture(tileMapLayer.data, tileMapLayer.width, tileMapLayer.height);
+        return textureFactory!!.loadDataTexture(tileMapLayer.data, tileMapLayer.width, tileMapLayer.height)
     }
 }

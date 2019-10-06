@@ -1,13 +1,13 @@
 package com.adam.adventure.server.scene
 
-import com.adam.adventure.entity.EntityFactory
+import com.adam.adventure.entity.EntityFactoryImpl
 import com.adam.adventure.entity.component.tilemap.TilemapComponent
 import com.adam.adventure.scene.Scene
 import com.adam.adventure.scene.SceneFactory
 import javax.inject.Inject
 
 class SceneRepository @Inject constructor(val sceneFactory : SceneFactory,
-                                          val entityFactory: EntityFactory) {
+                                          val entityFactory: EntityFactoryImpl) {
 
     fun buildTestScene() : Scene {
         val scene = sceneFactory.createScene("Test Scene")

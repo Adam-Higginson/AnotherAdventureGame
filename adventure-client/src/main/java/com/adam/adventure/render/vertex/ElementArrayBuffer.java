@@ -9,7 +9,7 @@ public class ElementArrayBuffer implements Buffer {
     private final IntBuffer intBuffer;
     private final int numberOfIndices;
 
-    public ElementArrayBuffer(final int bufferId, final IntBuffer intBuffer, final int numberOfIndices) {
+    ElementArrayBuffer(final int bufferId, final IntBuffer intBuffer, final int numberOfIndices) {
         this.bufferId = bufferId;
         this.intBuffer = intBuffer;
         this.numberOfIndices = numberOfIndices;
@@ -26,4 +26,8 @@ public class ElementArrayBuffer implements Buffer {
         return numberOfIndices;
     }
 
+    @Override
+    public void delete() {
+        glDeleteBuffers(bufferId);
+    }
 }

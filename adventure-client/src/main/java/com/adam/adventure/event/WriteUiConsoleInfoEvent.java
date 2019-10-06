@@ -1,7 +1,7 @@
 package com.adam.adventure.event;
 
-import com.adam.adventure.entity.component.console.ConsoleEvent;
-import com.adam.adventure.entity.component.console.UiConsoleComponent;
+import com.adam.adventure.entity.component.ui.console.ConsoleEvent;
+import com.adam.adventure.entity.component.ui.console.UiConsoleComponent;
 import de.lessvoid.nifty.tools.Color;
 
 import java.time.LocalDateTime;
@@ -21,10 +21,8 @@ public class WriteUiConsoleInfoEvent extends ConsoleEvent {
         return new WriteUiConsoleInfoEvent(message);
     }
 
-
     @Override
     public void handle(final UiConsoleComponent console) {
         console.writeLine(message, GREEN);
     }
-
 }
