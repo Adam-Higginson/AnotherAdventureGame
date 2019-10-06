@@ -2,10 +2,10 @@ package com.adam.adventure.scene;
 
 import com.adam.adventure.event.Event;
 
-public class NewSceneEvent extends Event {
+public class RequestNewSceneEvent extends Event {
     private final String sceneName;
 
-    public NewSceneEvent(final String sceneName) {
+    public RequestNewSceneEvent(final String sceneName) {
         this.sceneName = sceneName;
     }
 

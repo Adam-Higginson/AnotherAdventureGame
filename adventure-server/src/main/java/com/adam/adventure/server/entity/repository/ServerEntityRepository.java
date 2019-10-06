@@ -26,4 +26,14 @@ public class ServerEntityRepository implements EntityRepository {
                 .addComponent(new AIComponent(.05f))
                 .addComponent(new NetworkAnimationComponent());
     }
+
+    @Override
+    public Entity buildPlayerEntity() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Entity buildOtherPlayerEntity() {
+        throw new UnsupportedOperationException();
+    }
 }

@@ -1,4 +1,6 @@
-package com.adam.adventure.event;
+package com.adam.adventure.entity.component.network.event;
+
+import com.adam.adventure.event.Event;
 
 /**
  * An event which specifies we want to connect to a given server. Curently this is intercepted by

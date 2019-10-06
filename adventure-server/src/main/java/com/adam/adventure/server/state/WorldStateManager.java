@@ -9,7 +9,7 @@ import com.adam.adventure.entity.NewLoopIterationEvent;
 import com.adam.adventure.event.EventBus;
 import com.adam.adventure.event.EventSubscribe;
 import com.adam.adventure.lib.flatbuffer.schema.converter.PacketConverter;
-import com.adam.adventure.scene.NewSceneEvent;
+import com.adam.adventure.scene.RequestNewSceneEvent;
 import com.adam.adventure.scene.Scene;
 import com.adam.adventure.scene.SceneManager;
 import com.adam.adventure.server.entity.component.NetworkAnimationComponent;
@@ -51,7 +51,7 @@ public class WorldStateManager {
     public void onNewServerTickEvent(final OnNewServerTickEvent onNewServerTickEvent) {
         //For now if no current scene, just set to a hardcoded test scene
         if (sceneManager.getCurrentScene().isEmpty()) {
-            eventBus.publishEvent(new NewSceneEvent("Test Scene"));
+            eventBus.publishEvent(new RequestNewSceneEvent("Test Scene"));
         }
         //Give all entities a chance to update
         eventBus.publishEvent(new NewLoopIterationEvent(onNewServerTickEvent.getDeltaTime()));
