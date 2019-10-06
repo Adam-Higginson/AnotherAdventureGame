@@ -3,12 +3,10 @@ package com.adam.adventure.loop;
 import com.adam.adventure.input.InputManager;
 import com.adam.adventure.render.Renderer;
 import com.adam.adventure.update.UpdateStrategy;
-import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 
 import javax.inject.Inject;
 
-@Slf4j
 public class LoopIterationImpl implements LoopIteration {
 
     private final InputManager inputManager;
