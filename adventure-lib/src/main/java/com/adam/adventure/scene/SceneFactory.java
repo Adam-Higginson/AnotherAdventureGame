@@ -12,7 +12,10 @@ public class SceneFactory {
         this.eventBus = eventBus;
     }
 
+
+
     public Scene createScene(final String name) {
         return new Scene(eventBus, name);
     }
+
 }

@@ -1,12 +1,14 @@
 package com.adam.adventure.server;
 
-import com.adam.adventure.scene.Scene;
+import com.adam.adventure.entity.Entity;
+import com.adam.adventure.entity.EntityFactory;
+import com.adam.adventure.entity.component.tilemap.TilemapComponent;
+import com.adam.adventure.scene.SceneFactory;
 import com.adam.adventure.scene.SceneManager;
 import com.adam.adventure.server.module.AdventureServerModule;
 import com.adam.adventure.server.module.ServerDatagramSocket;
 import com.adam.adventure.server.player.PlayerLoginCompleter;
 import com.adam.adventure.server.receiver.ServerReceiver;
-import com.adam.adventure.server.scene.SceneRepository;
 import com.adam.adventure.server.state.WorldStateManager;
 import com.adam.adventure.server.tick.ServerTickScheduler;
 import com.adam.adventure.server.tick.ServerTickSchedulerFactory;
@@ -37,9 +39,8 @@ public class AdventureServer implements Runnable {
         injector.getInstance(WorldStateManager.class);
 
 
-        final SceneRepository sceneRepository = injector.getInstance(SceneRepository.class);
-        final Scene testScene = sceneRepository.buildTestScene();
-        injector.getInstance(SceneManager.class).addScene(testScene);
+        final SceneFactory sceneFactory = injector.getInstance(SceneFactory.class);
+        addTestScene(injector.getInstance(SceneManager.class), injector.getInstance(EntityFactory.class));
 
         final ServerTickScheduler serverTickScheduler = injector.getInstance(ServerTickSchedulerFactory.class)
                 .create(tickrate);
@@ -55,6 +56,16 @@ public class AdventureServer implements Runnable {
                 serverTickScheduler,
                 injector.getInstance(Key.get(DatagramSocket.class, ServerDatagramSocket.class)));
     }
+
+    private void addTestScene(final SceneManager sceneManager, final EntityFactory entityFactory) {
+        sceneManager.addScene("Test Scene", () -> {
+            final Entity tilemapEntity = entityFactory.create("Tilemap")
+                    .addComponent(new TilemapComponent("tilemaps/test-world.json"));
+
+            return sceneManager.getSceneFactory().createScene("Test Scene");
+        });
+    }
+
 
     private void addShutdownHook(final ServerReceiver serverReceiver,
                                  final Thread serverReceiveThread,

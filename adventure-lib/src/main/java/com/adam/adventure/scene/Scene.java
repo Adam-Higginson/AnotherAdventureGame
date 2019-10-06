@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Scene {
     private static final Logger LOG = LoggerFactory.getLogger(Scene.class);
@@ -91,18 +92,19 @@ public class Scene {
 
     private void addNewEntitiesToScene() {
         //Drain the queue and add to scene.
-        if (!entitiesToBeAdded.isEmpty()) {
-            Entity entityToBeAdded = entitiesToBeAdded.poll();
-            while (entityToBeAdded != null) {
-                entities.add(entityToBeAdded);
-                entityToBeAdded.activate();
-                entityToBeAdded = entitiesToBeAdded.poll();
-            }
+        Entity entityToBeAdded = entitiesToBeAdded.poll();
+        while (entityToBeAdded != null) {
+            entities.add(entityToBeAdded);
+            entityToBeAdded.activate();
+            entityToBeAdded = entitiesToBeAdded.poll();
         }
     }
 
-    void shutdown() {
-        entities.forEach(entity -> entity.setShouldDestroyOnSceneChange(true));
-        destroy();
+    public void removeEntities(final List<Entity> entitiesToRemove) {
+        final Set<Integer> idsToRemove = entitiesToRemove.stream()
+                .map(Entity::getId)
+                .collect(Collectors.toSet());
+
+        entities.removeIf(entity -> idsToRemove.contains(entity.getId()));
     }
 }

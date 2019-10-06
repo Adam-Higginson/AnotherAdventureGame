@@ -2,7 +2,7 @@ package com.adam.adventure.render.texture;
 
 import com.adam.adventure.event.EventBus;
 import com.adam.adventure.event.EventSubscribe;
-import com.adam.adventure.scene.NewSceneEvent;
+import com.adam.adventure.scene.RequestNewSceneEvent;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;
@@ -29,8 +29,8 @@ public class TextureCache {
     }
 
     @EventSubscribe
-    public void onNewScene(final NewSceneEvent newSceneEvent) throws IOException {
-        LOG.info("Caching textures for scene: {}", newSceneEvent.getSceneName());
+    public void onNewScene(final RequestNewSceneEvent requestNewSceneEvent) throws IOException {
+        LOG.info("Caching textures for scene: {}", requestNewSceneEvent.getSceneName());
 
         //For now just cache the same textures
         textureNameToTexture.clear();

@@ -10,46 +10,48 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.function.Supplier;
 
 public class SceneManager {
 
 
-    private enum SceneManagerState {ACTIVE_SCENE, TRANSITION_TO_SCENE}
+    private enum SceneManagerState {ACTIVE_SCENE, DESTROY_CURRENT_SCENE, ACTIVATE_NEXT_SCENE}
 
     private static final Logger LOG = LoggerFactory.getLogger(SceneManager.class);
 
     private Scene currentScene;
+    private Scene nextScene;
 
     private final EventBus eventBus;
-    private final Map<String, Scene> sceneNameToSceneSupplier;
+    private final Map<String, Supplier<Scene>> sceneNameToSceneSupplier;
     private final SceneFactory sceneFactory;
+    private final List<Entity> rootEntities;
     private SceneManagerState sceneManagerState;
 
     @Inject
     public SceneManager(
             final SceneFactory sceneFactory,
             final EventBus eventBus) {
+        this.sceneFactory = sceneFactory;
         this.eventBus = eventBus;
         this.sceneNameToSceneSupplier = new HashMap<>();
-        this.sceneFactory = sceneFactory;
+        this.rootEntities = new LinkedList<>();
 
         eventBus.register(this);
     }
 
-    public SceneManager addScene(final Scene scene) {
-        sceneNameToSceneSupplier.put(scene.getName().toLowerCase(), scene);
+    public SceneManager addScene(final String sceneName, final Supplier<Scene> sceneSupplier) {
+        sceneNameToSceneSupplier.put(sceneName.toLowerCase(), sceneSupplier);
         return this;
     }
 
     /**
-     * Forces the destruction of the current scene and all associated entities even if the entity is flagged
-     * as not being destroyed on scene change
+     * Adds a root entity. A root entity is an entity which isn't attached to any individual scene but is instead
+     * always present.
      */
-    public void shutdown() {
-        if (currentScene != null) {
-            currentScene.shutdown();
-        }
+    public SceneManager addRootEntity(final Entity entity) {
+        rootEntities.add(entity);
+        return this;
     }
 
     public SceneFactory getSceneFactory() {
@@ -60,56 +62,74 @@ public class SceneManager {
         return Optional.ofNullable(currentScene);
     }
 
-    public Scene getCurrentSceneOrThrowException() {
-        if (currentScene == null) {
-            throw new IllegalStateException("No active current scene!");
-        }
-
-        return currentScene;
-    }
-
     @EventSubscribe
     @SuppressWarnings("unused")
-    public void newSceneEvent(final NewSceneEvent newSceneEvent) {
-        final Scene newScene = sceneNameToSceneSupplier.get(newSceneEvent.getSceneName().toLowerCase());
-        if (newScene == null) {
-            throw new NoSceneFoundException("Scene with name: " + newSceneEvent.getSceneName().toLowerCase() + " could not be found");
+    public void newSceneEvent(final RequestNewSceneEvent requestNewSceneEvent) {
+        final Supplier<Scene> newSceneCreator = sceneNameToSceneSupplier.get(requestNewSceneEvent.getSceneName().toLowerCase());
+        nextScene = newSceneCreator.get();
+        if (nextScene == null) {
+            throw new NoSceneFoundException("Scene with name: " + requestNewSceneEvent.getSceneName().toLowerCase() + " could not be found");
         }
 
-        //We update to scene in next frame rather than the current to allow for other processes to clean up
-        sceneManagerState = SceneManagerState.TRANSITION_TO_SCENE;
-        if (currentScene != null) {
-            currentScene.destroy();
-            getNonDestroyableEntitiesInCurrentScene()
-                    .forEach(newScene::addEntity);
-        }
-
-        LOG.info("Activating scene: {}", newScene.getName());
-        currentScene = newScene;
-    }
-
-    private List<Entity> getNonDestroyableEntitiesInCurrentScene() {
         if (currentScene == null) {
-            return new ArrayList<>();
+            //No need to destroy existing scene
+            activateNextScene();
+        } else {
+            //We update to scene in next frame rather than the current to allow for other processes to clean up
+            sceneManagerState = SceneManagerState.DESTROY_CURRENT_SCENE;
         }
-
-        return currentScene.getEntities().stream()
-                .filter(entity -> !entity.shouldDestroyOnSceneChange())
-                .collect(Collectors.toList());
     }
 
     @EventSubscribe
     @SuppressWarnings("unused")
     public void onUpdateEvent(final NewLoopIterationEvent newLoopIterationEvent) {
-        if (sceneManagerState == SceneManagerState.TRANSITION_TO_SCENE) {
-            //Transition to new scene if we need to
-            currentScene.activate();
-            sceneManagerState = SceneManagerState.ACTIVE_SCENE;
-            eventBus.publishEvent(new SceneActivatedEvent(currentScene.getName()));
+        switch (sceneManagerState) {
+            case DESTROY_CURRENT_SCENE:
+                destroyCurrentScene();
+                break;
+            case ACTIVATE_NEXT_SCENE:
+                activateNextScene();
+                break;
         }
 
         if (currentScene != null) {
             currentScene.update(newLoopIterationEvent.getElapsedTime());
         }
+    }
+
+    /**
+     * Called when the application is shutting down
+     */
+    public void shutdown() {
+        LOG.info("Shutting down scene manager");
+        rootEntities.forEach(Entity::destroy);
+        destroyCurrentScene();
+        LOG.info("Scene manager shut down");
+    }
+
+
+    private void destroyCurrentScene() {
+        if (currentScene != null) {
+            LOG.info("Destroying current scene: {}", currentScene.getName());
+            currentScene.removeEntities(rootEntities);
+            currentScene.destroy();
+            LOG.info("Current scene: {} destroyed", currentScene.getName());
+        }
+
+        sceneManagerState = SceneManagerState.ACTIVATE_NEXT_SCENE;
+    }
+
+    private void activateNextScene() {
+        currentScene = nextScene;
+        nextScene = null;
+        LOG.info("Activating scene: {}", currentScene.getName());
+
+        rootEntities.forEach(currentScene::addEntity);
+        currentScene.activate();
+
+        eventBus.publishEvent(new SceneActivatedEvent(currentScene.getName()));
+        LOG.info("Activated scene: {}", currentScene.getName());
+
+        sceneManagerState = SceneManagerState.ACTIVE_SCENE;
     }
 }

@@ -14,7 +14,6 @@ public class Entity {
     private final int id;
     private final Injector injector;
     private final ComponentContainer componentContainer;
-    private boolean shouldDestroyOnSceneChange = true;
     private boolean active;
 
     protected Entity(final String name, final int id, final Injector injector) {
@@ -83,15 +82,13 @@ public class Entity {
     }
 
     /**
-     * Tells an entity it should be removed from the current scene.
+     * Tells an entity it should destroy itself.
      */
     public void destroy() {
-        if (shouldDestroyOnSceneChange) {
-            LOG.debug("Destroying entity (name={}, id={})", name, id);
-            componentContainer.destroy();
-            active = false;
-            LOG.debug("Destroyed entity (name={}, id={})", name, id);
-        }
+        LOG.debug("Destroying entity (name={}, id={})", name, id);
+        componentContainer.destroy();
+        active = false;
+        LOG.debug("Destroyed entity (name={}, id={})", name, id);
     }
 
     public void beforeUpdate(final float deltaTime) {
@@ -112,15 +109,6 @@ public class Entity {
         }
     }
 
-    public Entity setShouldDestroyOnSceneChange(final boolean shouldDestroyOnSceneChange) {
-        this.shouldDestroyOnSceneChange = shouldDestroyOnSceneChange;
-        return this;
-    }
-
-    public boolean shouldDestroyOnSceneChange() {
-        return shouldDestroyOnSceneChange;
-    }
-
 
     @Override
     public String toString() {
@@ -132,5 +120,16 @@ public class Entity {
 
     public int getId() {
         return id;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    private void profile(final String name, final Runnable runnable) {
+        final long startTime = System.nanoTime();
+        runnable.run();
+        final long endTime = System.nanoTime();
+        LOG.debug("Took: {}ns to perform entity {} for entity: {}", endTime - startTime, name, this);
     }
 }

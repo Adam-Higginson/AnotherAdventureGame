@@ -2,8 +2,8 @@ package com.adam.adventure.entity.component.ui.console;
 
 import com.adam.adventure.event.EventBus;
 import com.adam.adventure.event.RequestConnectionToServerEvent;
-import com.adam.adventure.scene.NewSceneEvent;
 import com.adam.adventure.scene.NoSceneFoundException;
+import com.adam.adventure.scene.RequestNewSceneEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +44,7 @@ public class UiConsoleComponentFactory {
                         console.writeError("Usage: scene <scene_name>");
                     } else {
                         try {
-                            eventBus.publishEvent(new NewSceneEvent(args[1]));
+                            eventBus.publishEvent(new RequestNewSceneEvent(args[1]));
                             eventBus.publishEvent(consoleInfoEvent("Scene changed to: " + args[1]));
                         }
                         catch (final NoSceneFoundException e) {

@@ -11,7 +11,8 @@ import com.adam.adventure.entity.repository.EntityRepository;
 import com.adam.adventure.event.*;
 import com.adam.adventure.lib.flatbuffer.schema.converter.PacketConverter;
 import com.adam.adventure.lib.flatbuffer.schema.packet.*;
-import com.adam.adventure.scene.NewSceneEvent;
+import com.adam.adventure.scene.RequestNewSceneEvent;
+import com.adam.adventure.scene.Scene;
 import com.adam.adventure.scene.SceneManager;
 import com.google.flatbuffers.FlatBufferBuilder;
 import org.slf4j.Logger;
@@ -21,12 +22,9 @@ import javax.inject.Inject;
 import java.io.IOException;
 import java.net.*;
 import java.nio.ByteBuffer;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Supplier;
 
 import static com.adam.adventure.event.WriteUiConsoleErrorEvent.consoleErrorEvent;
 
@@ -45,8 +43,6 @@ public class NetworkManagerComponent extends EntityComponent {
     @Inject
     private EntityRepository entityRepository;
 
-    private final Supplier<Entity> playerEntitySupplier;
-    private final Supplier<Entity> otherPlayerEntitySupplier;
     private final Map<UUID, NetworkIdentityComponent> idToNetworkIdentities;
     private final OutputMessageQueue outputMessageQueue;
     private final AtomicBoolean isErrorInConnection = new AtomicBoolean();
@@ -63,13 +59,7 @@ public class NetworkManagerComponent extends EntityComponent {
     private long serverTickrate;
 
 
-    /**
-     * @param playerEntitySupplier What entity to spawn when successfully logged into server.
-     */
-    public NetworkManagerComponent(final Supplier<Entity> playerEntitySupplier,
-                                   final Supplier<Entity> otherPlayerEntitySupplier) {
-        this.playerEntitySupplier = playerEntitySupplier;
-        this.otherPlayerEntitySupplier = otherPlayerEntitySupplier;
+    public NetworkManagerComponent() {
         this.idToNetworkIdentities = new HashMap<>();
         this.outputMessageQueue = new OutputMessageQueue();
     }
@@ -95,7 +85,7 @@ public class NetworkManagerComponent extends EntityComponent {
             }
 
             eventBus.publishEvent(consoleErrorEvent("Server timed out"));
-            eventBus.publishEvent(new NewSceneEvent("TitleScene"));
+            eventBus.publishEvent(new RequestNewSceneEvent("TitleScene"));
         }
     }
 
@@ -103,11 +93,16 @@ public class NetworkManagerComponent extends EntityComponent {
     protected void afterUpdate(final float deltaTime) {
         if (activeWorldState == null && latestWorldState != null) {
             //For now only publish initial scene transition
-            eventBus.publishEvent(new NewSceneEvent(latestWorldState.getSceneInfo().getSceneName()));
+            eventBus.publishEvent(new RequestNewSceneEvent(latestWorldState.getSceneInfo().getSceneName()));
         }
 
         activeWorldState = latestWorldState;
-        if (activeWorldState != null) {
+
+        final String currentSceneName = sceneManager.getCurrentScene()
+                .map(Scene::getName)
+                .orElse(null);
+        //Only process messages if we have successfully transitioned scenes
+        if (activeWorldState != null && Objects.equals(currentSceneName, activeWorldState.getSceneInfo().getSceneName())) {
             processUpdatedEntities();
         }
 
@@ -267,7 +262,7 @@ public class NetworkManagerComponent extends EntityComponent {
     }
 
     private void addNewPlayer(final EntityInfo playerEntityInfo) {
-        LOG.info("New player joined: {} with username: {}", playerEntityInfo.getAttributes().get("username"), playerEntityInfo.getId());
+        LOG.info("New player joined: {} with username: {}", playerEntityInfo.getId(), playerEntityInfo.getAttributes().get("username"));
         eventBus.publishEvent(new WriteUiConsoleInfoEvent(playerEntityInfo.getAttributes().get("username") + " has joined."));
 
         final Entity player = buildNewPlayerEntity(playerEntityInfo);
@@ -278,10 +273,10 @@ public class NetworkManagerComponent extends EntityComponent {
         final Entity player;
         if (newPlayerEntityInfo.getId().equals(playerEntityInfo.getId())) {
             LOG.info("Spawning player");
-            player = playerEntitySupplier.get();
+            player = entityRepository.buildPlayerEntity();
         } else {
             LOG.info("Spawning new player with id: {}", newPlayerEntityInfo.getId());
-            player = otherPlayerEntitySupplier.get();
+            player = entityRepository.buildOtherPlayerEntity();
         }
 
         final NetworkIdentityComponent networkIdentityComponent
