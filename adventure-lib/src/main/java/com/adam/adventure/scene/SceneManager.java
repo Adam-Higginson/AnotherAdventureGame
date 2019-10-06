@@ -131,5 +131,7 @@ public class SceneManager {
         LOG.info("Activated scene: {}", currentScene.getName());
 
         sceneManagerState = SceneManagerState.ACTIVE_SCENE;
+
+        eventBus.publishEvent(new NewSceneActivatedEvent(currentScene));
     }
 }

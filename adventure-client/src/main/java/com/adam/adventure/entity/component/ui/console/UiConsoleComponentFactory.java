@@ -1,7 +1,7 @@
 package com.adam.adventure.entity.component.ui.console;
 
+import com.adam.adventure.entity.component.network.event.RequestConnectionToServerEvent;
 import com.adam.adventure.event.EventBus;
-import com.adam.adventure.event.RequestConnectionToServerEvent;
 import com.adam.adventure.scene.NoSceneFoundException;
 import com.adam.adventure.scene.RequestNewSceneEvent;
 import org.slf4j.Logger;

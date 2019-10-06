@@ -26,7 +26,6 @@ public class LoopIterationImpl implements LoopIteration {
     @Override
     public void onNewIteration(final long elapsedTime) {
         MDC.put("frameId", Long.toString(++frameId));
-        LOG.info("Free memory: {}", Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory());
         inputManager.processInput();
         updateStrategy.update(elapsedTime);
         renderer.render();

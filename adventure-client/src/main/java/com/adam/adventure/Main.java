@@ -2,7 +2,9 @@ package com.adam.adventure;
 
 import com.adam.adventure.entity.Entity;
 import com.adam.adventure.entity.EntityFactory;
+import com.adam.adventure.entity.component.SceneTransitionEventFirer;
 import com.adam.adventure.entity.component.network.NetworkManagerComponent;
+import com.adam.adventure.entity.component.network.event.RequestDisconnectFromServerEvent;
 import com.adam.adventure.entity.component.tilemap.TilemapComponent;
 import com.adam.adventure.entity.component.tilemap.TilemapRendererComponent;
 import com.adam.adventure.entity.component.ui.UiManagerComponent;
@@ -33,6 +35,10 @@ import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.GL_TRUE;
 
 public class Main {
+
+    private static final String START_SCENE_NAME = "StartScene";
+    private static final String TEST_SCENE_NAME = "Test Scene";
+    private static final String TITLE_SCENE_NAME = "TitleScene";
 
     private void run() throws Exception {
         MDC.put("frameId", "0");
@@ -120,6 +126,8 @@ public class Main {
                 .addComponent(uiConsoleComponentFactory.buildDefaultUiConsoleComponent());
 
         final Entity networkEntity = entityFactory.create("Network manager")
+                .addComponent(new SceneTransitionEventFirer(RequestDisconnectFromServerEvent::new,
+                        START_SCENE_NAME, TITLE_SCENE_NAME))
                 .addComponent(new NetworkManagerComponent());
 
         sceneManager.addRootEntity(uiManager)
@@ -128,19 +136,19 @@ public class Main {
     }
 
     private void addTitleScreenScene(final SceneManager sceneManager) {
-        sceneManager.addScene("TitleScene", () -> sceneManager.getSceneFactory().createScene("TitleScene"));
+        sceneManager.addScene("TitleScene", () -> sceneManager.getSceneFactory().createScene(TITLE_SCENE_NAME));
     }
 
 
     private void addStartScene(
             final SceneManager sceneManager) {
 
-        sceneManager.addScene("StartScene",
-                () -> sceneManager.getSceneFactory().createScene("StartScene"));
+        sceneManager.addScene(START_SCENE_NAME,
+                () -> sceneManager.getSceneFactory().createScene(START_SCENE_NAME));
     }
 
     private void addTestScene(final SceneManager sceneManager, final EntityFactory entityFactory) {
-        sceneManager.addScene("Test Scene", () -> {
+        sceneManager.addScene(TEST_SCENE_NAME, () -> {
             final Entity tilemapEntity = entityFactory.create("Tilemap")
                     .addComponent(new TilemapComponent("tilemaps/test-world.json"))
                     .addComponent(new TilemapRendererComponent());
