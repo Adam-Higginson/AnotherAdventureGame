@@ -23,7 +23,8 @@ data class TileSetTile (
 )
 
 data class Tile (
-        val tileSetTile : TileSetTile?,
+        val tileSetTile : TileSetTile,
+        val walkable : Boolean,
         val x : Int,
         val y : Int,
         val id : Int

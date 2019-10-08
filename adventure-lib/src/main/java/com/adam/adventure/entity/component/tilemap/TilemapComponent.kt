@@ -85,10 +85,10 @@ class TilemapComponent(private val tilemapLocation: String) : EntityComponent() 
         for ((gid, tileData) in tileMapLayer.data.withIndex()) {
 
             //TODO tile with tileSetId 0 is a special case of empty tile
-            val tileId = tileMap.tileSets[0].firstgid + tileData
+            val tileId = tileData - tileMap.tileSets[0].firstgid
             val tileSetTile = tileIdToTileSetTile.getOrPut(tileId, { TileSetTile(tileId, emptyList(), "unknown") })
 
-            val tile = Tile(tileSetTile, tileX, tileY, gid)
+            val tile = Tile(tileSetTile, walkable = isTileWalkable(tileSetTile), x = tileX, y = tileY, id = gid)
             tiles.add(tile)
             tileX++
             if (tileX % tileMapLayer.width == 0) {
@@ -98,6 +98,10 @@ class TilemapComponent(private val tilemapLocation: String) : EntityComponent() 
         }
 
         entityTileMap = EntityTileMap(tileMap, tileSet, tiles)
+    }
+
+    private fun isTileWalkable(tileSetTile : TileSetTile): Boolean {
+        return tileSetTile.properties.find { it.name == "walkable" }?.value != false
     }
 
     fun dumpTileMapInfo() {
@@ -161,9 +165,13 @@ class TilemapComponent(private val tilemapLocation: String) : EntityComponent() 
                     getTileAt(tile.x -1, tile.y + 1))
         }
 
+        fun getAdjacentWalkableTiles(tile: Tile): List<Tile> {
+            return getAdjacentTiles(tile).filter { it.walkable }
+        }
+
         fun getRealTilePosition(tile: Tile) : Vector3f {
-            val tileX = (tile.x.toFloat() * tileSet.tileWidth) + (tileSet.tileWidth / 2)
-            val tileY = (-(tile.y.toFloat()) * tileSet.tileHeight) - (tileSet.tileHeight / 2)
+            val tileX = (tile.x.toFloat() +  (tileSet.tileWidth / 2)) * tileSet.tileWidth
+            val tileY = (-(tile.y.toFloat()) - (tileSet.tileHeight / 2)) * tileSet.tileHeight
 
             val vectorPosition = Vector4f(tileX, tileY, 0.0f, 1.0f)
             transformComponent.transform.transform(vectorPosition)

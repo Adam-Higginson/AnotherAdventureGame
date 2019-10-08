@@ -4,7 +4,6 @@ import com.adam.adventure.entity.Entity
 import com.adam.adventure.entity.EntityComponent
 import com.adam.adventure.entity.component.event.ComponentEvent
 import com.adam.adventure.entity.component.tilemap.TilemapComponent
-import com.adam.adventure.entity.component.tilemap.data.Tile
 import com.adam.adventure.scene.SceneManager
 import org.joml.Vector2f
 import java.util.*
@@ -95,7 +94,7 @@ class PathFindingComponent : EntityComponent() {
     }
 
     private fun getAdjacentNodes(entityTileMap: TilemapComponent.EntityTileMap, node: PathNode): Set<PathNode> {
-        return entityTileMap.getAdjacentTiles(node.tile).map { PathNode(it) }.toSet()
+        return entityTileMap.getAdjacentWalkableTiles(node.tile).map { PathNode(it) }.toSet()
     }
 
     private fun buildPath(node: PathNode): Stack<PathNode> {
@@ -109,26 +108,4 @@ class PathFindingComponent : EntityComponent() {
         return path
     }
 
-    inner class PathNode(val tile: Tile, var cost: Int = Integer.MAX_VALUE) {
-        var previous: PathNode? = null
-
-        override fun hashCode(): Int {
-            return tile.id
-        }
-
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (javaClass != other?.javaClass) return false
-
-            other as PathNode
-
-            return tile.id == other.tile.id
-        }
-
-        override fun toString(): String {
-            val tileX = tile.x
-            val tileY = tile.y
-            return "PathNode(tile=($tileX, $tileY), cost=$cost)"
-        }
-    }
 }

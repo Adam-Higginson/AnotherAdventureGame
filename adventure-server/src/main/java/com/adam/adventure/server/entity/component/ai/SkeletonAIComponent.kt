@@ -55,6 +55,7 @@ class SkeletonAIComponent : EntityComponent() {
     override fun onComponentEvent(componentEvent: ComponentEvent?) {
         if (componentEvent is PathFoundEvent) {
             val path = componentEvent.path
+            log.info("Found path: {}", path)
             broadcastComponentEvent(MoveAlongPathRequestEvent(path))
             state = State.MOVING_TO_TARGET
         }

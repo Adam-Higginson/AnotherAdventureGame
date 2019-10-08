@@ -6,6 +6,7 @@ import com.adam.adventure.entity.component.event.MovementComponentEvent
 import com.adam.adventure.entity.component.tilemap.TilemapComponent
 import com.adam.adventure.scene.SceneManager
 import org.joml.Vector3f
+import org.slf4j.LoggerFactory
 import java.lang.Math.*
 import java.util.*
 import javax.inject.Inject
@@ -14,6 +15,7 @@ import javax.inject.Inject
  * Class which moves an entity along a given path
  */
 class PathMovingComponent(private val speed : Float) : EntityComponent() {
+    private val log = LoggerFactory.getLogger(this.javaClass)
 
     private enum class DirectionAnimation(val animationName: MovementComponentEvent.MovementType) {
         EAST(MovementComponentEvent.MovementType.ENTITY_MOVE_EAST),
@@ -25,8 +27,8 @@ class PathMovingComponent(private val speed : Float) : EntityComponent() {
     @Inject
     private lateinit var sceneManager : SceneManager
 
-    private var path: Stack<PathFindingComponent.PathNode> = Stack()
-    private var currentNode : PathFindingComponent.PathNode? = null
+    private var path: Stack<PathNode> = Stack()
+    private var currentNode : PathNode? = null
 
 
     override fun onComponentEvent(componentEvent: ComponentEvent?) {
@@ -53,6 +55,13 @@ class PathMovingComponent(private val speed : Float) : EntityComponent() {
         val ourTile = tileMap.getTileForEntity(entity)
         if (ourTile == null || currentNode == null) {
             return
+        }
+
+        if (!ourTile.walkable) {
+            log.warn("Our tile is not walkable! {}", ourTile)
+        }
+        if(currentNode?.tile?.walkable == false) {
+            log.warn("Path is taking us on a non-walkable tile of: {}", currentNode?.tile)
         }
 
         if (ourTile.id == currentNode!!.tile.id) {
