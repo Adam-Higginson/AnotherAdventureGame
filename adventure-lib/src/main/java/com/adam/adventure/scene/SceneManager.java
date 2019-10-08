@@ -1,6 +1,7 @@
 package com.adam.adventure.scene;
 
 import com.adam.adventure.entity.Entity;
+import com.adam.adventure.entity.EntityComponent;
 import com.adam.adventure.entity.NewLoopIterationEvent;
 import com.adam.adventure.event.EventBus;
 import com.adam.adventure.event.EventSubscribe;
@@ -60,6 +61,29 @@ public class SceneManager {
 
     public Optional<Scene> getCurrentScene() {
         return Optional.ofNullable(currentScene);
+    }
+
+    /**
+     * Retrieves an entity component which should be a singleton. This throws an {@link IllegalStateException} if:
+     * <ul>
+     *     <li>There is no current scene</li>
+     *     <li>This component is not found in the current scene</li>
+     *     <li>There is more than one entity component found in the current scene</li>
+     * </ul>
+     * @return The found component
+     */
+    public <T extends EntityComponent> T getSingletonEntityComponent(final Class<T> entityComponentClass) {
+        if (currentScene == null) {
+            throw new IllegalStateException("There is no current scene!");
+        }
+
+        final List<T> entityComponents = currentScene.findEntityComponents(entityComponentClass);
+        if (entityComponents.size() != 1) {
+            throw new IllegalStateException("Expected exactly 1 component found, " +
+                    "but instead there were: " + entityComponents.size());
+        }
+
+        return entityComponents.get(0);
     }
 
     @EventSubscribe

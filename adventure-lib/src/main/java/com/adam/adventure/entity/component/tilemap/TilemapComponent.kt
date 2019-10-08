@@ -152,9 +152,13 @@ class TilemapComponent(private val tilemapLocation: String) : EntityComponent() 
         fun getAdjacentTiles(tile: Tile): List<Tile> {
             return listOfNotNull(
                     getTileAt(tile.x, tile.y + 1),
+                    getTileAt(tile.x + 1, tile.y + 1),
                     getTileAt(tile.x + 1, tile.y),
+                    getTileAt(tile.x + 1, tile.y - 1),
                     getTileAt(tile.x, tile.y - 1),
-                    getTileAt(tile.x - 1, tile.y))
+                    getTileAt(tile.x -1, tile.y - 1),
+                    getTileAt(tile.x - 1, tile.y),
+                    getTileAt(tile.x -1, tile.y + 1))
         }
 
         fun getRealTilePosition(tile: Tile) : Vector3f {
