@@ -13,13 +13,20 @@ data class TileSet (
         val tileHeight : Float,
         val tileWidth : Float,
         val type : String,
-        val tiles : List<Tile>
+        val tiles : List<TileSetTile>
+)
+
+data class TileSetTile (
+        val id: Int,
+        val properties : List<TileProperty>,
+        val type : String
 )
 
 data class Tile (
-        val id : Int,
-        val type : String,
-        val properties : List<TileProperty>
+        val tileSetTile : TileSetTile?,
+        val x : Int,
+        val y : Int,
+        val id : Int
 )
 
 data class TileProperty (

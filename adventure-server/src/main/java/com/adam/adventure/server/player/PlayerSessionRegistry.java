@@ -40,7 +40,7 @@ public class PlayerSessionRegistry {
         final UUID playerId = UUID.randomUUID();
         LOG.info("Adding player: {} with id: {}", username, playerId);
 
-        final Entity playerEntity = entityFactory.create("Player-" + playerId);
+        final Entity playerEntity = entityFactory.create("Player");
         playerEntity.setTransform(buildRandomPositionMatrix());
         playerEntity.addComponent(new NetworkIdComponent(playerId));
         playerEntity.addComponent(new NetworkAnimationComponent());

@@ -20,6 +20,10 @@ class TilemapObserverComponent : EntityComponent() {
 
     private var beforeTransform: Matrix4f? = null
 
+    override fun activate() {
+        eventBus!!.publishEvent(TilemapEntityTransformEvent(entity))
+    }
+
     override fun beforeUpdate(deltaTime: Float) {
         beforeTransform = Matrix4f(transformComponent.transform)
     }

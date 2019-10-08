@@ -12,6 +12,7 @@ import com.google.common.collect.Multimap
 import com.google.common.io.Resources
 import org.joml.Vector2i
 import org.joml.Vector3f
+import org.joml.Vector4f
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -30,7 +31,8 @@ class TilemapComponent(private val tilemapLocation: String) : EntityComponent() 
     @Inject
     private var eventBus: EventBus? = null
 
-    private var entityTileMap: EntityTileMap? = null
+    var entityTileMap: EntityTileMap? = null
+        private set
 
     override fun activate() {
         val tilemapResource = Resources.getResource(tilemapLocation)
@@ -73,16 +75,26 @@ class TilemapComponent(private val tilemapLocation: String) : EntityComponent() 
 
 
     private fun buildEntityTileMap(tileMap: TileMap, tileSet: TileSet) {
-        val tileIdToTile = tileSet.tiles.associateBy(keySelector = Tile::id, valueTransform = { t -> t }).toMutableMap()
+        val tileIdToTileSetTile = tileSet.tiles.associateBy(keySelector = TileSetTile::id, valueTransform = { t -> t }).toMutableMap()
 
         val tileMapLayer = tileMap.layers[0]
         val tiles = mutableListOf<Tile>()
-        for (tileData in tileMapLayer.data) {
-            //TODO tile with id 0 is a special case of empty tile
-            val tileId = tileMap.tileSets[0].firstgid + tileData
 
-            val tile = tileIdToTile.getOrPut(tileId, { Tile(tileId, "unknown", emptyList()) })
+        var tileX = 0
+        var tileY = 0
+        for ((gid, tileData) in tileMapLayer.data.withIndex()) {
+
+            //TODO tile with tileSetId 0 is a special case of empty tile
+            val tileId = tileMap.tileSets[0].firstgid + tileData
+            val tileSetTile = tileIdToTileSetTile.getOrPut(tileId, { TileSetTile(tileId, emptyList(), "unknown") })
+
+            val tile = Tile(tileSetTile, tileX, tileY, gid)
             tiles.add(tile)
+            tileX++
+            if (tileX % tileMapLayer.width == 0) {
+                tileX = 0
+                tileY++
+            }
         }
 
         entityTileMap = EntityTileMap(tileMap, tileSet, tiles)
@@ -102,43 +114,68 @@ class TilemapComponent(private val tilemapLocation: String) : EntityComponent() 
     /**
      * Class which holds all entity information on this tile map
      */
-    private inner class EntityTileMap(val tileMap: TileMap,
-                                val tileSet: TileSet,
-                                val tiles: List<Tile>,
-                                val tileIdToEntities: Multimap<Int, Entity> = ArrayListMultimap.create(),
-                                val entityIdToTile: MutableMap<Int, Tile> = mutableMapOf()) {
+    inner class EntityTileMap(private val tileMap: TileMap,
+                              private val tileSet: TileSet,
+                              private val tiles: List<Tile>,
+                              private val tileIdToEntities: Multimap<Int, Entity> = ArrayListMultimap.create(),
+                              val entityIdToTile: MutableMap<Int, Tile> = mutableMapOf()) {
 
-        fun getTileAt(x: Int, y: Int): Tile {
-            return tiles[tileMap.width * (x + y)]
+        fun getTileAt(x: Int, y: Int): Tile? {
+            if (isOutOfBounds(x, y)) {
+                return null
+            }
+
+            return tiles[(tileMap.width * y) + x]
         }
 
         fun getEntitiesAt(x: Int, y: Int): Collection<Entity> {
-            val tileId = getTileAt(x, y).id
+            val tile = getTileAt(x, y) ?: return emptyList()
+            val tileId = tile.id
             return tileIdToEntities[tileId]
         }
 
         fun updateEntity(entity: Entity) {
             removeFromMaps(entity)
             val tilePos = getTilePosForEntity(entity)
-            if (tilePos.x < 0 || tilePos.x >= tileMap.width || tilePos.y >= 0 || tilePos.y < tileMap.height) {
-                // Out of bounds
-                return
-            }
 
             val tile = getTileAt(tilePos.x, tilePos.y)
-            tileIdToEntities[tile.id].add(entity)
-            entityIdToTile[entity.id] = tile
-        }
-
-        private fun removeFromMaps(entity: Entity) {
-            val existingTile = entityIdToTile.remove(entity.id)
-            if (existingTile != null) {
-                tileIdToEntities[existingTile.id].removeIf { it.id == entity.id }
+            if (tile != null) {
+                tileIdToEntities[tile.id].add(entity)
+                entityIdToTile[entity.id] = tile
             }
         }
 
+        fun getTileForEntity(entity: Entity): Tile? {
+            return entityIdToTile[entity.id]
+        }
 
-        private fun getTilePosForEntity(entity : Entity) : Vector2i {
+        fun getAdjacentTiles(tile: Tile): List<Tile> {
+            return listOfNotNull(
+                    getTileAt(tile.x, tile.y + 1),
+                    getTileAt(tile.x + 1, tile.y),
+                    getTileAt(tile.x, tile.y - 1),
+                    getTileAt(tile.x - 1, tile.y))
+        }
+
+        fun getRealTilePosition(tile: Tile) : Vector3f {
+            val tileX = (tile.x.toFloat() * tileSet.tileWidth) + (tileSet.tileWidth / 2)
+            val tileY = (-(tile.y.toFloat()) * tileSet.tileHeight) - (tileSet.tileHeight / 2)
+
+            val vectorPosition = Vector4f(tileX, tileY, 0.0f, 1.0f)
+            transformComponent.transform.transform(vectorPosition)
+            return Vector3f(vectorPosition.x, vectorPosition.y, vectorPosition.z)
+        }
+
+
+        private fun isOutOfBounds(x: Int, y: Int): Boolean {
+            if (x < 0 || x >= tileMap.width || y < 0 || y >= tileMap.height) {
+                return true
+            }
+            val index = (tileMap.width * y) + x
+            return index < 0 || index >= tiles.size
+        }
+
+        private fun getTilePosForEntity(entity: Entity): Vector2i {
             val entityTranslation = Vector3f()
             entity.transform.getTranslation(entityTranslation)
 
@@ -151,6 +188,13 @@ class TilemapComponent(private val tilemapLocation: String) : EntityComponent() 
             val tileY = (entityTranslation.y / (tileMap.tileHeight * -1)).toInt()
 
             return Vector2i(tileX, tileY)
+        }
+
+        private fun removeFromMaps(entity: Entity) {
+            val existingTile = entityIdToTile.remove(entity.id)
+            if (existingTile != null) {
+                tileIdToEntities[existingTile.id].removeIf { it.id == entity.id }
+            }
         }
     }
 

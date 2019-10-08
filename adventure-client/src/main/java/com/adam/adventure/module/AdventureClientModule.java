@@ -10,7 +10,7 @@ import com.adam.adventure.entity.repository.EntityRepository;
 import com.adam.adventure.event.EventBus;
 import com.adam.adventure.input.InputManager;
 import com.adam.adventure.loop.LoopIteration;
-import com.adam.adventure.loop.LoopIterationImpl;
+import com.adam.adventure.loop.SleepingLoopIteration;
 import com.adam.adventure.render.RenderQueue;
 import com.adam.adventure.render.Renderer;
 import com.adam.adventure.render.camera.Camera;
@@ -34,7 +34,7 @@ public class AdventureClientModule extends AbstractModule {
         bind(Window.class).toInstance(buildWindow());
         bind(Camera.class).toInstance(new Camera(new Vector3f(0.0f, 0.0f, 1.0f)));
         bind(UpdateStrategy.class).to(PublishEventUpdateStrategy.class).in(Singleton.class);
-        bind(LoopIteration.class).to(LoopIterationImpl.class).in(Singleton.class);
+        bind(LoopIteration.class).to(SleepingLoopIteration.class).in(Singleton.class);
         bind(InputManager.class).in(Singleton.class);
         bind(TextureFactory.class).in(Singleton.class);
         bind(Renderer.class).in(Singleton.class);

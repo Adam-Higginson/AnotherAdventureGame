@@ -37,8 +37,8 @@ public class ServerCommandPacketProcessor implements BiConsumer<DatagramPacket, 
         }
 
         final String[] commandParts = command.split(" ");
-        if (commandParts.length < 2) {
-            LOG.warn("Received command: {} but this was less than minimum split of 2 parts", command);
+        if (commandParts.length < 1) {
+            LOG.warn("Received command: {} but this was less than minimum split of 1 part", command);
         }
 
         LOG.info("Server processing command: {}", serverCommandPacket.command());

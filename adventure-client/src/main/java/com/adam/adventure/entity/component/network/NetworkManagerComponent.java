@@ -78,11 +78,9 @@ public class NetworkManagerComponent extends EntityComponent {
     @Override
     protected void afterUpdate(final float deltaTime) {
         if (isErrorInConnection.get()) {
-            if (datagramSocket != null) {
-                datagramSocket.close();
-            }
-
+            disconnect();
             isErrorInConnection.set(false);
+
             eventBus.publishEvent(consoleErrorEvent("Server timed out"));
             eventBus.publishEvent(new RequestNewSceneEvent("TitleScene"));
         } else if (shouldReceivePackets) {
@@ -105,7 +103,6 @@ public class NetworkManagerComponent extends EntityComponent {
 
 
     @EventSubscribe
-    @SuppressWarnings("unused")
     public void onRequestConnectionToServer(final RequestConnectionToServerEvent requestConnectionToServerEvent) {
         if (shouldReceivePackets) {
             LOG.warn("Already connected to server, so ignoring request to connect to server");
@@ -125,7 +122,7 @@ public class NetworkManagerComponent extends EntityComponent {
 
     @EventSubscribe
     public void onRequestDisconnectFromServer(final RequestDisconnectFromServerEvent requestDisconnectFromServerEvent) {
-        if (!shouldReceivePackets) {
+        if (!shouldReceivePackets || !isErrorInConnection.get()) {
             LOG.warn("Not connected to server so ignoring request to disconnect");
             return;
         }
@@ -319,7 +316,7 @@ public class NetworkManagerComponent extends EntityComponent {
             LOG.info("Spawning player");
             player = entityRepository.buildPlayerEntity();
         } else {
-            LOG.info("Spawning new player with id: {}", newPlayerEntityInfo.getId());
+            LOG.info("Spawning new player with tileSetId: {}", newPlayerEntityInfo.getId());
             player = entityRepository.buildOtherPlayerEntity();
         }
 
