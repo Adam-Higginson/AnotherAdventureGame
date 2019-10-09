@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.BiFunction;
-import java.util.function.Supplier;
 
 public class OutputPacketQueue {
 

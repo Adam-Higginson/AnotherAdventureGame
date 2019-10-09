@@ -3,6 +3,7 @@ package com.adam.adventure.server;
 import com.adam.adventure.entity.Entity;
 import com.adam.adventure.entity.EntityFactory;
 import com.adam.adventure.entity.component.tilemap.TilemapComponent;
+import com.adam.adventure.scene.Scene;
 import com.adam.adventure.scene.SceneFactory;
 import com.adam.adventure.scene.SceneManager;
 import com.adam.adventure.server.module.AdventureServerModule;
@@ -62,7 +63,10 @@ public class AdventureServer implements Runnable {
             final Entity tilemapEntity = entityFactory.create("Tilemap")
                     .addComponent(new TilemapComponent("tilemaps/test-world.json"));
 
-            return sceneManager.getSceneFactory().createScene("Test Scene");
+            final Scene scene = sceneManager.getSceneFactory().createScene("Test Scene");
+            scene.addEntity(tilemapEntity);
+
+            return scene;
         });
     }
 

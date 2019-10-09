@@ -25,7 +25,7 @@ public class ProgramFactory {
         glAttachShader(programId, vertexShader.getShaderId());
         glAttachShader(programId, fragmentShader.getShaderId());
         glLinkProgram(programId);
-        LOG.debug("Linking vertex shader id: {} and fragment shader id: {} using program id: {}",
+        LOG.debug("Linking vertex shader tileSetId: {} and fragment shader tileSetId: {} using program tileSetId: {}",
                 vertexShader.getShaderId(), fragmentShader.getShaderId(), programId);
 
         assertProgramLinkedSuccessfully(programId);

@@ -3,6 +3,7 @@ package com.adam.adventure.scene;
 import com.adam.adventure.entity.Entity;
 import com.adam.adventure.entity.EntityComponent;
 import com.adam.adventure.event.EventBus;
+import com.google.common.collect.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +49,7 @@ public class Scene {
     }
 
     public List<Entity> getEntities() {
-        return entities;
+        return ImmutableList.copyOf(entities);
     }
 
     void activate() {
@@ -88,6 +89,21 @@ public class Scene {
         return entities.stream()
                 .filter(entity -> entity.hasComponent(componentClass))
                 .findFirst();
+    }
+
+
+    public List<Entity> findEntitiesByName(final String entityName) {
+        return entities.stream()
+                .filter(entity -> entity.getName().equals(entityName))
+                .collect(Collectors.toList());
+    }
+
+    public <T extends EntityComponent> List<T> findEntityComponents(final Class<T> componentClass) {
+        return entities.stream()
+                .map(entity -> entity.getComponent(componentClass))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toList());
     }
 
     private void addNewEntitiesToScene() {

@@ -5,6 +5,7 @@ import org.joml.Matrix4f;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Objects;
 import java.util.Optional;
 
 public class Entity {
@@ -65,9 +66,9 @@ public class Entity {
     public void activate() {
         if (!active) {
             active = true;
-            LOG.debug("Activating entity (name={}, id={})", name, id);
+            LOG.debug("Activating entity (name={}, tileSetId={})", name, id);
             componentContainer.activate();
-            LOG.debug("Activated entity (name={}, id={})", name, id);
+            LOG.debug("Activated entity (name={}, tileSetId={})", name, id);
         }
     }
 
@@ -85,10 +86,10 @@ public class Entity {
      * Tells an entity it should destroy itself.
      */
     public void destroy() {
-        LOG.debug("Destroying entity (name={}, id={})", name, id);
+        LOG.debug("Destroying entity (name={}, tileSetId={})", name, id);
         componentContainer.destroy();
         active = false;
-        LOG.debug("Destroyed entity (name={}, id={})", name, id);
+        LOG.debug("Destroyed entity (name={}, tileSetId={})", name, id);
     }
 
     public void beforeUpdate(final float deltaTime) {
@@ -114,7 +115,7 @@ public class Entity {
     public String toString() {
         return "Entity{" +
                 "name='" + name + '\'' +
-                ", id=" + id +
+                ", tileSetId=" + id +
                 '}';
     }
 
@@ -126,10 +127,20 @@ public class Entity {
         return active;
     }
 
-    private void profile(final String name, final Runnable runnable) {
-        final long startTime = System.nanoTime();
-        runnable.run();
-        final long endTime = System.nanoTime();
-        LOG.debug("Took: {}ns to perform entity {} for entity: {}", endTime - startTime, name, this);
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        final Entity entity = (Entity) o;
+        return id == entity.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }
