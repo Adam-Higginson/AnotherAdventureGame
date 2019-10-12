@@ -89,11 +89,6 @@ class PathFindingComponent : EntityComponent() {
     }
 
     private fun estimateDistance(ourNode: PathNode, goalNode: PathNode): Float {
-//        val dx = abs(ourNode.tile.x - goalNode.tile.y)
-//        val dy = abs(ourNode.tile.y - goalNode.tile.y)
-//        val d = 1
-//        val d2 = 1.1414
-//        return (d * (dx + dy) + (d2 - 2 * d) * min(dx, dy)).toFloat()
         return Vector2f(ourNode.tile.x.toFloat(), ourNode.tile.y.toFloat())
                 .distance(goalNode.tile.x.toFloat(), goalNode.tile.y.toFloat())
     }
