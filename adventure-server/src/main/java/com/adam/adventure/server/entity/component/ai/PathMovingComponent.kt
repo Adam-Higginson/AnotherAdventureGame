@@ -82,7 +82,7 @@ class PathMovingComponent(private val speed : Float) : EntityComponent() {
             transformComponent.transform.translate(direction.x * speed * deltaTime, direction.y * speed * deltaTime, 0.0f)
 
             calculateAnimation(direction)
-        }
+        } ?: broadcastComponentEvent(MovementComponentEvent(MovementComponentEvent.MovementType.ENTITY_NO_MOVEMENT))
     }
 
     private fun calculateAnimation(direction : Vector3f) {
