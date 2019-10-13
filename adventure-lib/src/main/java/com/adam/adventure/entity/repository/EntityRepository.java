@@ -12,7 +12,7 @@ import java.util.Optional;
 public interface EntityRepository {
     String NPC_SKELETON_NAME = "skeleton";
     String PLAYER_NAME = "player";
-    String OTHER_PLAYER = "other_player";
+    String NETWORK_PLAYER = "network_player";
 
     Entity buildNpcSkeletonEntity();
 
@@ -32,7 +32,7 @@ public interface EntityRepository {
                 return Optional.of(buildNpcSkeletonEntity());
             case PLAYER_NAME:
                 return Optional.of(buildPlayerEntity());
-            case OTHER_PLAYER:
+            case NETWORK_PLAYER:
                 return Optional.of(buildOtherPlayerEntity());
         }
 

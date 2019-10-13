@@ -21,6 +21,7 @@ import com.adam.adventure.update.PublishEventUpdateStrategy;
 import com.adam.adventure.update.UpdateStrategy;
 import com.adam.adventure.window.Window;
 import com.google.inject.AbstractModule;
+import com.google.inject.Provides;
 import com.google.inject.matcher.Matchers;
 import org.joml.Vector3f;
 
@@ -31,7 +32,6 @@ public class AdventureClientModule extends AbstractModule {
     @Override
     protected void configure() {
         bind(EventBus.class).toInstance(new EventBus());
-        bind(Window.class).toInstance(buildWindow());
         bind(Camera.class).toInstance(new Camera(new Vector3f(0.0f, 0.0f, 1.0f)));
         bind(UpdateStrategy.class).to(PublishEventUpdateStrategy.class).in(Singleton.class);
         bind(LoopIteration.class).to(SleepingLoopIteration.class).in(Singleton.class);
@@ -51,8 +51,10 @@ public class AdventureClientModule extends AbstractModule {
                 new TimedInterceptor());
     }
 
-    private Window buildWindow() {
-        return new Window.Builder(800, 600)
+    @Provides
+    @Singleton
+    public Window buildWindow(final EventBus eventBus) {
+        return new Window.Builder(800, 600, eventBus)
                 .withTitle("Yet another adventure game")
                 .withIsVisible(true)
                 .withIsResizable(true)

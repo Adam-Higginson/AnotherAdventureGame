@@ -66,9 +66,9 @@ public class Entity {
     public void activate() {
         if (!active) {
             active = true;
-            LOG.debug("Activating entity (name={}, tileSetId={})", name, id);
+            LOG.debug("Activating entity (name={}, id={})", name, id);
             componentContainer.activate();
-            LOG.debug("Activated entity (name={}, tileSetId={})", name, id);
+            LOG.debug("Activated entity (name={}, id={})", name, id);
         }
     }
 
@@ -86,10 +86,10 @@ public class Entity {
      * Tells an entity it should destroy itself.
      */
     public void destroy() {
-        LOG.debug("Destroying entity (name={}, tileSetId={})", name, id);
+        LOG.debug("Destroying entity (name={}, id={})", name, id);
         componentContainer.destroy();
         active = false;
-        LOG.debug("Destroyed entity (name={}, tileSetId={})", name, id);
+        LOG.debug("Destroyed entity (name={}, id={})", name, id);
     }
 
     public void beforeUpdate(final float deltaTime) {
@@ -115,7 +115,7 @@ public class Entity {
     public String toString() {
         return "Entity{" +
                 "name='" + name + '\'' +
-                ", tileSetId=" + id +
+                ", id=" + id +
                 '}';
     }
 

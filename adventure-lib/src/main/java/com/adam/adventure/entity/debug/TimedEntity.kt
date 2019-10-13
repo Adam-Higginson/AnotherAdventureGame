@@ -14,19 +14,19 @@ class TimedEntity(name: String, id: Int, injector: Injector) : Entity(name, id, 
     override fun activate() {
         val startTime = System.nanoTime()
         super.activate()
-        log.info("Took {}ns to activate entity(name: {}, tileSetId: {})", System.nanoTime() - startTime, name, id)
+        log.info("Took {}ns to activate entity(name: {}, id: {})", System.nanoTime() - startTime, name, id)
     }
 
     override fun update(deltaTime: Float) {
         val startTime = System.nanoTime()
         super.update(deltaTime)
-        log.info("Took {}ns to update entity(name: {}, tileSetId: {})", System.nanoTime() - startTime, name, id)
+        log.info("Took {}ns to update entity(name: {}, id: {})", System.nanoTime() - startTime, name, id)
     }
 
 
     override fun destroy() {
         val startTime = System.nanoTime()
         super.destroy()
-        log.info("Took {}ns to destroy entity(name: {}, tileSetId: {})", System.nanoTime() - startTime, name, id)
+        log.info("Took {}ns to destroy entity(name: {}, id: {})", System.nanoTime() - startTime, name, id)
     }
 }
