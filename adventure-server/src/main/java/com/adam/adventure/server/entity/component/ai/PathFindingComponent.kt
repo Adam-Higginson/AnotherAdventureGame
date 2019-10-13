@@ -37,7 +37,7 @@ class PathFindingComponent : EntityComponent() {
         val explored = mutableSetOf<PathNode>()
 
         while (reachable.isNotEmpty()) {
-            val chosenNode = chooseNode(ourNode, goalNode, reachable) ?: return Stack()
+            val chosenNode = chooseNode(goalNode, reachable) ?: return Stack()
             if (chosenNode == goalNode) {
                 return buildPath(chosenNode)
             }
@@ -73,12 +73,12 @@ class PathFindingComponent : EntityComponent() {
         return tilemapComponent.entityTileMap ?: throw IllegalStateException("AI present but no tilemap!")
     }
 
-    private fun chooseNode(ourNode: PathNode, goalNode: PathNode, reachable: Set<PathNode>): PathNode? {
-        var minCost = Integer.MAX_VALUE
+    private fun chooseNode(goalNode: PathNode, reachable: Set<PathNode>): PathNode? {
+        var minCost = Float.MAX_VALUE
         var bestNode: PathNode? = null
 
         for (node in reachable) {
-            val totalCost = 1 + estimateDistance(ourNode, goalNode)
+            val totalCost = 1 + estimateDistance(node, goalNode)
             if (minCost > totalCost) {
                 minCost = totalCost
                 bestNode = node
@@ -88,9 +88,9 @@ class PathFindingComponent : EntityComponent() {
         return bestNode
     }
 
-    private fun estimateDistance(ourNode: PathNode, goalNode: PathNode): Int {
+    private fun estimateDistance(ourNode: PathNode, goalNode: PathNode): Float {
         return Vector2f(ourNode.tile.x.toFloat(), ourNode.tile.y.toFloat())
-                .distance(goalNode.tile.x.toFloat(), goalNode.tile.y.toFloat()).toInt()
+                .distance(goalNode.tile.x.toFloat(), goalNode.tile.y.toFloat())
     }
 
     private fun getAdjacentNodes(entityTileMap: TilemapComponent.EntityTileMap, node: PathNode): Set<PathNode> {

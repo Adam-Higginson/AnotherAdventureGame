@@ -37,9 +37,6 @@ public class NetworkTransformComponent extends NetworkComponent {
     protected void update(final float deltaTime) {
         if (lastReceivedTransform != null && lastReceivedMovementType != null) {
             getTransformComponent().getTransform().set(lastReceivedTransform);
-            if (lastReceivedMovementType != MovementComponentEvent.MovementType.ENTITY_NO_MOVEMENT) {
-                LOG.debug("Next movement type: {}", lastReceivedMovementType);
-            }
             broadcastComponentEvent(new MovementComponentEvent(lastReceivedMovementType));
         }
     }
