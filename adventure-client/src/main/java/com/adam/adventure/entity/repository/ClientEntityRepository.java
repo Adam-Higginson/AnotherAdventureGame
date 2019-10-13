@@ -190,7 +190,7 @@ public class ClientEntityRepository implements EntityRepository {
 
         final Sprite sprite = new Sprite(playerTexture, new Rectangle(0.0f, 0.0f, 30f, 30f), 90f, 90f);
 
-        return entityFactory.create(OTHER_PLAYER)
+        return entityFactory.create(NETWORK_PLAYER)
                 .addComponent(new NetworkTransformComponent(false))
                 .addComponent(new AnimatedSpriteRendererComponent.Builder(sprite)
                         .onEventStopAnimation(MovementComponentEvent.MovementType.ENTITY_NO_MOVEMENT)

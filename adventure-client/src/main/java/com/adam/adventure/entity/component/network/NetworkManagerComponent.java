@@ -316,7 +316,7 @@ public class NetworkManagerComponent extends EntityComponent {
             LOG.info("Spawning player");
             player = entityRepository.buildPlayerEntity();
         } else {
-            LOG.info("Spawning new player with tileSetId: {}", newPlayerEntityInfo.getId());
+            LOG.info("Spawning new player with network id: {}", newPlayerEntityInfo.getId());
             player = entityRepository.buildOtherPlayerEntity();
         }
 

@@ -71,7 +71,7 @@ public class EntityInfo {
     @Override
     public String toString() {
         return "EntityInfo{" +
-                "tileSetId=" + id +
+                "id=" + id +
                 ", name='" + name + '\'' +
                 ", animationName='" + animationName + '\'' +
                 ", transform=" + transform +

@@ -6,7 +6,7 @@ import com.google.flatbuffers.FlatBufferBuilder;
 public interface PacketableMessage<T> {
 
     /**
-     * @return the flat buffer tileSetId of the created packet
+     * @return the flat buffer id of the created packet
      */
     int serialise(final FlatBufferBuilder builder,
                   final PacketConverter packetConverter,

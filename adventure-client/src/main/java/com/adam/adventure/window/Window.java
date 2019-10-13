@@ -1,5 +1,6 @@
 package com.adam.adventure.window;
 
+import com.adam.adventure.event.EventBus;
 import com.adam.adventure.glfw.GlfwUtil;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.GL;
@@ -19,9 +20,11 @@ public class Window {
 
     private enum WindowState {INITIALISED, OPEN, CLOSED;}
 
+
     // The window handle
     private final long glfwWindow;
 
+    private final EventBus eventBus;
     private final boolean isVisible;
     private final boolean isResizable;
     private int width;
@@ -29,6 +32,7 @@ public class Window {
     private WindowState windowState;
 
     public Window(final Builder builder) {
+        this.eventBus = builder.eventBus;
         this.isVisible = builder.isVisible;
         this.isResizable = builder.isResizable;
         this.width = builder.width;
@@ -134,6 +138,7 @@ public class Window {
         this.width = width;
         this.height = height;
         glViewport(0, 0, width, height);
+        eventBus.publishEvent(new WindowResizeEvent(width, height));
     }
 
 
@@ -146,13 +151,15 @@ public class Window {
     public static class Builder {
         private final int width;
         private final int height;
+        private EventBus eventBus;
         private String title = "";
         private boolean isVisible = false;
         private boolean isResizable = true;
 
-        public Builder(final int width, final int height) {
+        public Builder(final int width, final int height, final EventBus eventBus) {
             this.width = width;
             this.height = height;
+            this.eventBus = eventBus;
         }
 
         public Builder withTitle(final String title) {

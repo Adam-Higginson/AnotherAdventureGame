@@ -18,7 +18,7 @@ import org.joml.Matrix4f
  * @param tilemapHeight - The number of tiles for the height of the tileMap
  * @param tilesetColumns - How many columns are in the tileset
  * @param tileSize - The size of the tiles, shader currently only supports square tiles
- * @param firstgid - The first tileSetId of the tile
+ * @param firstgid - The first id of the tile
  */
 class TilemapRenderable(private val transform : Matrix4f,
                         private val tileSetTexture: Texture,

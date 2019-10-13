@@ -82,7 +82,6 @@ public class AnimatedSpriteRendererComponent extends EntityComponent {
             if (stopAnimationEvents.contains(movementComponentEvent.getMovementType()) && activeSpriteAnimation != null) {
                 activeSpriteAnimation.setLooping(false);
             } else {
-                LOG.debug("Current component event = {} new one = {}", activeMovementType, movementComponentEvent.getMovementType());
                 final SpriteAnimation newSpriteAnimation = eventToSpriteAnimation
                         .getOrDefault(movementComponentEvent.getMovementType(), defaultSpriteAnimation);
                 if (newSpriteAnimation != null) {

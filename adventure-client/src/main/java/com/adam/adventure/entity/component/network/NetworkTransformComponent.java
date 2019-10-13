@@ -5,8 +5,6 @@ import com.adam.adventure.domain.message.EntityTransformPacketableMessage;
 import com.adam.adventure.entity.AnimationName;
 import com.adam.adventure.entity.component.event.MovementComponentEvent;
 import org.joml.Matrix4f;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.LinkedList;
 import java.util.UUID;
@@ -16,7 +14,6 @@ import java.util.UUID;
  * regarding it.
  */
 public class NetworkTransformComponent extends NetworkComponent {
-    private static final Logger LOG = LoggerFactory.getLogger(NetworkTransformComponent.class);
 
     private final boolean authoritative;
 
@@ -117,7 +114,7 @@ public class NetworkTransformComponent extends NetworkComponent {
         private final long timestamp;
         private final EntityInfo entityInfo;
 
-        public EntityInfoBufferElement(final long timestamp, final EntityInfo entityInfo) {
+        EntityInfoBufferElement(final long timestamp, final EntityInfo entityInfo) {
             this.timestamp = timestamp;
             this.entityInfo = entityInfo;
         }
