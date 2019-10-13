@@ -11,10 +11,10 @@ import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
 class SkeletonAIComponent : EntityComponent() {
-    //Amount of millis between recalculating targets
-    private val targetRecalculationTime = 2000L
     private val log: Logger = LoggerFactory.getLogger(this.javaClass)
-    private enum class State { SELECTING_TARGET, FIND_PATH_TO_TARGET, MOVING_TO_TARGET }
+    private enum class State { SELECTING_TARGET, MOVING_TO_TARGET }
+    //Amount of millis between recalculating targets
+    private val targetRecalculationTime = 500L
 
     @Inject
     private lateinit var sceneManager: SceneManager
@@ -22,7 +22,7 @@ class SkeletonAIComponent : EntityComponent() {
     private var state = State.SELECTING_TARGET
     private var target: Entity? = null
     private var lastFoundTargetTransform : Matrix4f? = null
-    private var lastRecalculatedPathTime : Long = System.currentTimeMillis()
+    private var lastTimeTargetRecalculated = System.currentTimeMillis()
 
 
     override fun update(deltaTime: Float) {
@@ -35,19 +35,11 @@ class SkeletonAIComponent : EntityComponent() {
         when(state) {
             State.SELECTING_TARGET -> {
                 selectTarget(scene)
-                state = State.FIND_PATH_TO_TARGET
-            }
-
-            State.FIND_PATH_TO_TARGET -> {
-                if (System.currentTimeMillis() - lastRecalculatedPathTime >= targetRecalculationTime) {
-                    lastRecalculatedPathTime = System.currentTimeMillis()
-                    target?.let { broadcastComponentEvent(FindPathRequestEvent(it)) }
-                    state = State.MOVING_TO_TARGET
-                }
+                state = State.MOVING_TO_TARGET
             }
 
             State.MOVING_TO_TARGET -> {
-                checkForTargetMoving()
+                recalculatePathIfTargetHasMoved()
             }
         }
     }
@@ -69,11 +61,14 @@ class SkeletonAIComponent : EntityComponent() {
         }
     }
 
-    private fun checkForTargetMoving() {
-        target?.let {
-            if (it.transform != lastFoundTargetTransform) {
-                lastFoundTargetTransform = Matrix4f(target!!.transform)
-                state = State.FIND_PATH_TO_TARGET
+    private fun recalculatePathIfTargetHasMoved() {
+        if (System.currentTimeMillis() - lastTimeTargetRecalculated > targetRecalculationTime) {
+            lastTimeTargetRecalculated = System.currentTimeMillis()
+            target?.let {
+                if (it.transform != lastFoundTargetTransform) {
+                    lastFoundTargetTransform = Matrix4f(target!!.transform)
+                    broadcastComponentEvent(FindPathRequestEvent(it))
+                }
             }
         }
     }

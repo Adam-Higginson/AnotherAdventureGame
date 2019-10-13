@@ -170,8 +170,8 @@ class TilemapComponent(private val tilemapLocation: String) : EntityComponent() 
         }
 
         fun getRealTilePosition(tile: Tile) : Vector3f {
-            val tileX = (tile.x.toFloat() +  (tileSet.tileWidth / 2)) * tileSet.tileWidth
-            val tileY = (-(tile.y.toFloat()) - (tileSet.tileHeight / 2)) * tileSet.tileHeight
+            val tileX = (tile.x.toFloat() * tileSet.tileWidth) + (tileSet.tileWidth / 2)
+            val tileY = (-(tile.y.toFloat()) * tileSet.tileHeight) - (tileSet.tileHeight / 2)
 
             val vectorPosition = Vector4f(tileX, tileY, 0.0f, 1.0f)
             transformComponent.transform.transform(vectorPosition)
