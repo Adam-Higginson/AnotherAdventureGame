@@ -1,2 +1,18 @@
 language: java
 jdk: openjdk11
+
+jobs:
+  include:
+    - stage: Release to GitHub
+      deploy:
+        provider: releases
+        api_key:
+          secure: HnRAcHCv5GdWl1+kEEc4V7WCkaOamWsCWvAMpmy9GdbYwx5l40gLxXgg2bjadf+AdTNmZw2LPtUbJvqw4l2Fiih/tsSuTUkarsszW0WVs9h5qT0xfaLYB1U139jZhh3soTL/qH0gpxj5H01IJ86PAk9PXCGKX02SOyyicTlvNywuF2pGsC6hOmsFJeQz85ZLdMPt+JSnrCtwTp4tw3M+wOq8MjMEGN4wVFZKvbdG1A+8wHslASrkqeMx5OlQ0uQijkkMvifSLR7ucvh0ZHKyd3b3zcBuL7Zrt3sok/RwhAY7tZKak+9ZJCuuQ4rEZ+rHHOHNiIA/Vf9+hceR7fw1duLEmwbckg6yz5rmd4LHRi2QHzf4e8QRiSVjIvJxIaFlYNPc0uhxaY+X6Nn/ND1aXy0XQxMhS8qgDquIR0P3Pp0VKN4UCiVupOOssnlCA+PRuC3p83pI3sIESVh3ND/gC5rHt9k/7NdgAU+IDrYVlYQMg9cT3Ruku6Td559KqINRFGdDnR3TC7lHVheTTZWRrgC65Jf0ksznmxf6GvgZcGrfrmuF2tu2YwzYQX3SiAaiS5ISvmbTTYgoM47TYMxmr3rPuVw8JqqsfSSaal7FhBaVao7G+ncENwHIe+8zZhZZ3dT4b/SXBRnWNv1XvxQM3m8B6H4C3yBylDWhCtwGKxQ=
+        file:
+          - "adventure-client/target/adventure-client-1.0-SNAPSHOT.jar"
+          - "adventure-server/target/adventure-server-1.0-SNAPSHOT.jar"
+        skip_cleanup: true
+        on:
+          repo: Adam-Higginson/AnotherAdventureGame
+          tags: true
+

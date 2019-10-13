@@ -1,8 +1,6 @@
 package com.adam.adventure.server.tick;
 
-import com.adam.adventure.event.EventBus;
 import com.google.inject.assistedinject.Assisted;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;
@@ -16,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class ServerTickScheduler {
 
-    private ServerTick serverTick;
+    private final ServerTick serverTick;
     private final long millisPerTick;
     private final ScheduledExecutorService scheduledExecutorService;
 
@@ -37,6 +35,7 @@ public class ServerTickScheduler {
     public void stop() throws InterruptedException {
         LOG.info("Stopping server tick...");
         scheduledExecutorService.shutdown();
+        serverTick.stop();
         scheduledExecutorService.awaitTermination(1, TimeUnit.SECONDS);
     }
 }

@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -45,10 +46,18 @@ public class ServerReceiver implements Runnable {
                 for (int i = 0; i < packetBatch.packetsLength(); i++) {
                     processPacket(datagramPacket, packetBatch.packets(i));
                 }
+            } catch (final SocketException e) {
+                if (!running) {
+                    LOG.debug("Socket exception caught but the server receiver is no longer running", e);
+                } else {
+                    LOG.error("Exception thrown when receiving packet", e);
+                }
             } catch (final Exception e) {
                 LOG.error("Exception thrown when receiving packet", e);
             }
         }
+
+        LOG.info("Server receiver stopped");
     }
 
     private PacketBatch receivePacketBatch(final DatagramPacket datagramPacket, final byte[] buffer) {
@@ -65,6 +74,5 @@ public class ServerReceiver implements Runnable {
     private void logUnhandledPacket(final Packet packet) {
         LOG.error("Could not find handler for packet type: {}", packet.packetType());
     }
-
 
 }

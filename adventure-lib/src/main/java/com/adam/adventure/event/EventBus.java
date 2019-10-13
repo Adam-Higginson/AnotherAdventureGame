@@ -92,7 +92,7 @@ public class EventBus {
         }
     }
 
-    private static class InstanceAndMethod {
+    private class InstanceAndMethod {
         private final Object instance;
         private final Method method;
 
@@ -106,8 +106,10 @@ public class EventBus {
                 method.setAccessible(true);
                 method.invoke(instance, event);
                 method.setAccessible(false);
-            } catch (final IllegalAccessException | InvocationTargetException e) {
-                LOG.error("Error in event bus when trying to process event: {}", event.getClass().getSimpleName(), e);
+            } catch (final InvocationTargetException e) {
+                publishEvent(new UncaughtThrowableEvent(e.getCause()));
+            } catch (final IllegalAccessException e) {
+                publishEvent(new UncaughtThrowableEvent(e));
             }
         }
 

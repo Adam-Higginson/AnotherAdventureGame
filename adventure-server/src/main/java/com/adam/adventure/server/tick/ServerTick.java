@@ -29,8 +29,9 @@ class ServerTick implements Runnable {
      */
     private final OutputPacketQueue outputPacketQueue;
 
-    private AtomicLong packetIndexCounter;
+    private final AtomicLong packetIndexCounter;
     private long lastTime;
+    private boolean running;
 
 
     @Inject
@@ -45,6 +46,7 @@ class ServerTick implements Runnable {
         this.outputPacketQueue = new OutputPacketQueue();
         this.packetIndexCounter = new AtomicLong();
         this.lastTime = System.currentTimeMillis();
+        this.running = true;
 
         eventBus.register(this);
     }
@@ -54,10 +56,12 @@ class ServerTick implements Runnable {
      */
     @Override
     public void run() {
-        handleNewEvents();
-        publishServerTickEvent();
-        writeOutputMessages();
-        lastTime = System.currentTimeMillis();
+        if (running) {
+            handleNewEvents();
+            publishServerTickEvent();
+            writeOutputMessages();
+            lastTime = System.currentTimeMillis();
+        }
     }
 
     private void handleNewEvents() {
@@ -74,7 +78,7 @@ class ServerTick implements Runnable {
     }
 
     private void publishServerTickEvent() {
-        long deltaTime = System.currentTimeMillis() - lastTime;
+        final long deltaTime = System.currentTimeMillis() - lastTime;
         eventBus.publishEvent(new OnNewServerTickEvent(outputPacketQueue, deltaTime));
     }
 
@@ -95,5 +99,9 @@ class ServerTick implements Runnable {
     @SuppressWarnings("unused")
     public void onServerTickEvent(final ServerTickEvent serverTickEvent) {
         serverTickEvents.add(serverTickEvent);
+    }
+
+    public void stop() {
+        this.running = false;
     }
 }

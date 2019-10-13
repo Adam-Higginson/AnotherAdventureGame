@@ -107,6 +107,10 @@ public class SceneManager {
     @EventSubscribe
     @SuppressWarnings("unused")
     public void onUpdateEvent(final NewLoopIterationEvent newLoopIterationEvent) {
+        if (sceneManagerState == null) {
+            return;
+        }
+
         switch (sceneManagerState) {
             case DESTROY_CURRENT_SCENE:
                 destroyCurrentScene();

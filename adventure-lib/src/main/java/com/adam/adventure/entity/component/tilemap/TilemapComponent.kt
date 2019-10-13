@@ -15,12 +15,12 @@ import org.joml.Vector3f
 import org.joml.Vector4f
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.io.File
-import java.net.URL
 import javax.inject.Inject
 
 class TilemapComponent(private val tilemapLocation: String) : EntityComponent() {
     private val log: Logger = LoggerFactory.getLogger(this.javaClass)
+    //TODO figure out how to handle tilemap/tileset paths better
+    private val tilemapDirectory = "tilemaps"
 
     @Inject
     private var tileMapLoader: TileMapLoader? = null
@@ -40,7 +40,7 @@ class TilemapComponent(private val tilemapLocation: String) : EntityComponent() 
         val tileMap = tileMapLoader!!.load(tilemapResource.openStream())
         assertValidTileMap(tileMap)
 
-        val tileSet = loadTileSet(tilemapResource, tileMap)
+        val tileSet = loadTileSet(tileMap)
         buildEntityTileMap(tileMap, tileSet)
         eventBus!!.register(this)
 
@@ -66,11 +66,10 @@ class TilemapComponent(private val tilemapLocation: String) : EntityComponent() 
     }
 
 
-    private fun loadTileSet(tilemapResource: URL, tileMap: TileMap): TileSet {
-        val file = File(tilemapResource.toURI())
-        val tileSetFile = File(file.parent.plus(File.separatorChar).plus(tileMap.tileSets[0].source))
+    private fun loadTileSet(tileMap: TileMap): TileSet {
+        val tileSetFile = Resources.getResource(tilemapDirectory + "/" + tileMap.tileSets[0].source)
         log.info("Opening tileset at: {}", tileSetFile)
-        return tileSetLoader!!.load(tileSetFile.inputStream())
+        return tileSetLoader!!.load(tileSetFile.openStream())
     }
 
 
